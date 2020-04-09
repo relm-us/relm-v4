@@ -1,0 +1,16 @@
+# Unwanted files
+target
+.cache/
+
+# Backup files
+.DS_Store
+thumbs.db
+*~
+*.rs.bk
+*.swp
+.vscode/
+
+dist/
+node_modules/
+statebus/
+design/*.afdesign
