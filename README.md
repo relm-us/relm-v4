@@ -2,6 +2,36 @@
 
 Relm is an experimental game world that's meant for remote team collaboration:
 
+
+
+## Installing for Local Development
+
+You can get going pretty quickly if you have a nodejs environment set up:
+
+```
+yarn install
+yarn start
+```
+
+We recommend node 10.15.3 at the time of this writing.
+
+## Notes on the Refactor
+
+Currently, the code is undergoing a fairly large refactor from a monolithic app to more of an ECS (entity-component-system) style of modularization. We're using [stampit](https://stampit.js.org/) as a way to create Components that interact with each other when added to an Entity.
+
+If you want to get started understanding the code, check out `src/index2.html` for now. Eventually it will become `src/index.html`.
+
+Project structure:
+
+```
+dist   - ephemeral directory, not part of git. Build artifacts go here.
+lib    - pieces of sample code and external libraries we've modified.
+public - assets that are loaded at run-time, e.g. images, meshes, animations
+src    - source code for this project
+```
+
+## Why build a game environment for serious teams trying to get stuff done?
+
 1. Games are fun, able to "steal" our attention, but often meaningless, unable to empower gamers to produce real market value in the world's economies.
 2. While online gambling is rampant, the current generation of video games do not offer a net postive ROI for playing the game.
 3. Unless you are a beta tester or selling virtual goods in game, most gamers can't play video games to pay their own rent.
@@ -43,4 +73,3 @@ But if you are super curious ...
 
 You can play a pre-alpha version here:
 https://relm.us 
-
