@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <title>Relm - A Gameworld for Teamwork!</title>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
+
+  <!-- THREEjs is a core dependency, load it first -->
+  <script src="//cdn.jsdelivr.net/npm/three@0.114.0/build/three.min.js"></script>
+  <!-- If the CDN fails (e.g. offline mode, server down, internet down?) load locally -->
+  <script>window.THREE || document.write('<script src="vendor/three-r114.min.js"><\/script>')</script>
+
+  <style>
+    html, body {
+      width: 100%;
+      height: 100%;
+    }
+    .translucent {
+      opacity: 0.3;
+    }
+    .mobile > img {
+        position: relative;
+    }
+    body, .mobile > img {
+      -webkit-touch-callout: none;
+      -webkit-user-select: none; 
+      -khtml-user-select: none; 
+      -moz-user-select: none; 
+      -ms-user-select: none; 
+      user-select: none;
+    }
+
+    /*
+      Thought Bubble CSS
+      
+      Note that .circle-text requires the following:
+      - a div with class 'circle-text'
+      - a span inside that div
+      
+      The outer span should also contain the following style properties:
+        width: $radius*2;
+        height: $radius*2;
+    */
+    .thought-bubble {
+      position: absolute;
+      transform: translate(0,-100%);
+      z-index: 1;
+    }
+    .thought-bubble-1 { /* smallest circle: closest to head */
+      position: absolute;
+      transform: translate(-50%,-50%);
+      z-index: 1;
+      border: 2px solid #555;
+      background-color: white;
+      border-radius: 100%;
+      width: 5px;
+      height: 5px;
+      left: -2px;
+      bottom: -10px;
+      opacity: 0.9;
+    }
+    .thought-bubble-2 { /* small circle: between smallest circle & thought bubble */
+      position: absolute;
+      transform: translate(-50%,-50%);
+      z-index: 1;
+      border: 2px solid #555;
+      background-color: white;
+      border-radius: 100%;
+      width: 12px;
+      height: 12px;
+      left: 13px;
+      bottom: -8px;
+      opacity: 0.9;
+    }
+    .circle-text-center {
+      position: relative;
+      top: 25%;
+    }
+    .circle-text {
+      border-radius: 100%;
+      border: 2px solid #555;
+      background-color: white;
+      font: 14px sans-serif;
+      text-align: center;
+      overflow: hidden;
+      padding: 5px;
+      opacity: 0.9;
+    }
+    .circle-text::before{
+      content: '';
+      height: 100%;
+      width: 50%;
+      float: left;
+      shape-outside: polygon(
+        0 0, 100% 0, 60% 4%, 40% 10%, 20% 20%, 10% 28.2%, 5% 34.4%, 0 50%,
+        5% 65.6%, 10% 71.8%, 20% 80%, 40% 90%, 60% 96%, 100% 100%, 0 100%
+      );
+    }
+    .circle-text > span::before{
+      content: '';
+      height: 100%;
+      width: 50%;
+      float: right;
+      shape-outside: polygon(
+        100% 0, 0 0, 40% 4%, 60% 10%, 80% 20%, 90% 28.2%, 95% 34.4%, 100% 50%,
+        95% 65.6%, 90% 71.8%, 80% 80%, 60% 90%, 40% 96%, 0 100%, 100% 100%
+      );
+    }
+    .thought-bubble-close {
+      right: 0px;
+      top: 0px;
+      opacity: 0.9;
+    }
+
+    .entity-label {
+      position: absolute;
+      transform: translate(-50%, -50%);
+      display: ruby;
+      color: #e5e5e5;
+      letter-spacing: 1.0px;
+      font-weight: bold;
+      text-shadow: 0px 0px 5px #333;
+    }
+
+    /* CSS-only "Close" button with icon */
+    .close {
+      position: absolute;
+      z-index: 1;
+      border: 2px solid #aaa;
+      background-color: white;
+      border-radius: 100%;
+      width: 25px;
+      height: 25px;
+    }
+    .close:before, .close:after {
+      position: absolute;
+      left: 12px;
+      top: 2px;
+      content: ' ';
+      height: 20px;
+      width: 2px;
+      background-color: #aaa;
+    }
+    .close:before {
+      transform: rotate(45deg);
+    }
+    .close:after {
+      transform: rotate(-45deg);
+    }
+
+    #control-button { fill: black; }
+    #control-button.pressed { fill: #ff0000; }
+
+    #control-pad .pad-top { fill: #ffffff; }
+    #control-pad .pad-top.pressed { fill: #ff0000; }
+
+    #control-pad .pad-right { fill: #ffffff; }
+    #control-pad .pad-right.pressed { fill: #ff0000; }
+
+    #control-pad .pad-bottom { fill: #ffffff; }
+    #control-pad .pad-bottom.pressed { fill: #ff0000; }
+
+    #control-pad .pad-left { fill: #ffffff; }
+    #control-pad .pad-left.pressed { fill: #ff0000; }
+
+    .mobile { display: none; }
+    @media (any-pointer: coarse) {
+      .mobile { display: block !important; }
+    }
+    @media (any-hover: none) {
+      .mobile { display: block !important; }
+    }
+
+    .front {
+      z-index: 99;
+    }
+
+    #progress-bar {
+      position: absolute;
+      height: 20px;
+      bottom: 0px;
+      left: 0px;
+      right: 0px;
+      z-index: 100;
+      text-align: center;
+    }
+    #progress-bar > div {
+      position: absolute;
+      border-radius: 2.5px;
+      background-color: #f54;
+      left: 0px;
+      height: 100%;
+      text-align: center;
+      text-emphasis: bold;
+      overflow: hidden;
+    }
+
+    #typing {
+      visibility: hidden;
+      position: absolute;
+      bottom: 0px;
+      left: 0px;
+      right: 0px;
+      opacity: 0.8;
+      z-index: 99;
+      padding: 4px 10px;
+      background-color: #555;
+      display: flex;
+    }
+    #typing:focus-within {
+      background-color: #eee;
+    }
+    #typing:focus-within::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      bottom: 0px;
+      left: 0;
+      right: 0;
+      box-shadow: inset 0px 0px 12px #fe9;
+    }
+    #typing > input::placeholder {
+      color: white;
+    }
+    #typing:focus-within > input::placeholder, #typing:focus-within > input {
+      color: black;
+      background-color: #eee;
+    }
+    #typing > input {
+      font-size: 24px;
+      border: 2px solid #111;
+      color: white;
+      background-color: #555;
+      padding: 4px 10px;
+      flex-grow: 1;
+    }
+    /* easier to read font size on mobile */
+    @media only screen and (max-width: 900px) {
+      #typing > input {font-size:24px !important;}
+    }
+    /* smaller controls on desktop touch screens */
+    @media only screen and (min-width: 900px) {
+      #control-pad {font-size:12px !important;}
+      #control-button {font-size:12px !important;}
+    }
+    /* medium controls on mobile touch screens */
+    @media only screen and (max-width: 900px) {
+      #control-pad {font-size:8px !important;}
+      #control-button {font-size:8px !important;}
+    }
+    .bold-p {
+      font-weight: bold;
+    } 
+    .welcome-settings {
+      padding: 15px;
+      border-radius: 10px;
+    }
+    .welcome-settings > div {
+      margin-bottom: 15px;
+    }
+
+    .sign-message {
+      color: #421;
+      text-align: center;
+      font-size: 18pt;
+      height: 90px;
+    }
+    .chat-message {
+      border: 2px solid black;
+      padding: 15px;
+      background-color: white;
+      color: black;
+      opacity: 0.8;
+      border-radius: 8px;  
+      height: 30px;
+    }
+
+    #game:focus-within::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      bottom: 50px;
+      left: 0;
+      right: 0;
+      box-shadow: inset 0px 0px 12px #fe9;
+    }
+  </style>
+</head>
+<body style="margin: 0px; background-color: #bbbbbb; overflow: hidden;">
+
+  <!-- The GL Canvas element goes inside here -->
+  <div id="game"></div>
+
+  <div id="progress-bar">Loading...</div>
+  <div id="typing">
+    <svg class="mobile translucent front" id="control-pad" style="width: 18em; height: 18em; position: fixed; left: 0.5em; margin-top:-18.5em;" viewBox="0 0 135 135" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" draggable="false">
+      <g><circle cx="67.259" cy="67.259" r="63.009" style="stroke:#ebebeb;stroke-width:7.5px;"></circle>
+        <path class="pad-top" d="M67.198,56.462c-5.192,-0.166 -11.916,-6.666 -13.555,-9.64c-1.767,-3.207 -1.894,-17.136 -1.979,-25.608c-0.063,-6.147 8.016,-6.735 8.033,-6.737l15.123,0c0,0 8.096,0.583 8.034,6.737c-0.086,8.472 -0.213,22.401 -1.98,25.608c-1.645,2.986 -8.415,9.525 -13.615,9.641l-0.061,-0.001Z"></path>
+        <path class="pad-right" d="M78.056,67.198c0.166,-5.192 6.665,-11.916 9.64,-13.555c3.207,-1.767 17.136,-1.894 25.607,-1.979c6.148,-0.063 6.736,8.016 6.737,8.033l0,15.123c0,0 -0.583,8.096 -6.737,8.034c-8.471,-0.086 -22.4,-0.213 -25.607,-1.98c-2.986,-1.645 -9.525,-8.415 -9.642,-13.615l0.002,-0.061Z"></path>
+        <path class="pad-bottom" d="M67.32,78.056c5.192,0.166 11.916,6.665 13.554,9.64c1.767,3.207 1.894,17.136 1.98,25.607c0.062,6.148 -8.016,6.736 -8.034,6.737l-15.123,0c0,0 -8.096,-0.583 -8.033,-6.737c0.085,-8.471 0.212,-22.4 1.979,-25.607c1.645,-2.986 8.416,-9.525 13.616,-9.642l0.061,0.002Z"></path>
+        <path class="pad-left" d="M56.462,67.32c-0.166,5.192 -6.666,11.916 -9.64,13.554c-3.207,1.767 -17.136,1.894 -25.608,1.98c-6.147,0.062 -6.735,-8.016 -6.737,-8.034l0,-15.123c0,0 0.583,-8.096 6.737,-8.033c8.472,0.085 22.401,0.212 25.608,1.979c2.986,1.645 9.525,8.416 9.641,13.616l-0.001,0.061Z"></path>
+      </g>
+    </svg>
+
+    <svg class="mobile translucent front" id="control-button" style="width: 10em; height: 10em; position: fixed; right: 0.5em; margin-top:-10.5em;" viewBox="0 0 65 65" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" draggable="false">
+        <circle cx="32.452" cy="32.452" r="28.702" style="stroke:#ebebeb;stroke-width:7.5px;"></circle>
+    </svg>
+
+    <input id="input" type="text" placeholder="Thought ..." value="">
+  </div>
+
+
+  <script src="./index2.js"></script>
+  
+  <!-- <script src="vendor/webrtc-adapter.js"></script>
+  <script src="vendor/janus.js"></script>
+  <script src="./communications.js"></script> -->
+  
+</body>
+</html>
