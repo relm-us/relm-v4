@@ -102,7 +102,7 @@ class ThoughtBubble {
     div.classList.add('circle-text')
     div.addEventListener('click', (event) => {
       actionCallback(this, event)
-    })
+    }, true)
     wrapper.appendChild(div)
 
     const bubble1 = document.createElement('div')
@@ -118,7 +118,7 @@ class ThoughtBubble {
     closeIcon.classList.add('close')
     closeIcon.addEventListener('click', (event) => {
       closeCallback(this, event)
-    })
+    }, true)
     wrapper.appendChild(closeIcon)
 
     const span = document.createElement('span')
