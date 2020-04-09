@@ -1,8 +1,6 @@
-# Ayanarra
+# Relm
 
-## A Game World That Dissolves Distance Between Remote Teammates, and Makes Life Fun Again
-
-Ayanarra is an experimental game whose time has come:
+Relm is an experimental game world that's meant for remote team collaboration:
 
 1. Games are fun, able to "steal" our attention, but often meaningless, unable to empower gamers to produce real market value in the world's economies.
 2. While online gambling is rampant, the current generation of video games do not offer a net postive ROI for playing the game.
@@ -31,7 +29,7 @@ It's time for a video game that deepens your relationships with real people and 
 3. We seek to enable remote workers to feel a sense of spatial collaboration, connection and expression not found anywhere else.
 4. We seek to enable distant teams and families to work on meaningful projects together in a way that's more fun, playful and social than the current generation of apps and games.
 
-## Sounds fun! But how can I play Ayanarra?
+## Sounds fun! But how can I play Relm?
 
 (This is only a concept)
 
@@ -43,6 +41,6 @@ You'll need to wait ...
 
 But if you are super curious ...
 
-You can play a pre-pre-pre-alpha version here:
-https://ayanarra.com 
+You can play a pre-alpha version here:
+https://relm.us 
 
