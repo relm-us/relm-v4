@@ -1,1 +1,1 @@
-ssh-agent ./relm-deploy-all.sh
+ssh-agent ./deploy-all.sh
