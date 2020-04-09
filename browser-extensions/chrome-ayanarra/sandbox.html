@@ -1,0 +1,57 @@
+<html>
+<head>
+    <script src="client6.js"
+            globals="false"
+            server="https://ayanarra.invisible.college"></script>
+</head>
+<body>
+    Sandbox
+    <script>
+        // Set to true if we don't want to actually send messages to/from Ayanarra
+        var simulateLocal = false;
+
+        // The "portal" is the statebus path for this particular portal
+        var portal;
+
+        function forwardToBackground(message) {
+            console.log("[sandbox] forwarded message to background from statebus:", message);
+            window.parent.postMessage(message, "*");
+        }
+
+        function validatePortal() {
+            if (portal === undefined) {
+                throw "[sandbox] statebus portal path is undefined"
+            }
+        }
+
+        var commands = {
+            init: (args) => {
+                portal = "/portal/" + args.portal;
+                // Set up a callback so that we keep getting updates to state
+                bus.fetch(portal, forwardToBackground);
+            },
+
+            fetch: () => {
+                validatePortal();
+                var state = bus.fetch(portal);
+                forwardToBackground(state);
+            },
+
+            send: (args) => {
+                validatePortal();
+                var state = bus.fetch(portal);
+                Object.assign(state, args);
+                bus.save(state);
+            },
+        };
+
+        window.addEventListener('message', function(event) {
+            console.log("[sandbox] received message:", event.data);
+            if (!simulateLocal) {
+                commands[event.data.command](event.data.args);
+            }
+        }, false);
+    </script>
+</body>
+</html>
+

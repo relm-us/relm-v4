@@ -1,0 +1,31 @@
+{
+  "description": "Drag page elements out of the browser and in to the Ayanarra world",
+  "manifest_version": 2,
+  "name": "Ayanarra Extension",
+  "version": "1.0",
+  "author": "Duane Johnson",
+  "statebus": {
+    "id": "vnc2",
+    "script": "https://stateb.us/client6.js",
+    "server": "https://ayanarra.invisible.college"
+  },
+
+  "permissions": [ "http://*/*", "https://*/*", "downloads" ],
+
+  "background": {
+    "page": "background.html",
+    "persistent": true
+  },
+
+  "sandbox": {
+    "pages": ["sandbox.html"]
+  },
+
+  "content_scripts": [
+    {
+      "matches": ["<all_urls>"],
+      "run_at": "document_start",
+      "js": ["content.js"]
+    }
+  ]
+}

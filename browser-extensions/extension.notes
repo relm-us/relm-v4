@@ -1,0 +1,22 @@
+// From: https://stackoverflow.com/questions/25815902/intercept-and-perhaps-cancel-pages-mouse-keyboard-event-handlers
+// in a content script, at run_at:document_start
+window.addEventListener('click', function(event) {
+    event.stopImmediatePropagation();
+}, true);
+
+// See https://developer.chrome.com/extensions/content_scripts#run_at
+[js]
+{
+  "name": "My extension",
+  ...
+  "content_scripts": [
+    {
+      "matches": ["http://*.nytimes.com/*"],
+      "run_at": "document_start",
+      "js": ["contentScript.js"]
+    }
+  ],
+  ...
+}
+[js]
+
