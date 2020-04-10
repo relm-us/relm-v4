@@ -35,8 +35,14 @@ const HasThoughtBubble = stampit(Entity, Component, EventEmittable, {
         this.state.thought.now = this.state.thought.target
         this.thoughtBubble.setText(this.state.thought.now)
       }
-      const walkCycleTime = this.clips.walking.time / this.clips.walking.getClip().duration
-      const bounceMotion = Math.sin(walkCycleTime * Math.PI * 4 + Math.PI/8) * 2
+      
+      let bounceMotion = 0
+      // If we have a walking AnimationClip available, we can use its time tracker
+      // to make the thought bubble look more real by making it bob up and down a bit
+      if (this.clips.walking) {
+        const walkCycleTime = this.clips.walking.time / this.clips.walking.getClip().duration
+        bounceMotion = Math.sin(walkCycleTime * Math.PI * 4 + Math.PI/8) * 2
+      }
       this.thoughtBubble.position.copy(this.object.position)
       this.thoughtBubble.position.y += 165 + bounceMotion
       this.thoughtBubble.position.x += 30

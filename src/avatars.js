@@ -65,17 +65,6 @@ function indexOfAvatarOption(avatarId, avatarOptions = avatarOptions) {
 }
 
 /**
- * Uses the playerId string to pseudo-randomly choose a gender.
- * 
- * @param {string} playerId The UUID of the player.
- * @returns {string} Either 'm' or 'f' at present.
- */
-function genderFromPlayerId(playerId) {
-  const pseudoRandom = sumLetters(playerId) % 2
-  return (pseudoRandom === 0 ? 'm' : 'f')
-}
-
-/**
  * Uses the `playerId` string to pseudo-randomly choose an avatarId from 
  * the list of avatarOptions.
  * 

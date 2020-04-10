@@ -18,12 +18,26 @@ const Stage = stampit(
   name: 'Stage',
 
   props: {
-    entities: {},
+    /**
+     * @type {Object}
+     */
+    entities: null,
+    
+    /**
+     * Width of the stage in pixels (i.e. screen)
+     * @type {number}
+     */
     width: null,
+    
+    /**
+     * Height of the stage in pixels (i.e. screen)
+     * @type {number}
+     */
     height: null,
   },
 
   init({ width, height }) {
+    this.entities = {}
     if (!width || !height) {
       throw new Error('State requires width and height')
     } else {
@@ -64,6 +78,9 @@ const Stage = stampit(
       }
     },
     
+    /**
+     * Main animation loop starts here.
+     */
     start() {
       const animate = (nowMsec) => {
         let avgDelta = calculateAverageDelta(nowMsec)

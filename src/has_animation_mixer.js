@@ -35,11 +35,19 @@ const HasAnimationMixer = stampit(Component, {
   props: {
     animationSpeed: 1.0,
     animationResourceId: null,
-    animationMeshName: null,
     animationActions: ['walking', 'falling'],
     animationMixer: null,
     animatedObject: null,
-    clips: {},
+    clips: null,
+  },
+  
+  deepProps: {
+    state: {
+      animationMeshName: {
+        now: null,
+        target: null
+      },
+    }
   },
 
   init({
@@ -48,17 +56,18 @@ const HasAnimationMixer = stampit(Component, {
     animationMeshName,
     animationActions = this.animationActions
   }) {
+    this.clips = {}
     this.animationSpeed = animationSpeed
     this.animationResourceId = animationResourceId
-    this.animationMeshName = animationMeshName
     this.animationActions = animationActions
+    this.state.animationMeshName.target = animationMeshName
   },
 
   methods: {
-    getClonedObjectWithSkeleton() {
+    getClonedObjectWithSkeleton(meshName) {
       let object3d
       this.resources.get(this.animationResourceId).scene.traverse(o1 => {
-        if (o1.name === this.animationMeshName) { // Object3D, contains Bone & SkinnedMesh
+        if (o1.name === meshName) { // Object3D, contains Bone & SkinnedMesh
           // Find mesh inside avatar container
           o1.traverse(o2 => {
             if (o2.isMesh) { this.setMeshDefaults(o2) }
@@ -68,7 +77,7 @@ const HasAnimationMixer = stampit(Component, {
       })
 
       if (!object3d) {
-        throw new Error(`Unable to find object in scene ${this.animationMeshName} in ${this.animationResourceId}`)
+        throw new Error(`Unable to find object in scene ${meshName} in ${this.animationResourceId}`)
       }
       
       return object3d
@@ -84,14 +93,14 @@ const HasAnimationMixer = stampit(Component, {
       return mesh
     },
 
-    attachAnimatedObject() {
+    attachAnimatedObject(meshName) {
       // If this isn't the first time, remove existing animatedObject from the root object
       if (this.animatedObject) {
         this.object.remove(this.animatedObject)
       }
 
       // We must use a clone of the object so that our customizations aren't global
-      this.animatedObject = this.getClonedObjectWithSkeleton()
+      this.animatedObject = this.getClonedObjectWithSkeleton(meshName)
       this.animatedObject.scale.set(1, 1, 1)
       this.object.add(this.animatedObject)
     },
@@ -106,15 +115,15 @@ const HasAnimationMixer = stampit(Component, {
      * be present in the animation's name. For example 'walking' will match
      * 'armature-15-walking'.
      */
-    setup() {
-      this.attachAnimatedObject()
+    changeAnimationMesh(meshName) {
+      this.attachAnimatedObject(meshName)
       
       // TODO: this is a bit of a hack, but it seems to be the only way to match
       // animations to mesh name:
       // - our mesh names are of the form '[gender]-[sequence]-armature'
       // - we remove the '-armature' and are left with a prefix
       // - this prefix can be used to match the AnimationClip (see findAnimationClip below)
-      const prefix = this.animationMeshName .split('-').slice(0,2).join('-')
+      const prefix = meshName.split('-').slice(0,2).join('-')
 
       const animations = this.resources.get(this.animationResourceId).animations
       this.mixer = new AnimationMixer(this.animatedObject)
@@ -131,7 +140,13 @@ const HasAnimationMixer = stampit(Component, {
     },
 
     update(delta) {
-      this.mixer.update(delta * this.animationSpeed)
+      if (this.state.animationMeshName.now !== this.state.animationMeshName.target) {
+        this.state.animationMeshName.now = this.state.animationMeshName.target
+        this.changeAnimationMesh(this.state.animationMeshName.now)
+      }
+      if (this.mixer) {
+        this.mixer.update(delta * this.animationSpeed)
+      }
     },
 
     teardown() {

@@ -76,12 +76,12 @@ const KeyboardController = stampit(Entity, Component, EventEmittable, {
       }
     },
 
-    keyPressed (keyCode) {
+    keyPressed (keyCode, opts) {
       const action = this.getActionFromKeyCode(keyCode)
       if (action === undefined) {
         // If this doesn't match a known action, emit 'unknown' so that we can
         // potentially help the player with visual feedback or other cues.
-        this.emit('unknown', keyCode)
+        this.emit('unknown', keyCode, opts)
       } else if (['done', 'switch', 'close'].includes(action)) {
         this.emit(action)
         this.actions.clear()

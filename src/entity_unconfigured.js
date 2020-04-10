@@ -26,6 +26,11 @@ const EntityUnconfigured = stampit(Component, {
      * @type {ResourceLoader}
      */
     resources: null,
+
+    /**
+     * @type {Object} See new_network.js
+     */
+    network: null,
   },
 
   props: {
@@ -40,10 +45,11 @@ const EntityUnconfigured = stampit(Component, {
     stage: null,
   },
 
-  init({ uuid = this.uuid, stage, resources }, { stamp }) {
+  init({ uuid = this.uuid, stage, resources, network }, { stamp }) {
     this.uuid = uuid || uuidv4()
     this.stage = stage || stamp.compose.configuration.stage
     this.resources = resources || stamp.compose.configuration.resources
+    this.network = network || stamp.compose.configuration.network
   },
 
   methods: {
