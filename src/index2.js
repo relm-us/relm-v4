@@ -60,6 +60,7 @@ async function start() {
 
   // At various times, we need to set focus on the game so that character directional controls work
   const focusOnGame = () => { stage.renderer.domElement.focus() }
+  const focusOnInput = () => { document.getElementById('input').focus() }
   // Do it once when the page finishes loading, too:
   focusOnGame()
   // If at any time we discover that the focus is on the document body instead of the canvas, correct it
@@ -78,8 +79,9 @@ async function start() {
         // Before focusing back on the game, clear the text and make a thought bubble
         player.setThought(e.target.value)
         e.target.value = ""
+      } else {
+        focusOnGame()
       }
-      focusOnGame()
     }
   })
 
@@ -104,13 +106,19 @@ async function start() {
       }
     }
   })
-  kbController.on('done', () => {
-    const input = document.getElementById('input')
-    input.focus()
-  })
-  kbController.on('switch', () => {
-    const input = document.getElementById('input')
-    input.focus()
+  kbController.on('done', focusOnInput)
+  kbController.on('switch', focusOnInput)
+  kbController.on('close', () => { player.setThought(null) })
+  kbController.on('unknown', (keyCode) => {
+    // If the player presses a letter of the alphabet on the keyboard, give them a hint
+    if (keyCode >= 65 && keyCode <= 90) {
+      const help = document.getElementById('press-tab-help')
+      help.classList.remove('hide')
+      help.classList.add('show')
+      setTimeout(() => {
+        help.classList.add('hide')
+      }, 7500)
+    }
   })
   stage.add(kbController)
 

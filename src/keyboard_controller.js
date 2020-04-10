@@ -30,8 +30,9 @@ const KeyboardController = stampit(Entity, Component, EventEmittable, {
       auxleft: [81 /* Q */],
       auxright: [69 /* E */],
       act: [32], // spacebar
-      switch: [9], // tab
-      done: [13], // enter
+      switch: [9], // TAB
+      done: [13], // ENTER
+      close: [27], // ESC
     }
   },
 
@@ -61,7 +62,7 @@ const KeyboardController = stampit(Entity, Component, EventEmittable, {
       return inverted
     },
 
-    getKeyCodeAction (keyCode) {
+    getActionFromKeyCode (keyCode) {
       return this.keyCodeAction[keyCode]
     },
 
@@ -76,8 +77,12 @@ const KeyboardController = stampit(Entity, Component, EventEmittable, {
     },
 
     keyPressed (keyCode) {
-      const action = this.getKeyCodeAction(keyCode)
-      if (['done', 'switch'].includes(action)) {
+      const action = this.getActionFromKeyCode(keyCode)
+      if (action === undefined) {
+        // If this doesn't match a known action, emit 'unknown' so that we can
+        // potentially help the player with visual feedback or other cues.
+        this.emit('unknown', keyCode)
+      } else if (['done', 'switch', 'close'].includes(action)) {
         this.emit(action)
         this.actions.clear()
       } else {
@@ -86,7 +91,7 @@ const KeyboardController = stampit(Entity, Component, EventEmittable, {
     },
 
     keyReleased (keyCode) {
-      const action = this.getKeyCodeAction(keyCode)
+      const action = this.getActionFromKeyCode(keyCode)
       this.actions.delete(action)
     },
 

@@ -14,6 +14,7 @@
     html, body {
       width: 100%;
       height: 100%;
+      font-family: Verdana, Geneva, Tahoma, sans-serif;
     }
     .translucent {
       opacity: 0.3;
@@ -284,12 +285,64 @@
       right: 0;
       box-shadow: inset 0px 0px 12px #fe9;
     }
+
+    #press-tab-help {
+      position: absolute;
+      bottom: 80px;
+      left: 50px;
+      font-size: 28px;
+      font-weight: bold;
+      color: #efaa22;
+      border: 5px solid #efef22;
+      border-radius: 8px;
+      background-color: gray;
+      padding: 10px 25px;
+      display: none;
+    }
+    #press-tab-help.show {
+      display: block;
+      animation: fadein 0.5s, bounce 0.5s infinite alternate;
+      /* animation-delay: 0.0s, 0.5s; */
+    }
+    #press-tab-help.hide {
+      display: block;
+      animation: fadeout 0.5s;
+      animation-fill-mode: forwards;
+    }
+    @keyframes fadein {
+      from { opacity: 0.0; }
+      to { opacity: 1.0; }
+    }
+    @keyframes fadeout {
+      from { opacity: 1.0; }
+      to { opacity: 0.0; }
+    }
+    @keyframes bounce {
+      from { transform: translateY(0px); }
+      to { transform: translateY(-15px); }
+    }
+
+    i {
+      border: solid black;
+      border-width: 0 3px 3px 0;
+      display: inline-block;
+      padding: 3px;
+    }
+    .right { transform: rotate(-45deg) scale(2); }
+    .left { transform: rotate(135deg) scale(2); }
+    .up { transform: rotate(-135deg) scale(2); }
+    .down { transform: rotate(45deg) scale(2); }
   </style>
 </head>
 <body style="margin: 0px; background-color: #bbbbbb; overflow: hidden;">
 
   <!-- The GL Canvas element goes inside here -->
   <div id="game"></div>
+
+  <div id="press-tab-help">
+    <i class="down" style="border-color:#efef22; position: absolute; bottom: -10px;"></i>
+    Press Tab to Type
+  </div>
 
   <div id="progress-bar">Loading...</div>
   <div id="typing">
