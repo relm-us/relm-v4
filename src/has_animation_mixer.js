@@ -108,11 +108,20 @@ const HasAnimationMixer = stampit(Component, {
      */
     setup() {
       this.attachAnimatedObject()
+      
+      // TODO: this is a bit of a hack, but it seems to be the only way to match
+      // animations to mesh name:
+      // - our mesh names are of the form '[gender]-[sequence]-armature'
+      // - we remove the '-armature' and are left with a prefix
+      // - this prefix can be used to match the AnimationClip (see findAnimationClip below)
+      const prefix = this.animationMeshName .split('-').slice(0,2).join('-')
 
       const animations = this.resources.get(this.animationResourceId).animations
       this.mixer = new AnimationMixer(this.animatedObject)
       for (const action of this.animationActions) {
-        const animation = findAnimationClip(animations, (name) => (name.indexOf(action) >= 0))
+        const animation = findAnimationClip(animations, (name) => {
+          return name.indexOf(prefix) === 0 && name.indexOf(action) >= 0
+        })
         if (animation) {
           this.clips[action] = this.mixer.clipAction(animation)
         } else {
