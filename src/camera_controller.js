@@ -18,7 +18,6 @@ const CameraController = stampit(Entity, Component, {
   methods: {
     setup() {
       this.offset.copy(this.stage.camera.position)
-      console.log('camera offset', this.offset)
     },
 
     update(delta) {
