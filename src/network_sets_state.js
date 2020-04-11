@@ -38,8 +38,8 @@ const NetworkSetsState = stampit(Component, {
     setup() {
       if (this.networkAwareness) {
         this.network.on('update', (key, object) => {
-          if (key === this.networkKey) {
-            
+          if (key === this.networkKey && this.uuid === object.uuid) {
+            console.log('network sets', this.uuid, object)
             for (let k in object) {
               if (k === 'uuid') { continue }
               if (!this.state[k]) { this.state[k] = {} }
