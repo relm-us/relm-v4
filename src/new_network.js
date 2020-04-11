@@ -21,38 +21,39 @@ const Network = stampit(EventEmittable, {
     this.clientIdsConnected = new Set()
     this.clientIdsAdded = new Set()
     
-    this.provider = new WebsocketProvider(Y_URL, Y_ROOM, this.ydoc)
     this.entityStates = this.ydoc.getMap('entities')
     
-    this.provider.awareness.on('change', ({ added, updated, removed}, _conn) => {
-      this.onAwarenessChanged(added)
-      this.onAwarenessChanged(updated)
-      this.onAwarenessRemoved(removed)
-    })
   },
 
   methods: {
+    connect() {
+      this.provider = new WebsocketProvider(Y_URL, Y_ROOM, this.ydoc)
+      this.provider.awareness.on('change', ({ added, updated, removed}, _conn) => {
+        this.onAwarenessChanged(added)
+        this.onAwarenessChanged(updated)
+        this.onAwarenessRemoved(removed)
+      })
+    },
+
     onAwarenessChanged(added) {
       // Note: `clientId` is the yjs-assigned integer for each client.
       for (let clientId of added) {
         if (clientId === this.ydoc.clientID) { continue }
-        const state = this.provider.awareness.getStates().get(clientId)
-        if (state) {
-          this.clientIdsToEntityState[clientId] = state
-          if (!this.clientIdsAdded.has(clientId) && !this.clientIdsConnected.has(clientId)) {
-            for (let key in state) {
-              this.emit('add', key, state[key])
-            }
-            this.clientIdsAdded.add(clientId)
-            this.clientIdsConnected.add(clientId)
-          } else if (!this.clientIdsConnected) {
-            for (let key in state) {
-              this.emit('connect', key, state[key])
-            }
-            this.clientIdsConnected.add(clientId)
-          } else {
-            for (let key in state) {
-              this.emit('update', key, state[key])
+        const keyedState = this.provider.awareness.getStates().get(clientId)
+        if (keyedState) {
+          this.clientIdsToEntityState[clientId] = keyedState
+          for (let key in keyedState) {
+            const state = keyedState[key]
+            if (!this.clientIdsAdded.has(state.uuid)) {
+              console.log('emit add', key, state)
+              this.emit('add', key, state)
+              this.clientIdsAdded.add(state.uuid)
+              this.clientIdsConnected.add(state.uuid)
+            } else if (!this.clientIdsConnected.has(state.uuid)) {
+              this.emit('connect', key, state)
+              this.clientIdsConnected.add(state.uuid)
+            } else {
+              this.emit('update', key, state)
             }
           }
         } else {
@@ -68,12 +69,13 @@ const Network = stampit(EventEmittable, {
         // FIXME: can't get state since it is removed by yjs;
         // see https://discuss.yjs.dev/t/should-awareness-emit-change-before-removing-state
         // const state = this.provider.awareness.getStates().get(clientId)
-        const state = this.clientIdsToEntityState[clientId]
-        if (state) {
-          for (let key in state) {
-            this.emit('disconnect', key, state[key])
+        const keyedState = this.clientIdsToEntityState[clientId]
+        if (keyedState) {
+          for (let key in keyedState) {
+            const state = keyedState[key]
+            this.emit('disconnect', key, state)
+            this.clientIdsConnected.delete(state.uuid)
           }
-          this.clientIdsConnected.delete(clientId)
         } else {
           console.warn('Unable to accept disconnect', clientId, state)
         }

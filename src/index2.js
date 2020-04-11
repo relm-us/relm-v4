@@ -17,7 +17,7 @@ import { HasOpacity } from './has_opacity.js'
 import { NetworkGetsState } from './network_gets_state.js'
 import { NetworkSetsState } from './network_sets_state.js'
 
-const Player = stampit(
+const PlayerBase = stampit(
   Entity,
   HasObject,
   HasOpacity,
@@ -26,6 +26,18 @@ const Player = stampit(
   FollowsTarget,
   HasAnimationMixer,
   WalksWhenMoving,
+).props({
+})
+// .props({
+//     speed: 250,
+//     animationSpeed: 1.5,
+//     labelOffset: { x: 0, y: 0, z: 60 },
+//     animationResourceId: 'people',
+//     networkKey: 'player'
+// })
+
+const Player = stampit(
+  PlayerBase,
   // This is how the player sends updates
   NetworkGetsState,
 {
@@ -33,15 +45,7 @@ const Player = stampit(
 })
 
 const OtherPlayer = stampit(
-  Entity,
-  HasObject,
-  HasOpacity,
-  HasLabel,
-  HasThoughtBubble,
-  FollowsTarget,
-  HasAnimationMixer,
-  WalksWhenMoving,
-  
+  PlayerBase,
   // This is how OtherPlayers get updates
   NetworkSetsState,
 {
@@ -72,31 +76,34 @@ async function start() {
   const playerState = LongTermMemory.getOrCreatePlayerState(playerId)
   const player = window.player = Player({
     uuid: playerId,
+    label: playerState.name,
+    animationMeshName: playerState.avatarId,
     speed: 250,
     animationSpeed: 1.5,
-    label: playerState.name,
     labelOffset: { x: 0, y: 0, z: 60 },
     animationResourceId: 'people',
-    animationMeshName: playerState.avatarId,
     networkKey: 'player'
   })
   stage.add(player)
 
   network.on('connect', (key, state) => {
-    console.log('network on connect', key, state)
-    if (state.uuid) {
-      stage.entities[state.uuid].setOpacity(1.0)
-    } else {
-      console.warn("Can't show connect", key, state)
+    const entity = stage.entities[state.uuid]
+    switch(key) {
+      case 'player':
+        entity.setOpacity(1.0)
+      default:
+        console.warn('"connect" issued for unhandled type', key, state)
     }
   })
   
   network.on('disconnect', (key, state) => {
-    console.log('network on disconnect', key, state)
-    if (state.uuid) {
-      stage.entities[state.uuid].setOpacity(0.2)
-    } else {
-      console.warn("Can't show disconnect", key, state)
+    const entity = stage.entities[state.uuid]
+    switch(key) {
+      case 'player':
+        entity.setOpacity(0.2)
+        entity.setThought(null)
+      default:
+        console.warn('"disconnect" issued for unhandled type', key, state)
     }
   })
   
@@ -121,7 +128,7 @@ async function start() {
         }
         return
       default:
-        console.warn('Network added unhandled type', key, state)
+        console.warn('"add" issued for unhandled type', key, state)
     }
   })
 
@@ -201,6 +208,11 @@ async function start() {
   const camController = CameraController({ target: player })
   stage.add(camController)
   
+  // Call network.connect now, after all the network callbacks are ready,
+  // so that we don't miss any inital 'add' events
+  network.connect()
+
+
   resources.enqueue([
     'green tree', 'yellow tree', 'hollow stump', 'tree7', 'rock',
     'stump', 'shrub', 'mushroom', 'sparkle', 'signpost', 'signpole',
