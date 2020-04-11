@@ -17,10 +17,10 @@ const HasOpacity = stampit(Component, {
       this.state.opacity.target = opacity
     },
     
-    update(delta) {
-      const epsilon = this.state.opacity.target - this.state.opacity.now
-      if (Math.abs(epsilon) > 0.01) {
-        const increment = Math.sign(epsilon) * 0.02
+    update(_delta) {
+      const closeEnough = this.state.opacity.target - this.state.opacity.now
+      if (Math.abs(closeEnough) > 0.01) {
+        const increment = Math.sign(closeEnough) * 0.02
         this.state.opacity.now += increment
         // Traverse the entity's SkinnedMesh and set opacity on any associated materials
         if (this.object) {
