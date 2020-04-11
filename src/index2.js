@@ -13,12 +13,14 @@ import { CameraController } from './camera_controller.js'
 import { HasAnimationMixer } from './has_animation_mixer.js'
 import { WalksWhenMoving } from './walks_when_moving.js'
 import { HasThoughtBubble } from './has_thought_bubble.js'
+import { HasOpacity } from './has_opacity.js'
 import { NetworkGetsState } from './network_gets_state.js'
 import { NetworkSetsState } from './network_sets_state.js'
 
 const Player = stampit(
   Entity,
   HasObject,
+  HasOpacity,
   HasLabel,
   HasThoughtBubble,
   FollowsTarget,
@@ -33,11 +35,13 @@ const Player = stampit(
 const OtherPlayer = stampit(
   Entity,
   HasObject,
+  HasOpacity,
   HasLabel,
   HasThoughtBubble,
   FollowsTarget,
   HasAnimationMixer,
   WalksWhenMoving,
+  
   // This is how OtherPlayers get updates
   NetworkSetsState,
 {
@@ -78,6 +82,14 @@ async function start() {
   })
   stage.add(player)
 
+  network.on('connect', (key, state) => {
+    console.log('network on connect', key, state)
+  })
+  
+  network.on('disconnect', (key, state) => {
+    console.log('network on disconnect', key, state)
+  })
+  
   network.on('add', (key, state) => {
     switch(key) {
       case 'player':
@@ -98,6 +110,8 @@ async function start() {
           console.error(e)
         }
         return
+      default:
+        console.warn('Network added unhandled type', key, state)
     }
   })
 
