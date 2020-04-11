@@ -84,10 +84,20 @@ async function start() {
 
   network.on('connect', (key, state) => {
     console.log('network on connect', key, state)
+    if (state.uuid) {
+      stage.entities[state.uuid].setOpacity(1.0)
+    } else {
+      console.warn("Can't show connect", key, state)
+    }
   })
   
   network.on('disconnect', (key, state) => {
     console.log('network on disconnect', key, state)
+    if (state.uuid) {
+      stage.entities[state.uuid].setOpacity(0.2)
+    } else {
+      console.warn("Can't show disconnect", key, state)
+    }
   })
   
   network.on('add', (key, state) => {
@@ -95,7 +105,7 @@ async function start() {
       case 'player':
         console.log('create other player', state)
         try {
-          const otherPlayer = window.otherPlayer = OtherPlayer({
+          const otherPlayer = OtherPlayer({
             uuid: state.uuid,
             speed: 250,
             animationSpeed: 1.5,
