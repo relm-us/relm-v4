@@ -14,6 +14,7 @@ import { HasAnimationMixer } from './has_animation_mixer.js'
 import { WalksWhenMoving } from './walks_when_moving.js'
 import { HasThoughtBubble } from './has_thought_bubble.js'
 import { NetworkGetsState } from './network_gets_state.js'
+import { NetworkSetsState } from './network_sets_state.js'
 
 const Player = stampit(
   Entity,
@@ -23,6 +24,7 @@ const Player = stampit(
   FollowsTarget,
   HasAnimationMixer,
   WalksWhenMoving,
+  // This is how the player sends updates
   NetworkGetsState,
 {
   name: 'Player',
@@ -36,7 +38,8 @@ const OtherPlayer = stampit(
   FollowsTarget,
   HasAnimationMixer,
   WalksWhenMoving,
-  // NetworkSetsState,
+  // This is how OtherPlayers get updates
+  NetworkSetsState,
 {
   name: 'OtherPlayer'
 })
@@ -88,6 +91,7 @@ async function start() {
             labelOffset: { x: 0, y: 0, z: 60 },
             animationResourceId: 'people',
             animationMeshName: state.animationMeshName,
+            networkKey: 'player'
           })
           stage.add(otherPlayer)
         } catch (e) {

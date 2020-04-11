@@ -2,16 +2,6 @@ import stampit from 'stampit'
 
 import { Component } from './component.js'
 
-function stateToObject(uuid, state) {
-  const object = { uuid }
-  for (let key in state) {
-    if (state[key].target) {
-      object[key] = state[key].target
-    }
-  }
-  return object
-}
-
 /**
  * SyncsStateWithAwareness syncs any data in the `state` deepProps of the Entity
  * to the Awareness system on the network.
@@ -24,7 +14,7 @@ function stateToObject(uuid, state) {
  * track of a lot of dynamic information that we don't actually care to
  * store anywhere (at least for now).
  */
-const NetworkGetsState = stampit(Component, {
+const NetworkSetsState = stampit(Component, {
   props: {
     /**
      * The networkKey can be set to the type of object, e.g. 'player', so that
@@ -42,22 +32,26 @@ const NetworkGetsState = stampit(Component, {
   init({ networkKey = this.networkKey, networkAwareness = this.networkAwareness }) {
     this.networkKey = networkKey
     this.networkAwareness = networkAwareness
-    this.networkGetsStateCounter = 0
   },
   
   methods: {
-    update(delta) {
-      this.networkGetsStateCounter++
-      if (this.networkGetsStateCounter % 20 === 0) {
-        const state = stateToObject(this.uuid, this.state)
-        if (this.networkAwareness) {
-          this.network.provider.awareness.setLocalStateField(this.networkKey, state)
-        } else {
-          // TODO: write state to this.network.ydoc
-        }
+    setup() {
+      if (this.networkAwareness) {
+        this.network.on('update', (key, object) => {
+          if (key === this.networkKey) {
+            
+            for (let k in object) {
+              if (k === 'uuid') { continue }
+              if (!this.state[k]) { this.state[k] = {} }
+              this.state[k].target = object[k]
+            }
+          }
+        })
+      } else {
+        // TODO: write state to this.network.ydoc
       }
     }
   }
 })
 
-export { NetworkGetsState }
+export { NetworkSetsState }
