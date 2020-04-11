@@ -10,8 +10,8 @@ const HasLabel = stampit(Component, {
   name: 'HasLabel',
 
   props: {
-    labelPosition: new Vector3(),
-    labelOffset: new Vector3()
+    labelPosition: null,
+    labelOffset: null,
   },
 
   deepProps: {
@@ -27,9 +27,11 @@ const HasLabel = stampit(Component, {
     label = this.state.label.target,
     labelOffset = this.labelOffset
   }) {
+  
     this.state.label.now = label
     this.state.label.target = label
-    this.labelOffset = labelOffset
+    this.labelPosition = new Vector3()
+    this.labelOffset = labelOffset || new Vector3()
   },
 
   methods: {

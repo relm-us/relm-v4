@@ -13,8 +13,8 @@ const HasObject = stampit(Component, {
     object: null
   },
 
-  init({ object }) {
-    this.object = object || new THREE.Object3D()
+  init() {
+    this.object = new THREE.Object3D()
     // Layer 1 is used for things that can collide
     // this.object.layers.enable(1)
   },
