@@ -4,7 +4,7 @@ import EventEmittable from '@stamp/eventemittable'
 import * as Y from 'yjs'
 import { WebsocketProvider } from 'y-websocket'
 
-const Y_URL = 'ws://ayanarra.com:1235'
+const Y_URL = 'wss://y.relm.us'
 const Y_ROOM = 'ayanarra'
 
 const Network = stampit(EventEmittable, {
