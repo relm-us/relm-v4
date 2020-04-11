@@ -163,6 +163,7 @@ async function start() {
     } else if (e.keyCode >= 37 && e.keyCode <= 40 && text === "") {
       // If the player has typed nothing, but uses the arrow keys, go back to the game
       focusOnGame()
+      kbController.keyPressed(e.keyCode)
     }
   })
 
