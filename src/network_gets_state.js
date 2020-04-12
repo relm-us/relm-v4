@@ -1,16 +1,7 @@
 import stampit from 'stampit'
 
 import { Component } from './component.js'
-
-function stateToObject(uuid, state) {
-  const object = { uuid }
-  for (let key in state) {
-    if (state[key].target) {
-      object[key] = state[key].target
-    }
-  }
-  return object
-}
+import { stateToObject } from './state_to_object.js'
 
 /**
  * SyncsStateWithAwareness syncs any data in the `state` deepProps of the Entity

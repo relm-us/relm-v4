@@ -65,6 +65,17 @@ const FollowsTarget = stampit(Component, HasObject, {
     setPosition(coords) {
       this.state.position.target.copy(coords)
     },
+    
+    /**
+     * Instantly move to a position (no animation, no lerp).
+     * FIXME: Put this in a better place? CanWarp Component?
+     
+     * @param {Vector3} coords 
+     */
+    warpToPosition(coords) {
+      this.state.position.now.copy(coords)
+      this.object.position.copy(coords)
+    },
 
     updatePosition(delta, distance) {
       if (distance > this.closeEnough) {

@@ -78,6 +78,15 @@ function avatarOptionFromPlayerId(playerId, options = avatarOptions) {
 }
 
 /**
+ * Uses the `playerId` string to create a 'Guest-xyz' name.
+ * 
+ * @param {string} playerId 
+ */
+function guestNameFromPlayerId(playerId) {
+  return 'Guest-' + playerId.slice(0, 3)
+}
+
+/**
  * Gets the AvatarOption in a list of options that is after the one with `avatarId`.
  * 
  * @param {string} avatarId The unique string identifier of the avatarOption
@@ -100,7 +109,8 @@ export {
   avatarOptions,
   avatarOptionsOfGender,
   indexOfAvatarOption,
-  avatarOptionFromPlayerId,
   getNextAvatarOption,
   getRandomAvatarOption,
+  avatarOptionFromPlayerId,
+  guestNameFromPlayerId,
 }

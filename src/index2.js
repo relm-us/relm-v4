@@ -16,6 +16,8 @@ import { HasThoughtBubble } from './has_thought_bubble.js'
 import { HasOpacity } from './has_opacity.js'
 import { NetworkGetsState } from './network_gets_state.js'
 import { NetworkSetsState } from './network_sets_state.js'
+import { LocalstoreGetsState, LocalstoreRestoreState } from './localstore_gets_state.js'
+import { guestNameFromPlayerId, avatarOptionFromPlayerId } from './avatars.js'
 
 const PlayerBase = stampit(
   Entity,
@@ -40,6 +42,7 @@ const Player = stampit(
   PlayerBase,
   // This is how the player sends updates
   NetworkGetsState,
+  LocalstoreGetsState,
 {
   name: 'Player',
 })
@@ -73,17 +76,21 @@ async function start() {
 
   // The player!
   const playerId = LongTermMemory.getOrCreatePlayerId()
-  const playerState = LongTermMemory.getOrCreatePlayerState(playerId)
+  // const playerState = LongTermMemory.getOrCreatePlayerState(playerId)
   const player = window.player = Player({
     uuid: playerId,
-    label: playerState.name,
-    animationMeshName: playerState.avatarId,
+    label: guestNameFromPlayerId(playerId),
+    animationMeshName: avatarOptionFromPlayerId(playerId).avatarId,
     speed: 250,
     animationSpeed: 1.5,
     labelOffset: { x: 0, y: 0, z: 60 },
     animationResourceId: 'people',
-    networkKey: 'player'
+    networkKey: 'player',
+    lsKey: 'player'
   })
+  LocalstoreRestoreState('player', player)
+  // Warp the player to their 'saved' location, if any
+  player.warpToPosition(player.state.position.target)
   stage.add(player)
 
   network.on('connect', (key, state) => {
@@ -122,6 +129,9 @@ async function start() {
             animationMeshName: state.animationMeshName,
             networkKey: 'player'
           })
+          if (state.position) {
+            otherPlayer.warpToPosition(state.position)
+          }
           stage.add(otherPlayer)
         } catch (e) {
           console.error(e)
