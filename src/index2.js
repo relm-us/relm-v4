@@ -2,7 +2,8 @@ import stampit from 'stampit'
 
 import { DOMReady } from './domready.js'
 import { addManifestTo } from './manifest_loaders.js'
-import { LongTermMemory } from './long_term_memory.js'
+import { guestNameFromPlayerId, avatarOptionFromPlayerId } from './avatars.js'
+import { Security } from './security.js'
 
 import { Entity } from './entity.js'
 import { HasObject } from './has_object.js'
@@ -17,7 +18,8 @@ import { HasOpacity } from './has_opacity.js'
 import { NetworkGetsState } from './network_gets_state.js'
 import { NetworkSetsState } from './network_sets_state.js'
 import { LocalstoreGetsState, LocalstoreRestoreState } from './localstore_gets_state.js'
-import { guestNameFromPlayerId, avatarOptionFromPlayerId } from './avatars.js'
+
+const security = Security()
 
 const PlayerBase = stampit(
   Entity,
@@ -75,8 +77,7 @@ async function start() {
   document.getElementById('game').appendChild(stage.renderer.domElement)
 
   // The player!
-  const playerId = LongTermMemory.getOrCreatePlayerId()
-  // const playerState = LongTermMemory.getOrCreatePlayerState(playerId)
+  const playerId = await security.getOrCreateId()
   const player = window.player = Player({
     uuid: playerId,
     label: guestNameFromPlayerId(playerId),
@@ -92,6 +93,10 @@ async function start() {
   // Warp the player to their 'saved' location, if any
   player.warpToPosition(player.state.position.target)
   stage.add(player)
+
+  // network.on('authorized', (params) => {
+  //   console.log('Authorized!')
+  // })
 
   network.on('connect', (key, state) => {
     const entity = stage.entities[state.uuid]
@@ -219,9 +224,29 @@ async function start() {
   const camController = CameraController({ target: player })
   stage.add(camController)
   
+  const pubkey = await security.exportPublicKey()
+  const url = new URL(window.location.href)
+  const token = url.searchParams.get("t")
+  const signature = await security.sign(playerId)
+  const params = { id: playerId, s: signature }
+  if (token) {
+    Object.assign(params, {
+      t: token,
+      /**
+       * The `x` and `y` parameters are public parts of the ECDSA algorithm.
+       * The server registers these and can later verify anything this client
+       * cryptographically signs.
+       */
+      x: pubkey.x,
+      y: pubkey.y
+    })
+  }
+  console.log('sec params', params)
+  await security.verify(playerId, signature)
+  
   // Call network.connect now, after all the network callbacks are ready,
   // so that we don't miss any inital 'add' events
-  network.connect()
+  network.connect(params)
 
 
   resources.enqueue([

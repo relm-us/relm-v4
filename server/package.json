@@ -1,0 +1,16 @@
+{
+  "name": "relm-server",
+  "version": "1.0.0",
+  "main": "index.js",
+  "author": "Duane Johnson",
+  "license": "GPL",
+  "dependencies": {
+    "@peculiar/webcrypto": "^1.0.27",
+    "base64-arraybuffer": "^0.2.0",
+    "fast-text-encoding": "^1.0.1",
+    "level": "^6.0.1",
+    "lib0": "^0.2.25",
+    "y-protocols": "^0.2.3",
+    "yjs": "^13.0.5"
+  }
+}

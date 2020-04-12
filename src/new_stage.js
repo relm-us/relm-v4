@@ -34,6 +34,8 @@ const Stage = stampit(
      * @type {number}
      */
     height: null,
+    
+    continueRendering: true,
   },
 
   init({ width, height }) {
@@ -78,6 +80,10 @@ const Stage = stampit(
       }
     },
     
+    stopRendering() {
+      this.continueRendering = false
+    },
+    
     /**
      * Main animation loop starts here.
      */
@@ -92,7 +98,9 @@ const Stage = stampit(
         // this.stats.end()
 
         // keep looping
-        requestAnimationFrame(animate)
+        if (this.continueRendering) {
+          requestAnimationFrame(animate)
+        }
       }
       requestAnimationFrame(animate)
     }

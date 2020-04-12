@@ -5,13 +5,15 @@ import * as Y from 'yjs'
 import { WebsocketProvider } from 'y-websocket'
 
 const Y_URL = 'wss://y.relm.us'
-const Y_ROOM = 'ayanarra'
+// const Y_URL = 'ws://localhost:1235'
+const Y_ROOM = 'relm'
 
 const Network = stampit(EventEmittable, {
   props: {
     ydoc: new Y.Doc(),
     entityStates: null,
     provider: null,
+    connected: false,
   },
 
   init() {
@@ -26,8 +28,15 @@ const Network = stampit(EventEmittable, {
   },
 
   methods: {
-    connect() {
-      this.provider = new WebsocketProvider(Y_URL, Y_ROOM, this.ydoc)
+    connect(params = {}) {
+      this.provider = new WebsocketProvider(Y_URL, Y_ROOM, this.ydoc, { params })
+      this.provider.on('status', (status) => {
+        if (status.status === 'connected') {
+          this.connected = true
+        } else if (status.status === 'disconnected') {
+          this.connected = false
+        }
+      })
       this.provider.awareness.on('change', ({ added, updated, removed}, _conn) => {
         this.onAwarenessChanged(added)
         this.onAwarenessChanged(updated)
