@@ -106,6 +106,8 @@ async function authorizeWithToken(db, token, id, pkx, pky) {
     await db.put(invitationKey, allowCounter - 1)
     await setPublicKeyDocForId(db, id, pkx, pky)
     return true
+  } else {
+    console.warn('token use count exhausted')
   }
   
   return false

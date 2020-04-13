@@ -18,6 +18,7 @@ import { HasOpacity } from './has_opacity.js'
 import { NetworkGetsState } from './network_gets_state.js'
 import { NetworkSetsState } from './network_sets_state.js'
 import { LocalstoreGetsState, LocalstoreRestoreState } from './localstore_gets_state.js'
+import { uuidv4 } from './util.js'
 
 const security = Security()
 
@@ -157,6 +158,20 @@ async function start() {
     if (document.activeElement === document.body) { focusOnGame() }
   }, 250)
 
+  const invite = document.getElementById('invite')
+  const invitation = document.getElementById('invitation')
+  const invitationInput = document.getElementById('invitation-input')
+  invite.addEventListener('click', () => {
+    if (invitation.classList.contains('show')) {
+      invitation.classList.remove('show')
+    } else {
+      const invitationToken = uuidv4().slice(0,7)
+      network.invitations.set(invitationToken, 1)
+      invitationInput.value = `${window.location.origin}/?t=${invitationToken}`
+      invitation.classList.add('show')
+    }
+  })
+  
   // Allow TAB and ESC keys to switch from text input to game view
   document.getElementById('input').addEventListener('keydown', e => {
     const text = e.target.value.trim()

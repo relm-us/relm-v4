@@ -4,7 +4,7 @@ import EventEmittable from '@stamp/eventemittable'
 import * as Y from 'yjs'
 import { WebsocketProvider } from 'y-websocket'
 
-const Y_URL = 'wss://y.relm.us'
+// const Y_URL = 'wss://y.relm.us'
 // const Y_URL = 'ws://localhost:1235'
 const Y_ROOM = 'relm'
 
@@ -12,8 +12,10 @@ const Network = stampit(EventEmittable, {
   props: {
     ydoc: new Y.Doc(),
     entityStates: null,
+    invitations: null,
     provider: null,
     connected: false,
+    // authorized: false,
   },
 
   init() {
@@ -24,12 +26,18 @@ const Network = stampit(EventEmittable, {
     this.clientIdsAdded = new Set()
     
     this.entityStates = this.ydoc.getMap('entities')
-    
+    this.invitations = this.ydoc.getMap('invitations')
   },
 
   methods: {
     connect(params = {}) {
-      this.provider = new WebsocketProvider(Y_URL, Y_ROOM, this.ydoc, { params })
+      let yUrl
+      if (window.location.origin === 'https://relm.us') {
+        yUrl = 'wss://y.relm.us'
+      } else if (window.location.origin === 'http://localhost:1234') {
+        yUrl = 'ws://localhost:1235'
+      }
+      this.provider = new WebsocketProvider(yUrl, Y_ROOM, this.ydoc, { params })
       this.provider.on('status', (status) => {
         if (status.status === 'connected') {
           this.connected = true
