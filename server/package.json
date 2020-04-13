@@ -3,7 +3,10 @@
   "version": "1.0.0",
   "main": "index.js",
   "author": "Duane Johnson",
-  "license": "GPL",
+  "license": "GPL-3.0-only",
+  "scripts": {
+    "start": "PORT=1235 node server.js"
+  },
   "dependencies": {
     "@peculiar/webcrypto": "^1.0.27",
     "base64-arraybuffer": "^0.2.0",

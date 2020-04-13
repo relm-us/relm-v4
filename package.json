@@ -2,7 +2,7 @@
   "name": "ayanarra2",
   "version": "1.0.0",
   "main": "index.js",
-  "license": "MIT",
+  "license": "GPL-3.0-only",
   "scripts": {
     "start": "parcel src/index2.html",
     "build": "parcel build --public-url / src/index2.html",

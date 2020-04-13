@@ -25,9 +25,10 @@ Project structure:
 
 ```
 dist   - ephemeral directory, not part of git. Build artifacts go here.
-lib    - pieces of sample code and external libraries we've modified.
 public - assets that are loaded at run-time, e.g. images, meshes, animations
-src    - source code for this project
+server - source code for the yjs data sync & websocket server
+src    - source code for the browser-based game client
+\- lib - pieces of sample code and external libraries we've modified.
 ```
 
 ## Why build a game environment for serious teams trying to get stuff done?
