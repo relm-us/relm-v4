@@ -1,4 +1,4 @@
-import { HtmlMixer, HtmlMixerHelpers } from '../lib/HtmlMixer.js'
+import { HtmlMixer, HtmlMixerHelpers } from './lib/HtmlMixer.js'
 import { Entity } from './entity.js'
 
 class RemoteDesktopPortal extends Entity {

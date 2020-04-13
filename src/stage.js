@@ -1,4 +1,4 @@
-import { HtmlMixer, HtmlMixerHelpers } from '../lib/HtmlMixer.js'
+import { HtmlMixer, HtmlMixerHelpers } from './lib/HtmlMixer.js'
 import { createGround } from './ground.js'
 import { setupRenderer } from './renderer.js'
 import { createAmbientLight, createDirectionalLight } from './light.js'

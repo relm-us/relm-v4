@@ -1,4 +1,4 @@
-import { HtmlMixer } from '../lib/HtmlMixer.js'
+import { HtmlMixer } from './lib/HtmlMixer.js'
 
 import React from 'react'
 import ReactDOM from 'react-dom'

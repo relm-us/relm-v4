@@ -1,4 +1,4 @@
-import { ImprovedNoise } from '../lib/ImprovedNoise.js'
+import { ImprovedNoise } from './lib/ImprovedNoise.js'
 
 const {
   PlaneBufferGeometry,

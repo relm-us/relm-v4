@@ -1,6 +1,6 @@
 import stampit from 'stampit'
 
-import { SkeletonUtils } from '../lib/SkeletonUtils.js'
+import { SkeletonUtils } from './lib/SkeletonUtils.js'
 import { Component } from './component.js'
 
 const { AnimationMixer } = THREE

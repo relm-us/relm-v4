@@ -1,5 +1,5 @@
 import { ParticlesSystem, Randomizers, Emitter } from 'partykals'
-import { SkeletonUtils } from '../lib/SkeletonUtils.js'
+import { SkeletonUtils } from './lib/SkeletonUtils.js'
 
 import { Label } from './label.js'
 import { DummyObject } from './dummy_object.js'

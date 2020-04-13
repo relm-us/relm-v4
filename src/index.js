@@ -1,6 +1,6 @@
-import { MapControls } from '../lib/OrbitControls.js'
-import { Stats } from '../lib/Stats.js'
-import '../lib/MathSeed.js'
+import { MapControls } from './lib/OrbitControls.js'
+import { Stats } from './lib/Stats.js'
+import './lib/MathSeed.js'
 
 import { addRandomDecorationsToScene } from './decoration.js'
 import { Player } from './player.js'

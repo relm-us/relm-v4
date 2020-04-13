@@ -1,6 +1,6 @@
-import { MeshoptGLTFLoader } from '../lib/MeshoptGLTFLoader.js'
-import { GLTFLoader } from '../lib/GLTFLoader.js'
-import { MeshoptDecoder } from '../lib/meshopt_decoder.js'
+import { MeshoptGLTFLoader } from './lib/MeshoptGLTFLoader.js'
+import { GLTFLoader } from './lib/GLTFLoader.js'
+import { MeshoptDecoder } from './lib/meshopt_decoder.js'
 
 // Loader for regular GLTFs and GLBs
 const regularGLTFLoader = new GLTFLoader()
