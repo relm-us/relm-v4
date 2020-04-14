@@ -11,6 +11,7 @@ thumbs.db
 .vscode/
 
 dist/
+server/relm-db/
 node_modules/
 statebus/
 design/*.afdesign

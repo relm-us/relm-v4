@@ -1,14 +1,20 @@
 # Relm
 
-Relm is an experimental game world that's meant for remote team collaboration:
-
-
+Relm is an experimental game world that's meant for remote team collaboration.
 
 ## Installing for Local Development
 
-You can get going pretty quickly if you have a nodejs environment set up:
+You can get going pretty quickly if you have a nodejs environment set up. You will need 2 server processes for basic multiplayer:
 
+Browser client dev server:
 ```
+yarn install
+yarn start
+```
+
+Data sync server (yjs):
+```
+cd server
 yarn install
 yarn start
 ```
@@ -30,6 +36,8 @@ server - source code for the yjs data sync & websocket server
 src    - source code for the browser-based game client
 \- lib - pieces of sample code and external libraries we've modified.
 ```
+
+See also NOTES.md for technical notes.
 
 ## Why build a game environment for serious teams trying to get stuff done?
 
