@@ -111,7 +111,7 @@ const Network = stampit(EventEmittable, {
     },
 
     observeEntityStates() {
-      this.state.entityStates.observeDeep((events, t) => {
+      this.entityStates.observeDeep((events, t) => {
         for (let event of events) {
           if (event.path.length === 0) {
             event.changes.keys.forEach(({ action }, uuid) => {
