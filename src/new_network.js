@@ -4,9 +4,8 @@ import EventEmittable from '@stamp/eventemittable'
 import * as Y from 'yjs'
 import { WebsocketProvider } from 'y-websocket'
 
-// const Y_URL = 'wss://y.relm.us'
-// const Y_URL = 'ws://localhost:1235'
-const Y_ROOM = 'relm'
+import { stateToObject } from './state_to_object.js'
+import config from './config.js'
 
 const Network = stampit(EventEmittable, {
   props: {
@@ -30,14 +29,24 @@ const Network = stampit(EventEmittable, {
   },
 
   methods: {
-    connect(params = {}) {
-      let yUrl
-      if (window.location.origin === 'https://relm.us') {
-        yUrl = 'wss://y.relm.us'
-      } else if (window.location.origin === 'http://localhost:1234') {
-        yUrl = 'ws://localhost:1235'
+    /**
+     * Adds a stateful entity to the network, to be synced with all clients.
+     * 
+     * @param {Entity} entity 
+     */
+    addEntity(entity) {
+      if (entity.state) {
+        this.entityStates.set(entity.uuid, stateToObject(entity.uuid, entity.state))
+      } else {
+        console.warn('entity added to the network must have state (not added)', entity)
       }
-      this.provider = new WebsocketProvider(yUrl, Y_ROOM, this.ydoc, { params })
+    },
+
+    connect(params = {}) {
+      const cfg = config(window.location)
+      console.log('trying to connect ws to', cfg.SERVER_YJS_URL, cfg.ROOM, params)
+
+      this.provider = new WebsocketProvider(cfg.SERVER_YJS_URL, cfg.ROOM, this.ydoc, { params })
       this.provider.on('status', (status) => {
         if (status.status === 'connected') {
           this.connected = true
@@ -50,6 +59,8 @@ const Network = stampit(EventEmittable, {
         this.onAwarenessChanged(updated)
         this.onAwarenessRemoved(removed)
       })
+      
+      this.observeEntityStates()
     },
 
     onAwarenessChanged(added) {
@@ -97,6 +108,31 @@ const Network = stampit(EventEmittable, {
           console.warn('Unable to accept disconnect', clientId, state)
         }
       }
+    },
+
+    observeEntityStates() {
+      this.state.entityStates.observeDeep((events, t) => {
+        for (let event of events) {
+          if (event.path.length === 0) {
+            event.changes.keys.forEach(({ action }, uuid) => {
+              const entityState = this.state.entityStates.get(uuid)
+              if (action === 'add') {
+                // this.emit('add', )
+                console.log('entity added', entityState)
+              } else if (action === 'delete') {
+                // this.removePlayerEvent(playerState)
+                console.log('entity deleted', entityState)
+              }
+            })
+          }
+          if (event.path.length > 0) {
+            const uuid = event.path[0]
+            const entityState = this.state.entityStates.get(uuid)
+            // this.updatePlayerEvent(playerState)
+            console.log('entity updated', entityState)
+          }
+        }
+      })      
     }
   }
 })

@@ -2192,6 +2192,11 @@ dotenv@^5.0.0:
   resolved "https://registry.yarnpkg.com/dotenv/-/dotenv-5.0.1.tgz#a5317459bd3d79ab88cff6e44057a6a3fbb1fcef"
   integrity sha512-4As8uPrjfwb7VXC+WnLCbXK7y+Ueb2B3zgNCePYfhxS1PYeaO1YTeplffTEcbfLhvFNGLAz90VvJs9yomG7bow==
 
+dropzone@^5.7.0:
+  version "5.7.0"
+  resolved "https://registry.yarnpkg.com/dropzone/-/dropzone-5.7.0.tgz#8d1007f3ebcc6e6d64096823f854d898f7564ef2"
+  integrity sha512-kOltiZXH5cO/72I22JjE+w6BoT6uaVLfWdFMsi1PMKFkU6BZWpqRwjnsRm0o6ANGTBuZar5Piu7m/CbKqRPiYg==
+
 duplexer2@~0.1.4:
   version "0.1.4"
   resolved "https://registry.yarnpkg.com/duplexer2/-/duplexer2-0.1.4.tgz#8b12dab878c0d69e3e7891051662a32fc6bddcc1"
@@ -3704,10 +3709,17 @@ levn@^0.3.0, levn@~0.3.0:
     prelude-ls "~1.1.2"
     type-check "~0.3.2"
 
-lib0@^0.2.12, lib0@^0.2.15, lib0@^0.2.20:
+lib0@^0.2.12, lib0@^0.2.20:
   version "0.2.21"
   resolved "https://registry.yarnpkg.com/lib0/-/lib0-0.2.21.tgz#01000811c10b6451b92b371b5d9fde391f685920"
   integrity sha512-Qed+why8OrRpauPW7RCw3v6kahHOo2MfQyozGfyt4JxzFNrhIiRz2mAblveoLe8+W8yS68pUir3eoIcBw5ZQrw==
+  dependencies:
+    isomorphic.js "^0.1.3"
+
+lib0@^0.2.22:
+  version "0.2.25"
+  resolved "https://registry.yarnpkg.com/lib0/-/lib0-0.2.25.tgz#9e5cd85e7280de01538bcf7000c02b6e7d7ef8bb"
+  integrity sha512-32XhCpOiyS/oOZKGPAMd9OybTx3fRqIxB9W2l2mZma5X9cLMILLlrS3MpcSXzmCvfmUwsLV6HxFWuUJ7widG0g==
   dependencies:
     isomorphic.js "^0.1.3"
 
@@ -6381,20 +6393,20 @@ xtend@^4.0.0, xtend@^4.0.1, xtend@~4.0.1:
   resolved "https://registry.yarnpkg.com/xtend/-/xtend-4.0.2.tgz#bb72779f5fa465186b1f438f674fa347fdb5db54"
   integrity sha512-LKYU1iAXJXUgAXn9URjiu+MWhyUXHsvfp7mcuYm9dSUKK0/CjtrUwFAxD82/mCWbtLsGjFIad0wIsod4zrTAEQ==
 
-y-protocols@^0.2.0:
-  version "0.2.2"
-  resolved "https://registry.yarnpkg.com/y-protocols/-/y-protocols-0.2.2.tgz#1d30abbf5f2ac9827a3db12270b2857b85ceabe6"
-  integrity sha512-5EYhdapClS9eMsgKcuEHOnQEZvBYbTNqthPB0RKigo8Z3BCJhPHStJlseZ12AmC4CNhsPzw7NnPPxK/KzmCiPg==
+y-protocols@^0.2.3:
+  version "0.2.3"
+  resolved "https://registry.yarnpkg.com/y-protocols/-/y-protocols-0.2.3.tgz#7782ce4f077bf8bd71cf50bf7bdee5218f3182d3"
+  integrity sha512-mJ838iW7XgMQqlv+9DtH7QyLqflZoy/VvaUWRIpwawee4mQiFJcEXazCmSYUHEbXIUuVNNc70FnuNSMWDC5vKQ==
   dependencies:
     lib0 "^0.2.20"
 
-y-websocket@^1.2.4:
-  version "1.2.4"
-  resolved "https://registry.yarnpkg.com/y-websocket/-/y-websocket-1.2.4.tgz#0da796493961fb35e4ca674482bc09364e1da88b"
-  integrity sha512-ixCrG7sp3SVVjzM0rMCLnoZ8azLsSMZ1L9clxbWMJUfKIsQWfjafAU1jmTohb5fsGgzy3T2RTdZ5fltrH/NwAw==
+y-websocket@^1.2.5:
+  version "1.2.5"
+  resolved "https://registry.yarnpkg.com/y-websocket/-/y-websocket-1.2.5.tgz#6b708c37ab2f05db85a62e327e8436a7c5999c14"
+  integrity sha512-Q8dcUrP7tZvfODPP/6cZ90lE+U3ucAUIBfPHwLtUov2WynDAqm/fc9fiARd5URYRk55m+edNkAhmwhkFNhbhFQ==
   dependencies:
-    lib0 "^0.2.15"
-    y-protocols "^0.2.0"
+    lib0 "^0.2.22"
+    y-protocols "^0.2.3"
   optionalDependencies:
     ws "^6.2.1"
 

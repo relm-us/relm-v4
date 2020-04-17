@@ -18,6 +18,5 @@ async function setupRelm(doc, db) {
 }
 
 module.exports = {
-  setupDatabase,
   setupRelm,
 }

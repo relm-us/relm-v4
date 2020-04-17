@@ -1,5 +1,6 @@
 import stampit from 'stampit'
 
+import Dropzone from 'dropzone'
 import { DOMReady } from './domready.js'
 import { addManifestTo } from './manifest_loaders.js'
 import { guestNameFromPlayerId, avatarOptionFromPlayerId } from './avatars.js'
@@ -19,6 +20,12 @@ import { NetworkGetsState } from './network_gets_state.js'
 import { NetworkSetsState } from './network_sets_state.js'
 import { LocalstoreGetsState, LocalstoreRestoreState } from './localstore_gets_state.js'
 import { uuidv4 } from './util.js'
+import config from './config.js'
+
+const cfg = config(window.location)
+
+// Don't look for 'dropzone' in HTML tags
+Dropzone.autoDiscover = false
 
 const security = Security()
 
@@ -76,6 +83,25 @@ async function start() {
   await DOMReady()
   // The stage is special in that it creates a domElement that must be added to our page
   document.getElementById('game').appendChild(stage.renderer.domElement)
+  
+  const previews = document.getElementById('previews')
+  const dropzone = new Dropzone(document.body, {
+    url: cfg.SERVER_UPLOAD_URL,
+    clickable: '#upload-button',
+    previewsContainer: '#previews',
+    maxFiles: 1,
+  })
+  dropzone.on('addedfile', (file) => {
+    previews.classList.add('show')
+  })
+  dropzone.on('success', (dz, response) => {
+    // TODO: Add a decoration
+    // network.addEntity()
+  })
+  dropzone.on('complete', (a) => {
+    console.log('file upload complete', a)
+    // previews.classList.remove('show')
+  })
 
   // The player!
   const playerId = await security.getOrCreateId()

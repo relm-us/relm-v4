@@ -10,6 +10,8 @@
   <!-- If the CDN fails (e.g. offline mode, server down, internet down?) load locally -->
   <script>window.THREE || document.write('<script src="vendor/three-r114.min.js"><\/script>')</script>
 
+  <link rel="stylesheet" type="text/css" href="./dropzone.css">
+  
   <style>
     html, body {
       width: 100%;
@@ -369,6 +371,17 @@
     #invitation-input {
       width: 200px;
     }
+    
+    #previews {
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%,-50%);
+      position: absolute;
+      display: none;
+    }
+    #previews.show {
+      display: block;
+    }
   </style>
 </head>
 <body style="margin: 0px; background-color: #bbbbbb; overflow: hidden;">
@@ -380,6 +393,8 @@
     <div id="invite">Invite Others</div>
     <div id="invitation">Copy One-Time Link: <input id="invitation-input"/></div>
   </div>
+  
+  <div id="previews" class="dropzone dropzone-previews"></div>
 
   <div id="press-tab-help">
     <i class="down" style="border-color:#efef22; position: absolute; bottom: -10px;"></i>
@@ -402,6 +417,7 @@
     </svg>
 
     <input id="input" type="text" placeholder="Thought ..." value="">
+    <button id="upload-button">Upload</button>
   </div>
 
 

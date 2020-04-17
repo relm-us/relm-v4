@@ -43,13 +43,15 @@ function LocalstoreRestoreState(lsKey, entity) {
   for (let key in entity.state) {
     let value = JSON.parse(localStorage.getItem(`${lsKey}.${key}`))
     if (value !== null) {
-      if (typeof entity.state[key].target.copy === 'function') {
+      let specificState = entity.state[key]
+      if (!specificState) { continue }
+      if (specificState.target && typeof specificState.target.copy === 'function') {
         // Used for Vector3 and Quaternion stored values
         // FIXME: once we can use get/set methods, this can go away
         //   see: https://github.com/stampit-org/stamp/issues/79
-        entity.state[key].target.copy(value)
+        specificState.target.copy(value)
       } else {
-        entity.state[key].target = value
+        specificState.target = value
       }
     }
   }
