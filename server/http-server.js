@@ -13,6 +13,10 @@ if (!fs.existsSync(config.ASSET_DIR)) {
 }
 const app = express()
 
+// Enable CORS pre-flight requests across the board
+// See https://expressjs.com/en/resources/middleware/cors.html#enabling-cors-pre-flight
+app.options('*', cors())
+
 app.use(fileupload())
 app.use('/asset', express.static(config.ASSET_DIR, {
   setHeaders: (res, path, stat) => {
@@ -37,7 +41,6 @@ function fail(res, reason) {
 }
 
 // Upload images and 3D assets
-app.options('/asset', cors())
 app.post('/asset', cors(), (req, res) => {
   const asset = req.files.file
   if (asset.size > config.MAX_FILE_SIZE) {
