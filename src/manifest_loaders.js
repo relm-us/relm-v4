@@ -54,4 +54,9 @@ const addManifestTo = (resourceLoader) => {
   }
 }
 
-export { addManifestTo }
+const addDynamicImageTo = async (resourceLoader, id, path) => {
+  resourceLoader.add(id, textureLoader, path)
+  return await resourceLoader.getAsync(id)
+}
+
+export { addManifestTo, addDynamicImageTo }

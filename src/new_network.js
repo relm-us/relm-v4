@@ -6,6 +6,7 @@ import { WebsocketProvider } from 'y-websocket'
 
 import { stateToObject } from './state_to_object.js'
 import config from './config.js'
+import { uuidv4 } from './util.js'
 
 const Network = stampit(EventEmittable, {
   props: {
@@ -34,11 +35,19 @@ const Network = stampit(EventEmittable, {
      * 
      * @param {Entity} entity 
      */
-    addEntity(entity) {
-      if (entity.state) {
-        this.entityStates.set(entity.uuid, stateToObject(entity.uuid, entity.state))
+    addEntity(networkKey, entity) {
+      this.addState(networkKey, stateToObject(entity.uuid, entity.state))
+    },
+    
+    addState(networkKey, state) {
+      if (state) {
+        let uuid = state.uuid
+        if (!uuid) {
+          uuid = state.uuid = uuidv4()
+        }
+        this.entityStates.set(uuid, { [networkKey]: state })
       } else {
-        console.warn('entity added to the network must have state (not added)', entity)
+        console.warn('attempted to add null state to network (not added)', state)
       }
     },
 
@@ -112,24 +121,31 @@ const Network = stampit(EventEmittable, {
 
     observeEntityStates() {
       this.entityStates.observeDeep((events, t) => {
+        console.log('events', events)
         for (let event of events) {
           if (event.path.length === 0) {
             event.changes.keys.forEach(({ action }, uuid) => {
-              const entityState = this.state.entityStates.get(uuid)
-              if (action === 'add') {
-                // this.emit('add', )
-                console.log('entity added', entityState)
-              } else if (action === 'delete') {
-                // this.removePlayerEvent(playerState)
-                console.log('entity deleted', entityState)
+              const keyedState = this.entityStates.get(uuid)
+              for (let key in keyedState) {
+                const state = keyedState[key]
+                if (action === 'add') {
+                  console.log('entity added', key, state)
+                  this.emit('add', key, state)
+                } else if (action === 'delete') {
+                  console.log('entity deleted', state)
+                  this.emit('remove', key, state)
+                }
               }
             })
           }
           if (event.path.length > 0) {
             const uuid = event.path[0]
-            const entityState = this.state.entityStates.get(uuid)
-            // this.updatePlayerEvent(playerState)
-            console.log('entity updated', entityState)
+            const keyedState = this.entityStates.get(uuid)
+            for (let key in keyedState) {
+              const state = keyedState[key]
+              console.log('entity updated', key, state)
+              this.emit('update', key, state)
+            }
           }
         }
       })      

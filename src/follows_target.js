@@ -13,39 +13,15 @@ const FollowsTarget = stampit(Component, HasObject, {
     distanceToTarget: 0.0,
   },
 
-  deepProps: {
-    state: {
-      position: {
-        /**
-         * @type {Vector3}
-         */
-        now: null,
-        /**
-         * @type {Vector3}
-         */
-        target: null,
-      },
-    }
-  },
-
   /**
    * Initializes the FollowsTarget stamp
    * @param {Vector3} position Initial position (in cartesian coordinates)
    * @param {Quaternion} direction Initial direction (as a quaternion)
    */
   init({
-    position,
     speed = this.speed,
   }) {
     this.speed = speed
-    this.state.position.now = new Vector3(0, 0, 0)
-    this.state.position.target = new Vector3(0, 0, 0)
-    
-    // Note that `copy` just takes the .x, .y, .z, (and .w) properties
-    // and then calls _onChangeCallbeck(). See https://github.com/mrdoob/three.js
-    // /blob/3ba0553208cfc9113152f5f39b4036a448cf3f25/src/math/Quaternion.js#L186
-    this.state.position.now.copy(position || this.state.position.now)
-    this.state.position.target.copy(position || this.state.position.now)
 
     this.quaternion = new Quaternion()
     this.matrix = new Matrix4()

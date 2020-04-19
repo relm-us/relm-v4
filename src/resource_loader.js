@@ -26,9 +26,12 @@ const ResourceLoader = window.ResourceLoader = stampit(EventEmittable, {
   methods: {
     // Registers a resource but doesn't queue it up to be loaded
     add(id, loader, path) {
-      const sizeInBytes = manifest[path]
-      this.maxProgress += (sizeInBytes || 0)
-      this.added[id] = { loader, path, sizeInBytes }
+      if (!this.added[id]) {
+        const sizeInBytes = manifest[path]
+        this.maxProgress += (sizeInBytes || 0)
+        this.added[id] = { loader, path, sizeInBytes }
+        console.log('resource added', id, this.added[id])
+      }
     },
 
     // Queues up a resource to be loaded during the next load() call
@@ -64,6 +67,20 @@ const ResourceLoader = window.ResourceLoader = stampit(EventEmittable, {
         console.trace('Unable to get resource', id, '(key not present in this.resources)')
       }
       return this.resources[id]
+    },
+    
+    getAsync (id) {
+      return new Promise((resolve, reject) => {
+        if (!(id in this.resources)) {
+          const { loader, path } = this.added[id]
+          loader.load(path, (loadedResource) => {
+            this.resources[id] = loadedResource
+            resolve(this.resources[id])
+          }, null, reject)
+        } else {
+          resolve(this.resources[id])
+        }
+      })
     },
 
     getObject (id, objectName) {

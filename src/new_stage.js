@@ -76,7 +76,9 @@ const Stage = stampit(
     update(delta) {
       for (let uuid in this.entities) {
         const entity = this.entities[uuid]
-        entity.update(delta)
+        if (entity.update) {
+          entity.update(delta)
+        }
       }
     },
     

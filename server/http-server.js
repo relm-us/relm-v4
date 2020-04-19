@@ -14,7 +14,13 @@ if (!fs.existsSync(config.ASSET_DIR)) {
 const app = express()
 
 app.use(fileupload())
-app.use('/asset', express.static(config.ASSET_DIR))
+app.use('/asset', express.static(config.ASSET_DIR, {
+  setHeaders: (res, path, stat) => {
+    res.header('Access-Control-Allow-Origin', '*');
+    res.header('Access-Control-Allow-Methods', 'GET');
+    res.header('Access-Control-Allow-Headers', 'Content-Type');
+  }
+}))
 
 // Courtesy page just to say we're a Relm web server
 app.get('/', function(_req, res) {

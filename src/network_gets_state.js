@@ -39,7 +39,7 @@ const NetworkGetsState = stampit(Component, {
   methods: {
     update(delta) {
       this.networkGetsStateCounter++
-      if (this.networkGetsStateCounter % 20 === 0) {
+      if (this.networkGetsStateCounter % 20 === 0 && this.network.provider) {
         const state = stateToObject(this.uuid, this.state)
         if (this.networkAwareness) {
           this.network.provider.awareness.setLocalStateField(this.networkKey, state)

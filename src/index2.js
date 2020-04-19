@@ -19,6 +19,7 @@ import { HasOpacity } from './has_opacity.js'
 import { NetworkGetsState } from './network_gets_state.js'
 import { NetworkSetsState } from './network_sets_state.js'
 import { LocalstoreGetsState, LocalstoreRestoreState } from './localstore_gets_state.js'
+import { HasImage } from './has_image.js'
 import { uuidv4 } from './util.js'
 import config from './config.js'
 
@@ -28,6 +29,12 @@ const cfg = config(window.location)
 Dropzone.autoDiscover = false
 
 const security = Security()
+
+const Decoration = stampit(
+  Entity,
+  HasObject,
+  HasImage
+)
 
 const PlayerBase = stampit(
   Entity,
@@ -94,13 +101,28 @@ async function start() {
   dropzone.on('addedfile', (file) => {
     previews.classList.add('show')
   })
-  dropzone.on('success', (dz, response) => {
-    // TODO: Add a decoration
-    // network.addEntity()
+  dropzone.on('success', async (dz, response) => {
+    // Close the upload box automatically
+    previews.classList.remove('show')
+    
+    // Add the decoration to the network so everyone can see it
+    const url = cfg.SERVER_UPLOAD_URL + '/' + response.file
+    network.addState('decoration', {
+      position: {
+        x: player.state.position.now.x,
+        y: player.state.position.now.y,
+        z: player.state.position.now.z,
+      },
+      asset: {
+        id: response.id,
+        url: url,
+      },
+      imageScale: 0.5,
+      orientation: 3
+    })
   })
   dropzone.on('complete', (a) => {
     console.log('file upload complete', a)
-    // previews.classList.remove('show')
   })
 
   // The player!
@@ -168,6 +190,10 @@ async function start() {
         } catch (e) {
           console.error(e)
         }
+        return
+      case 'decoration':
+        const decoration = Decoration(state)
+        stage.add(decoration)
         return
       default:
         console.warn('"add" issued for unhandled type', key, state)
@@ -291,11 +317,10 @@ async function start() {
 
 
   resources.enqueue([
-    'green tree', 'yellow tree', 'hollow stump', 'tree7', 'rock',
-    'stump', 'shrub', 'mushroom', 'sparkle', 'signpost', 'signpole',
-    'skybox'
+    'sparkle'
   ])
   await resources.load()
+  
 }
 
 start()
