@@ -85,7 +85,8 @@ const HasImage = stampit(Component, {
       this.material = new MeshPhongMaterial({
         color: 0xffffff,
         map: this.texture,
-        alphaTest: 0.9
+        alphaTest: 0.2,
+        transparent: true,
       })
       
       if (this.mesh) {

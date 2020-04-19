@@ -12,6 +12,7 @@ thumbs.db
 
 dist/
 server/relm-db/
+server/assets/
 node_modules/
 statebus/
 design/*.afdesign

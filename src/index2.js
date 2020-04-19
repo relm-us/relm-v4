@@ -117,7 +117,7 @@ async function start() {
         id: response.id,
         url: url,
       },
-      imageScale: 0.5,
+      imageScale: 1.0,
       orientation: 3
     })
   })
