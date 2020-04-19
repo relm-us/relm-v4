@@ -123,6 +123,7 @@ async function start() {
   })
   dropzone.on('complete', (a) => {
     console.log('file upload complete', a)
+    dropzone.removeAllFiles()
   })
 
   // The player!
