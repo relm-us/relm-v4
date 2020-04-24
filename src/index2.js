@@ -22,6 +22,7 @@ import { LocalstoreGetsState, LocalstoreRestoreState } from './localstore_gets_s
 import { HasImage } from './has_image.js'
 import { uuidv4 } from './util.js'
 import config from './config.js'
+import { Component } from './component.js'
 
 const cfg = config(window.location)
 
@@ -71,6 +72,92 @@ const OtherPlayer = stampit(
 {
   name: 'OtherPlayer'
 })
+
+const HasSphere = stampit(Component, {
+  methods: {
+    setup() {
+      const geometry = new THREE.SphereGeometry(7)
+      const material = new THREE.MeshBasicMaterial({
+        color: 0xff9900,
+      })
+      this.sphereMesh = new THREE.Mesh(geometry, material)
+      this.object.add(this.sphereMesh)
+    },
+    
+  }
+})
+
+const HasLine = stampit(Component, {
+  props: {
+    lineTrackStart: null,
+    lineTrackEnd: null,
+  },
+
+  init({ lineTrackStart, lineTrackEnd }) {
+    this.lineTrackStart = lineTrackStart || new THREE.Vector3()
+    this.lineTrackEnd = lineTrackEnd || new THREE.Vector3()
+  },
+
+  methods: {
+    setup() {
+      const material = new THREE.LineBasicMaterial({
+        color: 0x0000ff,
+        linewidth: 4,
+      });
+      
+      var points = [];
+      points.push(this.lineTrackStart);
+      points.push(this.lineTrackEnd);
+      
+      this.lineGeometry = new THREE.BufferGeometry().setFromPoints( points );
+      
+      this.line = new THREE.Line( this.lineGeometry, material );
+      this.object.add(this.line)
+    },
+
+    update(delta) {
+      var points = [];
+      points.push(this.lineTrackStart);
+      points.push(this.lineTrackEnd);
+      this.lineGeometry.setFromPoints( points )
+      // this.lineGeometry.verticesNeedUpdate = true
+    }
+  }
+})
+
+const UpdatesPositionFromScreenCoords = stampit(Component, {
+  init() {
+    this.screenCoords = {x: 0, y: 0}
+    this.screenVec = new THREE.Vector3()
+  },
+
+  methods: {
+    setScreenCoords(x, y) {
+      this.screenCoords = {x, y}
+    },
+
+    update(delta) {
+      const camera = this.stage.camera
+      this.screenVec.set(
+          ( this.screenCoords.x / window.innerWidth ) * 2 - 1,
+          - ( this.screenCoords.y / window.innerHeight ) * 2 + 1,
+          0.5 )
+
+      this.screenVec.unproject( camera )
+      this.screenVec.sub( camera.position ).normalize()
+      const distance = - camera.position.z / this.screenVec.z
+
+      this.object.position.copy( camera.position ).add( this.screenVec.multiplyScalar( distance ) )
+    }
+  }
+})
+
+const MousePointer = stampit(
+  Entity,
+  HasObject,
+  HasSphere,
+  UpdatesPositionFromScreenCoords,
+)
 
 async function start() {
   // We first add all resources from the manifest so that the progress
@@ -143,10 +230,22 @@ async function start() {
   // Warp the player to their 'saved' location, if any
   player.warpToPosition(player.state.position.target)
   stage.add(player)
+  
+  const mousePointer = window.mousePointer = MousePointer()
+  stage.add(mousePointer)
+  
+  let mouseVec = new THREE.Vector3()
+  let mousePos = new THREE.Vector3()
+  window.addEventListener('mousemove', (event) => {
+    mousePointer.setScreenCoords(event.clientX, event.clientY)
+    mousePos.copy(player.object.position)
+    mousePos.sub(mousePointer.object.position)
+    // mousePos.set(100, 0, 0)
+    // console.log('mousePos', player.object.position, mousePointer.object.position, mousePos)
+    mousePointer.lineTrackEnd.copy(mousePos)
+    // console.log('mouse', {x: event.clientX, y: event.clientY}, mousePos)
+  })
 
-  // network.on('authorized', (params) => {
-  //   console.log('Authorized!')
-  // })
 
   network.on('connect', (key, state) => {
     const entity = stage.entities[state.uuid]
