@@ -4,8 +4,7 @@ const { PerspectiveCamera, MathUtils, Vector3 } = THREE
 
 const CAMERA_DEFAULT_ISOMETRY = 1.25 // a number between 0.25 - 16.0
 const CAMERA_DEFAULT_PERSPECTIVE_RATIO = 11.25 / CAMERA_DEFAULT_ISOMETRY
-// const CAMERA_DEFAULT_POSITION = new Vector3(0, 2000, 3500)
-const CAMERA_DEFAULT_POSITION = new Vector3(0, 4000, 7000)
+const CAMERA_DEFAULT_POSITION = new Vector3(0, 4000, 5000)
 
 const SceneWithCamera = stampit({
   name: 'SceneWithCamera',
