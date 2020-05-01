@@ -5,6 +5,7 @@ import { DOMReady } from './domready.js'
 import { addManifestTo } from './manifest_loaders.js'
 import { guestNameFromPlayerId, avatarOptionFromPlayerId } from './avatars.js'
 import { Security } from './security.js'
+import { initializeAVChat } from './avchat.js'
 
 import { Entity } from './entity.js'
 import { HasObject } from './has_object.js'
@@ -15,6 +16,7 @@ import { CameraController } from './camera_controller.js'
 import { HasAnimationMixer } from './has_animation_mixer.js'
 import { WalksWhenMoving } from './walks_when_moving.js'
 import { HasThoughtBubble } from './has_thought_bubble.js'
+import { HasVideoBubble } from './has_video_bubble.js'
 import { HasOpacity } from './has_opacity.js'
 import { NetworkGetsState } from './network_gets_state.js'
 import { NetworkSetsState } from './network_sets_state.js'
@@ -37,27 +39,16 @@ const Decoration = stampit(
   HasImage
 )
 
-const PlayerBase = stampit(
+const Player = stampit(
   Entity,
   HasObject,
   HasOpacity,
   HasLabel,
+  HasVideoBubble,
   HasThoughtBubble,
   FollowsTarget,
   HasAnimationMixer,
   WalksWhenMoving,
-).props({
-})
-// .props({
-//     speed: 250,
-//     animationSpeed: 1.5,
-//     labelOffset: { x: 0, y: 0, z: 60 },
-//     animationResourceId: 'people',
-//     networkKey: 'player'
-// })
-
-const Player = stampit(
-  PlayerBase,
   // This is how the player sends updates
   NetworkGetsState,
   LocalstoreGetsState,
@@ -66,7 +57,15 @@ const Player = stampit(
 })
 
 const OtherPlayer = stampit(
-  PlayerBase,
+  Entity,
+  HasObject,
+  HasOpacity,
+  HasLabel,
+  HasVideoBubble,
+  HasThoughtBubble,
+  FollowsTarget,
+  HasAnimationMixer,
+  WalksWhenMoving,
   // This is how OtherPlayers get updates
   NetworkSetsState,
 {
@@ -222,6 +221,7 @@ async function start() {
     speed: 250,
     animationSpeed: 1.5,
     labelOffset: { x: 0, y: 0, z: 60 },
+    videoBubbleOffset: {x: 0, y: 0, z: -240 },
     animationResourceId: 'people',
     networkKey: 'player',
     lsKey: 'player'
@@ -242,7 +242,7 @@ async function start() {
     mousePos.sub(mousePointer.object.position)
     // mousePos.set(100, 0, 0)
     // console.log('mousePos', player.object.position, mousePointer.object.position, mousePos)
-    mousePointer.lineTrackEnd.copy(mousePos)
+    // mousePointer.lineTrackEnd.copy(mousePos)
     // console.log('mouse', {x: event.clientX, y: event.clientY}, mousePos)
   })
 
@@ -279,6 +279,7 @@ async function start() {
             animationSpeed: 1.5,
             label: state.name,
             labelOffset: { x: 0, y: 0, z: 60 },
+            videoBubbleOffset: {x: 0, y: 0, z: -240 },
             animationResourceId: 'people',
             animationMeshName: state.animationMeshName,
             networkKey: 'player'
@@ -421,6 +422,22 @@ async function start() {
   ])
   await resources.load()
   
+  initializeAVChat({
+    createVideoElement: (entityId) => {
+      console.log('playerId', playerId)
+      console.log('createVideoElement', entityId)
+      const entity = stage.entities[entityId]
+      if (entity) {
+        if (entity.videoBubble) {
+          return entity.videoBubble.object.createDomElement()
+        } else {
+          console.warn("Can't create video element for entity that has no VideoBubble", entityId)
+        }
+      } else {
+        console.warn("Can't create video element for missing entity", entityId)
+      }
+    }
+  }, player.uuid)
 }
 
 start()

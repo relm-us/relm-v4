@@ -9,6 +9,7 @@
   <script src="//cdn.jsdelivr.net/npm/three@0.114.0/build/three.min.js"></script>
   <!-- If the CDN fails (e.g. offline mode, server down, internet down?) load locally -->
   <script>window.THREE || document.write('<script src="vendor/three-r114.min.js"><\/script>')</script>
+  
 
   <link rel="stylesheet" type="text/css" href="./dropzone.css">
   
@@ -387,6 +388,24 @@
     #previews.show {
       display: block;
     }
+    
+    .video-wrapper {
+      position: absolute;
+      width: 200px;
+      height: 200px;
+      border-radius: 100%;
+      border: 2px solid white;
+      overflow: hidden; 
+      background-color: #ddd;
+      transform: translate(-50%, -100%);
+    }
+    .video-feed {
+      position: relative;
+      left: 50%;
+      top: 50%;
+      transform: translate(-50%,-50%); 
+    }
+    
   </style>
 </head>
 <body style="margin: 0px; background-color: #bbbbbb; overflow: hidden;">
@@ -428,9 +447,9 @@
 
   <script src="./index2.js"></script>
   
-  <!-- <script src="vendor/webrtc-adapter.js"></script>
-  <script src="vendor/janus.js"></script>
-  <script src="./communications.js"></script> -->
+  <!-- Lib Jitsi Meet is availabble as an include from their site -->
+  <script src="https://cdn.jsdelivr.net/npm/jquery@3.5.0/dist/jquery.min.js"></script>
+  <script src="https://meet.jit.si/libs/lib-jitsi-meet.min.js"></script>
   
 </body>
 </html>

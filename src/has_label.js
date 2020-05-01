@@ -27,11 +27,10 @@ const HasLabel = stampit(Component, {
     label = this.state.label.target,
     labelOffset = this.labelOffset
   }) {
-  
-    this.state.label.now = label
-    this.state.label.target = label
     this.labelPosition = new Vector3()
     this.labelOffset = labelOffset || new Vector3()
+    this.labelObj = new Label()
+    this.setLabel(label)
   },
 
   methods: {
@@ -47,10 +46,7 @@ const HasLabel = stampit(Component, {
      */
     setLabel(text) {
       this.state.label.target = text
-    },
-
-    setup() {
-      this.labelObj = new Label(this.object, this.stage.camera)
+      this.labelObj.setText(text)
     },
 
     update() {
@@ -62,8 +58,8 @@ const HasLabel = stampit(Component, {
       this.labelPosition.copy(this.object.position)
       this.labelPosition.add(this.labelOffset)
 
-      const size = { width: this.stage.width, height: this.stage.height }
-      this.labelObj.project(this.state.label.now, this.labelPosition, size)
+      const screenSize = { width: this.stage.width, height: this.stage.height }
+      this.labelObj.project(this.labelPosition, this.stage.camera, screenSize)
     },
 
     teardown() {
