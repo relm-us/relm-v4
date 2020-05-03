@@ -2,6 +2,7 @@
 let JitsiMeetJS
 let connection
 let remoteParticipants = {}
+let conference
 let localTracks
 
 const CONFERENCE_ROOM_NAME = 'relm01'
@@ -115,6 +116,7 @@ function onRemoteTrackMuteChanged() {
 
 function onConferenceJoined() {
   console.log('onConferenceJoined')
+  addLocalTracksToConference()
 }
 
 function onConferenceLeft() {
@@ -152,7 +154,7 @@ function onConnectionEstablished(callbacks, playerId) {
   const confOptions = {
     openBridgeChannel: true
   }
-  const conference = window.conference = connection.initJitsiConference(CONFERENCE_ROOM_NAME, confOptions)
+  conference = window.conference = connection.initJitsiConference(CONFERENCE_ROOM_NAME, confOptions)
   conference.setDisplayName(playerId)
   conference.on(JitsiMeetJS.events.conference.TRACK_ADDED, (track) => { onTrackAdded(track, playerId, callbacks) })
   conference.on(JitsiMeetJS.events.conference.TRACK_REMOVED, onTrackRemoved)
@@ -166,8 +168,15 @@ function onConnectionEstablished(callbacks, playerId) {
   
   conference.join()
 
+}
+
+function addLocalTracksToConference() {
+  console.log('addLocalTracksToConference', conference)
+  if (!conference) { return }
   for (let track of localTracks) {
+    if (track.addedLocalTrackToConference) { next }
     conference.addTrack(track)
+    track.addedLocalTrackToConference = true
   }
 }
 
@@ -181,10 +190,6 @@ function onConnectionDisconnected(a) {
 
 function onDeviceListChanged(a) {
   console.log('onDeviceListChanged', a)
-}
-
-function localTracksCreated(tracks, playerId, callbacks) {
-  console.log('localTracksAdded', tracks)
 }
 
 async function initJitsiMeet(callbacks, playerId) {
@@ -258,6 +263,8 @@ async function initJitsiMeet(callbacks, playerId) {
     console.error('Connection error', err)
   }
   
+  addLocalTracksToConference()
+
   for (let track of localTracks) {
     const type = track.getType()
     const id = `${type}-local`

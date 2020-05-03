@@ -14,6 +14,9 @@ const WithVideoBubble = stampit(UpdateCollision, {
   
   methods: {
     createDomElement() {
+      if (this.domElement) {
+        this.destroyDomElement()
+      }
       const element = document.createElement('video')
       element.classList.add('video-feed')
       element.setAttribute('autoplay', 1)
@@ -36,6 +39,11 @@ const WithVideoBubble = stampit(UpdateCollision, {
 
       this.documentBody.appendChild(wrapper)
       return element
+    },
+
+    destroyDomElement() {
+      this.documentBody.removeChild(this.domElement)
+      this.domElement = null
     }
   }
 })
