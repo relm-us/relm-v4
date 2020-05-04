@@ -30,7 +30,7 @@ const ResourceLoader = window.ResourceLoader = stampit(EventEmittable, {
         const sizeInBytes = manifest[path]
         this.maxProgress += (sizeInBytes || 0)
         this.added[id] = { loader, path, sizeInBytes }
-        console.log('resource added', id, this.added[id])
+        // console.log('resource added', id, this.added[id])
       }
     },
 

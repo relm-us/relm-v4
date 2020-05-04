@@ -104,7 +104,7 @@ function onRemoteTrackRemoved(track) {
 }
 
 function onRemoteTrackAudioLevelChanged(audioLevel) {
-  console.log(`onTrackAudioLevelChanged, remote audio level: ${audioLevel}`)
+  // console.log(`onTrackAudioLevelChanged, remote audio level: ${audioLevel}`)
 }
 
 function onRemoteTrackAudioOutputChanged(deviceId) {
