@@ -147,6 +147,9 @@ const UpdatesPositionFromScreenCoords = stampit(Component, {
       const distance = - camera.position.z / this.screenVec.z
 
       this.object.position.copy( camera.position ).add( this.screenVec.multiplyScalar( distance ) )
+      if (this.state.position.target) {
+        this.state.position.target.copy(this.object.position)
+      }
     }
   }
 })
@@ -156,6 +159,26 @@ const MousePointer = stampit(
   HasObject,
   HasSphere,
   UpdatesPositionFromScreenCoords,
+  NetworkGetsState
+)
+
+const MousePointerUpdate = stampit(Component, {
+  methods: {
+    update(delta) {
+      if (!this.state.position.now.equals(this.state.position.target)) {
+        this.state.position.now.copy(this.state.position.target)
+        this.object.position.copy(this.state.position.now)
+      }
+    }
+  }
+})
+
+const OtherMousePointer = stampit(
+  Entity,
+  HasObject,
+  HasSphere,
+  NetworkSetsState,
+  MousePointerUpdate
 )
 
 async function start() {
@@ -231,10 +254,11 @@ async function start() {
   player.warpToPosition(player.state.position.target)
   stage.add(player)
   
-  const mousePointer = window.mousePointer = MousePointer()
+  const mousePointer = window.mousePointer = MousePointer({
+    networkKey: 'mouse',
+  })
   stage.add(mousePointer)
   
-  let mouseVec = new THREE.Vector3()
   let mousePos = new THREE.Vector3()
   window.addEventListener('mousemove', (event) => {
     mousePointer.setScreenCoords(event.clientX, event.clientY)
@@ -295,6 +319,14 @@ async function start() {
       case 'decoration':
         const decoration = Decoration(state)
         stage.add(decoration)
+        return
+      case 'mouse':
+        const mousePointer = OtherMousePointer({
+          uuid: state.uuid,
+          networkKey: 'mouse'
+        })
+        console.log("create mouse pointer", mousePointer)
+        stage.add(mousePointer)
         return
       default:
         console.warn('"add" issued for unhandled type', key, state)
