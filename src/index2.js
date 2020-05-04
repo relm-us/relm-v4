@@ -78,8 +78,10 @@ const HasSphere = stampit(Component, {
       const geometry = new THREE.SphereGeometry(7)
       const material = new THREE.MeshBasicMaterial({
         color: 0xff9900,
+        depthTest: false,
       })
       this.sphereMesh = new THREE.Mesh(geometry, material)
+      this.object.renderOrder = 1
       this.object.add(this.sphereMesh)
     },
     
