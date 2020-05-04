@@ -91,7 +91,7 @@ function onRemoteTrackAdded(track, playerId, callbacks) {
       audioElement.autoplay = true
       audioElement.id = elementId
       document.body.appendChild(audioElement)
-      track.attach(audioElement)
+      // track.attach(audioElement)
       break;
     default:
       console.error('track has unknown type', track.getType())
@@ -282,7 +282,7 @@ async function initJitsiMeet(callbacks, playerId) {
         audioElement.autoplay = true
         audioElement.id = id
         document.body.appendChild(audioElement)
-        track.attach(audioElement)
+        // track.attach(audioElement)
         break
       default:
         console.error("Don't know how to handle track of type", type)
