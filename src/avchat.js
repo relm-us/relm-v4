@@ -279,6 +279,7 @@ async function initJitsiMeet(callbacks, playerId) {
         videoElement.setAttribute('id', id)
         // Don't echo local mic to local speakers
         videoElement.muted = true
+        videoElement.volume = 0
         // window.track = track
         track.attach(videoElement)
         break
