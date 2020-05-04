@@ -287,7 +287,7 @@ async function initJitsiMeet(callbacks, playerId) {
       case 'audio':
         const audioElement = document.createElement('audio')
         audioElement.id = id
-        // document.body.appendChild(audioElement)
+        document.body.appendChild(audioElement)
         track.attach(audioElement)
         break
       default:
