@@ -429,25 +429,30 @@ async function start() {
   const camController = CameraController({ target: player })
   stage.add(camController)
   
-  const pubkey = await security.exportPublicKey()
+  const params = { id: playerId }
   const url = new URL(window.location.href)
   const token = url.searchParams.get("t")
-  const signature = await security.sign(playerId)
-  const params = { id: playerId, s: signature }
-  if (token) {
-    Object.assign(params, {
-      t: token,
-      /**
-       * The `x` and `y` parameters are public parts of the ECDSA algorithm.
-       * The server registers these and can later verify anything this client
-       * cryptographically signs.
-       */
-      x: pubkey.x,
-      y: pubkey.y
-    })
+  if (window.crypto.subtle) {
+    const pubkey = await security.exportPublicKey()
+    const signature = await security.sign(playerId)
+    params.s = signature
+    if (token) {
+      Object.assign(params, {
+        t: token,
+        /**
+         * The `x` and `y` parameters are public parts of the ECDSA algorithm.
+         * The server registers these and can later verify anything this client
+         * cryptographically signs.
+         */
+        x: pubkey.x,
+        y: pubkey.y
+      })
+    }
+    console.log('sec params', params)
+    await security.verify(playerId, signature)
+  } else {
+    console.log("Not using crypto.subtle")
   }
-  console.log('sec params', params)
-  await security.verify(playerId, signature)
   
   // Call network.connect now, after all the network callbacks are ready,
   // so that we don't miss any inital 'add' events
