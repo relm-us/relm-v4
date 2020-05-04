@@ -130,6 +130,7 @@ const UpdatesPositionFromScreenCoords = stampit(Component, {
   init() {
     this.screenCoords = {x: 0, y: 0}
     this.screenVec = new THREE.Vector3()
+    this.screenRaycaster = new THREE.Raycaster()
   },
 
   methods: {
@@ -139,16 +140,18 @@ const UpdatesPositionFromScreenCoords = stampit(Component, {
 
     update(delta) {
       const camera = this.stage.camera
-      this.screenVec.set(
-          ( this.screenCoords.x / window.innerWidth ) * 2 - 1,
-          - ( this.screenCoords.y / window.innerHeight ) * 2 + 1,
-          0.5 )
+      const mouse = {
+        x: (this.screenCoords.x / window.innerWidth) * 2 - 1,
+        y: -(this.screenCoords.y / window.innerHeight) * 2 + 1
+      }
 
-      this.screenVec.unproject( camera )
-      this.screenVec.sub( camera.position ).normalize()
-      const distance = - camera.position.z / this.screenVec.z
+      this.screenRaycaster.setFromCamera(mouse, camera)
+      const intersects = this.screenRaycaster.intersectObject(this.stage.ground)
 
-      this.object.position.copy( camera.position ).add( this.screenVec.multiplyScalar( distance ) )
+      if (intersects.length > 0) {
+        this.object.position.copy(intersects[0].point)
+      }
+
       if (this.state.position.target) {
         this.state.position.target.copy(this.object.position)
       }
