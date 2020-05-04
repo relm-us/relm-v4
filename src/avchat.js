@@ -277,6 +277,8 @@ async function initJitsiMeet(callbacks, playerId) {
       case 'video':
         const videoElement = callbacks.createVideoElement(playerId)
         videoElement.setAttribute('id', id)
+        // Don't echo local mic to local speakers
+        videoElement.muted = true
         // window.track = track
         track.attach(videoElement)
         break
@@ -285,7 +287,7 @@ async function initJitsiMeet(callbacks, playerId) {
         audioElement.autoplay = true
         audioElement.id = id
         document.body.appendChild(audioElement)
-        // track.attach(audioElement)
+        track.attach(audioElement)
         break
       default:
         console.error("Don't know how to handle track of type", type)
