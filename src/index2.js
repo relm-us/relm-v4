@@ -388,6 +388,9 @@ async function start() {
   
   const doCommand = (command, args) => {
     switch (command) {
+      case 'home':
+        player.warpToPosition({x:0,y:0,z:0})
+        break
       case 'name':
         player.setLabel(args[0])
         break

@@ -51,6 +51,10 @@ const Network = stampit(EventEmittable, {
       }
     },
 
+    removeState(uuid) {
+      this.entityStates.delete(uuid)
+    },
+
     connect(params = {}) {
       const cfg = config(window.location)
       console.log('trying to connect ws to', cfg.SERVER_YJS_URL, cfg.ROOM, params)
