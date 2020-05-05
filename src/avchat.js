@@ -278,10 +278,7 @@ async function initJitsiMeet(callbacks, playerId) {
         const videoElement = callbacks.createVideoElement(playerId)
         videoElement.id = id
         // videoElement.autoplay = true
-        // Don't echo local mic to local speakers
-        // videoElement.muted = true
-        // videoElement.volume = 0
-        // window.track = track
+        videoElement.classList.add('local')
         track.attach(videoElement)
         break
       case 'audio':
