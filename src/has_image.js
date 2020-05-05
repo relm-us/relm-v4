@@ -144,7 +144,9 @@ const HasImage = stampit(Component, {
       
       // Get the texture and create a decoration locally
       const texture = await resources.getAsync(asset.id)
-      this.setTexture(texture)
+      if (texture) {
+        this.setTexture(texture)
+      }
     },
     
     setup() {
