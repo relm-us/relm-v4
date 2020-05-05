@@ -26,7 +26,7 @@ const HasThoughtBubble = stampit(Entity, Component, EventEmittable, {
 
     setup() {
       const action = () => { this.emit('thoughtBubbleAction') }
-      const close = () => { this.emit('thoughtBubbleClose'); this.thoughtBubble.clearText() }
+      const close = () => { this.emit('thoughtBubbleClose'); this.setThought(null) }
       this.thoughtBubble = new ThoughtBubble(this.stage.camera, action, close)
     },
 
@@ -44,8 +44,8 @@ const HasThoughtBubble = stampit(Entity, Component, EventEmittable, {
         bounceMotion = Math.sin(walkCycleTime * Math.PI * 4 + Math.PI/8) * 2
       }
       this.thoughtBubble.position.copy(this.object.position)
-      this.thoughtBubble.position.y += 165 + bounceMotion
-      this.thoughtBubble.position.x += 30
+      this.thoughtBubble.position.y += 100 + bounceMotion
+      this.thoughtBubble.position.x += 60
       this.thoughtBubble.project(this.stage.width, this.stage.height)
     }
   }
