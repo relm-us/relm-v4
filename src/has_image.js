@@ -143,9 +143,13 @@ const HasImage = stampit(Component, {
       await addDynamicImageTo(this.resources, asset.id, asset.url)
       
       // Get the texture and create a decoration locally
-      const texture = await resources.getAsync(asset.id)
-      if (texture) {
-        this.setTexture(texture)
+      try {
+        const texture = await resources.getAsync(asset.id)
+        if (texture) {
+          this.setTexture(texture)
+        }
+      } catch (err) {
+        console.warning("Can't load image", asset)
       }
     },
     
