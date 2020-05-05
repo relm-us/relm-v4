@@ -14,13 +14,17 @@ const WithVideoBubble = stampit(UpdateCollision, {
   
   methods: {
     show() {
-      this.domElement.classList.add('show')
-      this.domElement.classList.remove('hide')
+      if (this.domElement) {
+        this.domElement.classList.add('show')
+        this.domElement.classList.remove('hide')
+      }
     },
 
     hide() {
-      this.domElement.classList.add('hide')
-      this.domElement.classList.remove('show')
+      if (this.domElement) {
+        this.domElement.classList.add('hide')
+        this.domElement.classList.remove('show')
+      }
     },
 
     createDomElement() {
@@ -96,7 +100,7 @@ const HasVideoBubble = stampit(Component, {
     hideVideoBubble() {
       this.videoBubble.object.hide()
     },
-    
+
     update(delta) {
       this.videoBubble.position.copy(this.object.position)
       this.videoBubble.position.add(this.videoBubble.offset)
