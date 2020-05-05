@@ -3,7 +3,7 @@ import stampit from 'stampit'
 import Dropzone from 'dropzone'
 import { DOMReady } from './domready.js'
 import { addManifestTo } from './manifest_loaders.js'
-import { guestNameFromPlayerId, avatarOptionFromPlayerId } from './avatars.js'
+import { guestNameFromPlayerId, avatarOptionFromPlayerId, avatarOptionsOfGender } from './avatars.js'
 import { Security } from './security.js'
 import { initializeAVChat } from './avchat.js'
 
@@ -386,6 +386,28 @@ async function start() {
     }
   })
   
+  const doCommand = (command, args) => {
+    switch (command) {
+      case 'name':
+        player.setLabel(args[0])
+        break
+      case 'character':
+        const gender = args[0]
+        if (gender === 'f' || gender === 'm') {
+          const avatarOptions = avatarOptionsOfGender(gender)
+          const index = parseInt(args[1], 10)
+          if (index < avatarOptions.length) {
+            player.state.animationMeshName.target = avatarOptions[index].avatarId
+          } else {
+            console.warn("Can't get avatar")
+          }
+        } else {
+          console.warn('Gender not available')
+        }
+        break
+    }
+  }
+  
   // Allow TAB and ESC keys to switch from text input to game view
   document.getElementById('input').addEventListener('keydown', e => {
     const text = e.target.value.trim()
@@ -397,10 +419,22 @@ async function start() {
     } else if (e.keyCode === 27 /* ESC */) {
       focusOnGame()
     } else if (e.keyCode === 13 /* ENTER */) {
-      if (text !== "") {
+      if (text.substring(0,1) === '/') {
+        const parts = text.substring(1).split(' ')
+        if (parts.length === 1 && parts[0] !== '') {
+          const command = parts[0]
+          doCommand(command)
+        } else if (parts.length > 1) {
+          const command = parts[0]
+          const args = parts.slice(1)
+          doCommand(command, args)
+        }
+        e.target.value = ''
+        focusOnGame()
+      } else if (text !== '') {
         // Before focusing back on the game, make a thought bubble, and clear the text
         player.setThought(text)
-        e.target.value = ""
+        e.target.value = ''
       } else {
         focusOnGame()
       }
@@ -481,7 +515,6 @@ async function start() {
   // Call network.connect now, after all the network callbacks are ready,
   // so that we don't miss any inital 'add' events
   network.connect(params)
-
 
   resources.enqueue([
     'sparkle'
