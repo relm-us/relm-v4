@@ -80,7 +80,7 @@ const HasImage = stampit(Component, {
         this.texture.image.width,
         this.texture.image.height
       )
-      console.log(this.texture)
+      // console.log(this.texture)
 
       this.material = new MeshPhongMaterial({
         color: 0xffffff,

@@ -86,7 +86,8 @@ const HasSphere = stampit(Component, {
       const geometry = new THREE.SphereGeometry(7)
       const material = new THREE.MeshBasicMaterial({
         color: 0xff9900,
-        depthTest: false,
+        depthTest: true,
+        transparent: true, // so that it shows up on top of images
       })
       this.sphereMesh = new THREE.Mesh(geometry, material)
       this.object.renderOrder = 1
@@ -158,6 +159,10 @@ const UpdatesPositionFromScreenCoords = stampit(Component, {
 
       if (intersects.length > 0) {
         this.object.position.copy(intersects[0].point)
+        // TODO: make this a configurable offset. For now, it puts the HasSphere
+        //       object slightly "above" the ground, and above the mouse cursor
+        this.object.position.y += 10
+        this.object.position.x -= 3
       }
 
       if (this.state.position.target) {
@@ -291,8 +296,10 @@ async function start() {
       case 'player':
         entity.setOpacity(1.0)
         entity.showVideoBubble()
+        break
       case 'mouse':
         entity.showSphere()
+        break
       default:
         console.warn('"connect" issued for unhandled type', key, state)
     }
@@ -305,8 +312,10 @@ async function start() {
         entity.setOpacity(0.2)
         entity.hideVideoBubble()
         entity.setThought(null)
+        break
       case 'mouse':
         entity.hideSphere()
+        break
       default:
         console.warn('"disconnect" issued for unhandled type', key, state)
     }
@@ -335,11 +344,11 @@ async function start() {
         } catch (e) {
           console.error(e)
         }
-        return
+        break
       case 'decoration':
         const decoration = Decoration(state)
         stage.add(decoration)
-        return
+        break
       case 'mouse':
         const mousePointer = OtherMousePointer({
           uuid: state.uuid,
@@ -347,7 +356,7 @@ async function start() {
         })
         console.log("create mouse pointer", mousePointer)
         stage.add(mousePointer)
-        return
+        break
       default:
         console.warn('"add" issued for unhandled type', key, state)
     }

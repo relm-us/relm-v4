@@ -46,12 +46,14 @@ const HasLabel = stampit(Component, {
      */
     setLabel(text) {
       this.state.label.target = text
-      this.labelObj.setText(text)
     },
 
     update() {
       // No transition, just update the name
-      this.state.label.now = this.state.label.target
+      if (this.state.label.now !== this.state.label.target) {
+        this.state.label.now = this.state.label.target
+        this.labelObj.setText(this.state.label.now)
+      }
 
       // Since nametags are just HTML and CSS we have to 'manually' project
       // their position on to the screen
