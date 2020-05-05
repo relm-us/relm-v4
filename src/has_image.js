@@ -149,7 +149,7 @@ const HasImage = stampit(Component, {
           this.setTexture(texture)
         }
       } catch (err) {
-        console.warning("Can't load image", asset)
+        console.warning("Can't load image", err)
       }
     },
     
