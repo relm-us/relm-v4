@@ -261,6 +261,7 @@ async function start() {
   
   const mousePointer = window.mousePointer = MousePointer({
     networkKey: 'mouse',
+    networkGetsStateModulus: 2,
   })
   stage.add(mousePointer)
   

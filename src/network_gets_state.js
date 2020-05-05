@@ -28,18 +28,25 @@ const NetworkGetsState = stampit(Component, {
      * than the historical state.
      */
     networkAwareness: true,
+    
+    networkGetsStateModulus: 20,
   },
 
-  init({ networkKey = this.networkKey, networkAwareness = this.networkAwareness }) {
+  init({
+    networkKey = this.networkKey,
+    networkAwareness = this.networkAwareness,
+    networkGetsStateModulus = this.networkGetsStateModulus
+  }) {
     this.networkKey = networkKey
     this.networkAwareness = networkAwareness
     this.networkGetsStateCounter = 0
+    this.networkGetsStateModulus = networkGetsStateModulus
   },
   
   methods: {
     update(delta) {
       this.networkGetsStateCounter++
-      if (this.networkGetsStateCounter % 20 === 0 && this.network.provider) {
+      if (this.networkGetsStateCounter % this.networkGetsStateModulus === 0 && this.network.provider) {
         const state = stateToObject(this.uuid, this.state)
         if (this.networkAwareness) {
           this.network.provider.awareness.setLocalStateField(this.networkKey, state)
