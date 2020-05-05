@@ -399,6 +399,13 @@
       background-color: #ddd;
       transform: translate(-50%, -100%);
     }
+    .video-wrapper.show {
+      animation: fadein 0.5s;
+    }
+    .video-wrapper.hide {
+      animation: fadeout 0.5s;
+      animation-fill-mode: forwards;
+    }
     .video-feed {
       position: relative;
       left: 50%;

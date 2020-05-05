@@ -74,6 +74,14 @@ const OtherPlayer = stampit(
 
 const HasSphere = stampit(Component, {
   methods: {
+    hideSphere() {
+      this.object.remove(this.sphereMesh)
+    },
+    
+    showSphere() {
+      this.object.add(this.sphereMesh)
+    },
+
     setup() {
       const geometry = new THREE.SphereGeometry(7)
       const material = new THREE.MeshBasicMaterial({
@@ -82,9 +90,9 @@ const HasSphere = stampit(Component, {
       })
       this.sphereMesh = new THREE.Mesh(geometry, material)
       this.object.renderOrder = 1
-      this.object.add(this.sphereMesh)
+      
+      this.showSphere()
     },
-    
   }
 })
 
@@ -282,6 +290,9 @@ async function start() {
     switch(key) {
       case 'player':
         entity.setOpacity(1.0)
+        entity.showVideoBubble()
+      case 'mouse':
+        entity.showSphere()
       default:
         console.warn('"connect" issued for unhandled type', key, state)
     }
@@ -292,7 +303,10 @@ async function start() {
     switch(key) {
       case 'player':
         entity.setOpacity(0.2)
+        entity.hideVideoBubble()
         entity.setThought(null)
+      case 'mouse':
+        entity.hideSphere()
       default:
         console.warn('"disconnect" issued for unhandled type', key, state)
     }
