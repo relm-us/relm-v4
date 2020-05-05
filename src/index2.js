@@ -321,7 +321,7 @@ async function start() {
             uuid: state.uuid,
             speed: 250,
             animationSpeed: 1.5,
-            label: state.name,
+            label: state.label,
             labelOffset: { x: 0, y: 0, z: 60 },
             videoBubbleOffset: {x: 0, y: 0, z: -240 },
             animationResourceId: 'people',
