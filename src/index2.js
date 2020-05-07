@@ -298,6 +298,7 @@ async function start() {
         }
         break
       case 'object':
+      case 'obj':
         const subCommand = args[0]
         const decoration = findNearestOfType('decoration', stage.entities, player.state.position.now)
         if (!decoration) {
@@ -315,9 +316,29 @@ async function start() {
             network.removeEntity(decoration.uuid)
           } else if (subCommand === 'fetch') {
             const destination = new THREE.Vector3()
+            const y = decoration.state.position.now.y
             destination.copy(player.state.position.now)
-            destination.y += 1
+            destination.y = y
             decoration.setPosition(destination)
+            network.setEntity(decoration)
+          } else if (subCommand === 'move') {
+            if (args[1]) { decoration.state.position.target.x += parseFloat(args[1]) }
+            if (args[2]) { decoration.state.position.target.y += parseFloat(args[2]) }
+            if (args[3]) { decoration.state.position.target.z += parseFloat(args[3]) }
+            network.setEntity(decoration)
+          } else if (subCommand === 'x') {
+            if (args[1]) { decoration.state.position.target.x += parseFloat(args[1]) }
+            network.setEntity(decoration)
+          } else if (subCommand === 'y') {
+            if (args[1]) { decoration.state.position.target.y += parseFloat(args[1]) }
+            network.setEntity(decoration)
+          } else if (subCommand === 'z') {
+            if (args[1]) { decoration.state.position.target.z += parseFloat(args[1]) }
+            network.setEntity(decoration)
+          } else if (subCommand === 'scale') {
+            if (args[1]) {
+              decoration.state.imageScale.target = parseFloat(args[1])
+            }
             network.setEntity(decoration)
           }
         }
