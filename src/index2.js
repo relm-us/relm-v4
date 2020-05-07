@@ -314,7 +314,10 @@ async function start() {
           } else if (subCommand === 'delete') {
             network.removeEntity(decoration.uuid)
           } else if (subCommand === 'fetch') {
-            decoration.setPosition(player.state.position.now)
+            const destination = new THREE.Vector3()
+            destination.copy(player.state.position.now)
+            destination.y += 1
+            decoration.setPosition(destination)
             network.setEntity(decoration)
           }
         }
