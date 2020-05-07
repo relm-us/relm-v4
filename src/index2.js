@@ -128,6 +128,7 @@ async function start() {
     label: guestNameFromPlayerId(playerId),
     animationMeshName: avatarOptionFromPlayerId(playerId).avatarId,
     speed: 250,
+    followTurning: true,
     animationSpeed: 1.5,
     labelOffset: { x: 0, y: 0, z: 60 },
     videoBubbleOffset: {x: 0, y: 0, z: -240 },
@@ -195,6 +196,7 @@ async function start() {
         try {
           const otherPlayer = OtherPlayer(Object.assign({
             speed: 250,
+            followTurning: true,
             animationSpeed: 1.5,
             labelOffset: { x: 0, y: 0, z: 60 },
             videoBubbleOffset: {x: 0, y: 0, z: -240 },
@@ -210,7 +212,9 @@ async function start() {
         break
       case 'decoration':
       console.log('decoration state', state)
-        const decoration = Decoration(Object.assign({}, state, { uuid }))
+        const decoration = Decoration(Object.assign({
+          speed: 500,
+        }, state, { uuid }))
         stage.add(decoration)
         break
       case 'mouse':
@@ -219,6 +223,15 @@ async function start() {
         break
       default:
         console.warn('"add" issued for unhandled type', uuid, state)
+    }
+  })
+  
+  network.on('remove', (uuid) => {
+    const entity = stage.entities[uuid]
+    if (entity) {
+      stage.remove(entity)
+    } else {
+      console.warn("Can't remove entity (not found)", uuid)
     }
   })
 
@@ -246,6 +259,22 @@ async function start() {
     }
   })
   
+  const findNearestOfType = (type, entities, position, maxDistance = 500) => {
+    let nearest = null
+    let shortestDistanceSoFar = 10000000
+    console.log('entities', entities)
+
+    for (let uuid in entities) {
+      if (entities[uuid].type !== type) { continue }
+      let distance = entities[uuid].state.position.now.distanceTo(position)
+      if (distance < shortestDistanceSoFar && distance < maxDistance) {
+        shortestDistanceSoFar = distance
+        nearest= entities[uuid]
+      }
+    }
+    return nearest
+  }
+  
   const doCommand = (command, args) => {
     switch (command) {
       case 'home':
@@ -266,6 +295,25 @@ async function start() {
           }
         } else {
           console.warn('Gender not available')
+        }
+        break
+      case 'object':
+        const subCommand = args[0]
+        const decoration = findNearestOfType('decoration', stage.entities, player.state.position.now)
+        if (!decoration) {
+          console.log('Nearest decoration not found')
+          return
+        } else {
+          console.log('Nearest decoration', decoration)
+          if (subCommand === 'up') {
+            decoration.state.orientation.target = 0
+            network.setEntity(decoration)
+          } else if (subCommand === 'down') {
+            decoration.state.orientation.target = 3
+            network.setEntity(decoration)
+          } else if (subCommand === 'delete') {
+            network.removeEntity(decoration.uuid)
+          }
         }
         break
     }

@@ -306,7 +306,7 @@ function initializeAVChat(callbacks, playerId) {
       initJitsiMeet(callbacks, playerId)
       return
     }
-    console.log("Waiting for JitsiMeetJS")
+    // console.log("Waiting for JitsiMeetJS")
   }, 200)
 }
 

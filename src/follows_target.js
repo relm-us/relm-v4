@@ -8,6 +8,7 @@ const { Vector3, Matrix4, Quaternion, MathUtils } = THREE
 const FollowsTarget = stampit(Component, HasObject, {
   props: {
     speed: 100.0,
+    followTurning: false,
     turnSpeed: 10.0,
     closeEnough: 1.0,
     distanceToTarget: 0.0,
@@ -20,8 +21,10 @@ const FollowsTarget = stampit(Component, HasObject, {
    */
   init({
     speed = this.speed,
+    followTurning = this.followTurning
   }) {
     this.speed = speed
+    this.followTurning = followTurning
 
     this.quaternion = new Quaternion()
     this.matrix = new Matrix4()
@@ -76,7 +79,9 @@ const FollowsTarget = stampit(Component, HasObject, {
     update(delta) {
       this.distanceToTarget = this.state.position.now.distanceTo(this.state.position.target)
       this.updatePosition(delta, this.distanceToTarget)
-      this.updateDirection(delta, this.distanceToTarget)
+      if (this.followTurning) {
+        this.updateDirection(delta, this.distanceToTarget)
+      }
     },
   }
 

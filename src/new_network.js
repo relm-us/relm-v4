@@ -35,9 +35,9 @@ const Network = stampit(EventEmittable, {
      * 
      * @param {Entity} entity 
      */
-    addEntity(entity) {
+    setEntity(entity) {
       const state = stateToObject(entity.type, entity.state)
-      this.addState(state)
+      this.setState(entity.uuid, state)
     },
     
     getState(uuid) {
@@ -126,7 +126,6 @@ const Network = stampit(EventEmittable, {
 
     observeEntityStates() {
       this.entityStates.observeDeep((events, t) => {
-        console.log('events', events)
         for (let event of events) {
           if (event.path.length === 0) {
             event.changes.keys.forEach(({ action }, uuid) => {
@@ -135,20 +134,20 @@ const Network = stampit(EventEmittable, {
                 console.log('entity added', uuid, state)
                 this.emit('add', uuid, state)
               } else if (action === 'delete') {
-                console.log('entity deleted', state)
-                this.emit('remove', uuid, state)
+                console.log('entity deleted', uuid)
+                this.emit('remove', uuid)
+              } else if (action === 'update') {
+                console.log('entity updated', uuid)
+                this.emit(`update-${uuid}`, state)
+              } else {
+                console.warn('action not handled', action, uuid)
               }
             })
           }
-          if (event.path.length > 0) {
-            const uuid = event.path[0]
-            const state = this.entityStates.get(uuid)
-            console.log('entity updated', key, state)
-            this.emit('update', key, state)
-          }
         }
-      })      
+      })
     }
+
   }
 })
 

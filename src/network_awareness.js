@@ -21,18 +21,6 @@ store anywhere (at least for now).
  * to the Awareness system on the network.
  */
 const AwarenessSetsState = stampit(Component, {
-  props: {
-    /**
-     * If set to true, the state is sent to the presence Awareness module, rather
-     * than the historical state.
-     */
-    networkAwareness: true,
-  },
-
-  init({ networkAwareness = this.networkAwareness }) {
-    this.networkAwareness = networkAwareness
-  },
-  
   methods: {
     setup() {
       this.network.on('update', (uuid, object) => {

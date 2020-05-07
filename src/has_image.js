@@ -95,6 +95,8 @@ const HasImage = stampit(Component, {
       
       this.mesh = new Mesh(this.geometry, this.material)
       this.mesh.receiveShadow = true
+      this.mesh.position.set(0, this.texture.image.height/2 * this.state.imageScale.now, 0)
+      this.object.position.y = 1
       
       this.object.add(this.mesh)
       
@@ -107,22 +109,23 @@ const HasImage = stampit(Component, {
       switch(this.state.orientation.now) {
         case Orientation.up:
           // Standing up straight
-          this.mesh.position.set(0, this.texture.image.height/2 * scale, 0)
+          this.object.rotation.y = 0
+          this.object.rotation.x = 0
           break;
         case Orientation.left:
           // Standing up, but rotated to the left
-          this.mesh.position.set(0, this.texture.image.height/2 * scale, 0)
-          this.mesh.rotation.y = Math.PI/4
+          this.object.rotation.y = Math.PI/4
+          this.object.rotation.x = 0
           break;
         case Orientation.right:
           // Standing up, but rotated to the right
-          this.mesh.position.set(0, this.texture.image.height/2 * scale, 0)
-          this.mesh.rotation.y = -Math.PI/4
+          this.object.rotation.y = -Math.PI/4
+          this.object.rotation.x = 0
           break;
         case Orientation.down:
           // Place it flat, and *slightly* above the ground
-          this.mesh.position.set(0, 0.5, 0)
-          this.mesh.rotation.x = -Math.PI/2
+          this.object.rotation.y = 0
+          this.object.rotation.x = -Math.PI/2
           break;
       }
     },
@@ -161,7 +164,7 @@ const HasImage = stampit(Component, {
       if (this.state.orientation.now !== this.state.orientation.target) {
         // TODO: animate  
         this.state.orientation.now = this.state.orientation.target
-        this.setRotationFromOrientation()
+        this.setRotationFromState()
       }
       
       const imageScaleDelta = Math.abs(this.state.imageScale.now - this.state.imageScale.target)
