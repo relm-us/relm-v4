@@ -35,23 +35,24 @@ const Network = stampit(EventEmittable, {
      * 
      * @param {Entity} entity 
      */
-    addEntity(networkKey, entity) {
-      this.addState(networkKey, stateToObject(entity.uuid, entity.state))
+    addEntity(entity) {
+      const state = stateToObject(entity.type, entity.state)
+      this.addState(state)
     },
     
-    addState(networkKey, state) {
+    setState(state) {
       if (state) {
         let uuid = state.uuid
         if (!uuid) {
           uuid = state.uuid = uuidv4()
         }
-        this.entityStates.set(uuid, { [networkKey]: state })
+        this.entityStates.set(uuid, state)
       } else {
         console.warn('attempted to add null state to network (not added)', state)
       }
     },
 
-    removeState(uuid) {
+    removeEntity(uuid) {
       this.entityStates.delete(uuid)
     },
 
@@ -83,18 +84,18 @@ const Network = stampit(EventEmittable, {
         const keyedState = this.provider.awareness.getStates().get(clientId)
         if (keyedState) {
           this.clientIdsToEntityState[clientId] = keyedState
-          for (let key in keyedState) {
-            const state = keyedState[key]
-            if (!this.clientIdsAdded.has(state.uuid)) {
-              console.log('emit add', key, state)
-              this.emit('add', key, state)
-              this.clientIdsAdded.add(state.uuid)
-              this.clientIdsConnected.add(state.uuid)
-            } else if (!this.clientIdsConnected.has(state.uuid)) {
-              this.emit('connect', key, state)
-              this.clientIdsConnected.add(state.uuid)
+          for (let uuid in keyedState) {
+            const state = keyedState[uuid]
+            if (!this.clientIdsAdded.has(uuid)) {
+              console.log('emit add', uuid, state)
+              this.emit('add', uuid, state)
+              this.clientIdsAdded.add(uuid)
+              this.clientIdsConnected.add(uuid)
+            } else if (!this.clientIdsConnected.has(uuid)) {
+              this.emit('connect', uuid, state)
+              this.clientIdsConnected.add(uuid)
             } else {
-              this.emit('update', key, state)
+              this.emit('update', uuid, state)
             }
           }
         } else {
@@ -112,10 +113,10 @@ const Network = stampit(EventEmittable, {
         // const state = this.provider.awareness.getStates().get(clientId)
         const keyedState = this.clientIdsToEntityState[clientId]
         if (keyedState) {
-          for (let key in keyedState) {
-            const state = keyedState[key]
-            this.emit('disconnect', key, state)
-            this.clientIdsConnected.delete(state.uuid)
+          for (let uuid in keyedState) {
+            const state = keyedState[uuid]
+            this.emit('disconnect', uuid, state)
+            this.clientIdsConnected.delete(uuid)
           }
         } else {
           console.warn('Unable to accept disconnect', clientId, state)
@@ -130,14 +131,14 @@ const Network = stampit(EventEmittable, {
           if (event.path.length === 0) {
             event.changes.keys.forEach(({ action }, uuid) => {
               const keyedState = this.entityStates.get(uuid)
-              for (let key in keyedState) {
-                const state = keyedState[key]
+              for (let uuid in keyedState) {
+                const state = keyedState[uuid]
                 if (action === 'add') {
-                  console.log('entity added', key, state)
-                  this.emit('add', key, state)
+                  console.log('entity added', uuid, state)
+                  this.emit('add', uuid, state)
                 } else if (action === 'delete') {
                   console.log('entity deleted', state)
-                  this.emit('remove', key, state)
+                  this.emit('remove', uuid, state)
                 }
               }
             })

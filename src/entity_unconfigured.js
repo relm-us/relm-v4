@@ -5,8 +5,8 @@ import { Component } from './component.js'
 
 /**
  * An Entity is the most basic thing in the game world. It has 
- * only an identifier (.uuid) and can potentially be configured
- * with a Stage.
+ * only an identifier (`.uuid`) and type (`.type`), and can be 
+ * configured with a Stage, Resources, and Network.
  * 
  * Example:
  *   const ConfiguredEntity = Entity.conf({ stage: theStage })
@@ -40,13 +40,25 @@ const EntityUnconfigured = stampit(Component, {
     uuid: null,
 
     /**
+     * @type {string}
+     */
+    type: null,
+    
+    /**
      * @type {Stage}
      */
     stage: null,
   },
 
-  init({ uuid = this.uuid, stage, resources, network }, { stamp }) {
+  init({
+    uuid = this.uuid,
+    type = this.type,
+    stage,
+    resources,
+    network
+  }, { stamp }) {
     this.uuid = uuid || uuidv4()
+    this.type = type
     this.stage = stage || stamp.compose.configuration.stage
     this.resources = resources || stamp.compose.configuration.resources
     this.network = network || stamp.compose.configuration.network

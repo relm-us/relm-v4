@@ -21,10 +21,10 @@ import { HasOpacity } from './has_opacity.js'
 import { NetworkGetsState } from './network_gets_state.js'
 import { NetworkSetsState } from './network_sets_state.js'
 import { LocalstoreGetsState, LocalstoreRestoreState } from './localstore_gets_state.js'
-import { HasImage } from './has_image.js'
+import { MousePointer, OtherMousePointer } from './mouse_pointer.js'
+import { Decoration } from './decoration.js'
 import { uuidv4 } from './util.js'
 import config from './config.js'
-import { Component } from './component.js'
 
 const cfg = config(window.location)
 
@@ -32,12 +32,6 @@ const cfg = config(window.location)
 Dropzone.autoDiscover = false
 
 const security = Security()
-
-const Decoration = stampit(
-  Entity,
-  HasObject,
-  HasImage
-)
 
 const Player = stampit(
   Entity,
@@ -71,133 +65,6 @@ const OtherPlayer = stampit(
 {
   name: 'OtherPlayer'
 })
-
-const HasSphere = stampit(Component, {
-  methods: {
-    hideSphere() {
-      this.object.remove(this.sphereMesh)
-    },
-    
-    showSphere() {
-      this.object.add(this.sphereMesh)
-    },
-
-    setup() {
-      const geometry = new THREE.SphereGeometry(7)
-      const material = new THREE.MeshBasicMaterial({
-        color: 0xff9900,
-        depthTest: true,
-        transparent: true, // so that it shows up on top of images
-      })
-      this.sphereMesh = new THREE.Mesh(geometry, material)
-      this.object.renderOrder = 1
-      
-      this.showSphere()
-    },
-  }
-})
-
-const HasLine = stampit(Component, {
-  props: {
-    lineTrackStart: null,
-    lineTrackEnd: null,
-  },
-
-  init({ lineTrackStart, lineTrackEnd }) {
-    this.lineTrackStart = lineTrackStart || new THREE.Vector3()
-    this.lineTrackEnd = lineTrackEnd || new THREE.Vector3()
-  },
-
-  methods: {
-    setup() {
-      const material = new THREE.LineBasicMaterial({
-        color: 0x0000ff,
-        linewidth: 4,
-      });
-      
-      var points = [];
-      points.push(this.lineTrackStart);
-      points.push(this.lineTrackEnd);
-      
-      this.lineGeometry = new THREE.BufferGeometry().setFromPoints( points );
-      
-      this.line = new THREE.Line( this.lineGeometry, material );
-      this.object.add(this.line)
-    },
-
-    update(delta) {
-      var points = [];
-      points.push(this.lineTrackStart);
-      points.push(this.lineTrackEnd);
-      this.lineGeometry.setFromPoints( points )
-      // this.lineGeometry.verticesNeedUpdate = true
-    }
-  }
-})
-
-const UpdatesPositionFromScreenCoords = stampit(Component, {
-  init() {
-    this.screenCoords = {x: 0, y: 0}
-    this.screenVec = new THREE.Vector3()
-    this.screenRaycaster = new THREE.Raycaster()
-  },
-
-  methods: {
-    setScreenCoords(x, y) {
-      this.screenCoords = {x, y}
-    },
-
-    update(delta) {
-      const camera = this.stage.camera
-      const mouse = {
-        x: (this.screenCoords.x / window.innerWidth) * 2 - 1,
-        y: -(this.screenCoords.y / window.innerHeight) * 2 + 1
-      }
-
-      this.screenRaycaster.setFromCamera(mouse, camera)
-      const intersects = this.screenRaycaster.intersectObject(this.stage.ground)
-
-      if (intersects.length > 0) {
-        this.object.position.copy(intersects[0].point)
-        // TODO: make this a configurable offset. For now, it puts the HasSphere
-        //       object slightly "above" the ground, and above the mouse cursor
-        this.object.position.y += 10
-        this.object.position.x -= 3
-      }
-
-      if (this.state.position.target) {
-        this.state.position.target.copy(this.object.position)
-      }
-    }
-  }
-})
-
-const MousePointer = stampit(
-  Entity,
-  HasObject,
-  HasSphere,
-  UpdatesPositionFromScreenCoords,
-  NetworkGetsState
-)
-
-const MousePointerUpdate = stampit(Component, {
-  methods: {
-    update(delta) {
-      if (!this.state.position.now.equals(this.state.position.target)) {
-        this.state.position.now.copy(this.state.position.target)
-        this.object.position.copy(this.state.position.now)
-      }
-    }
-  }
-})
-
-const OtherMousePointer = stampit(
-  Entity,
-  HasObject,
-  HasSphere,
-  NetworkSetsState,
-  MousePointerUpdate
-)
 
 async function start() {
   // We first add all resources from the manifest so that the progress
@@ -234,7 +101,7 @@ async function start() {
     
     // Add the decoration to the network so everyone can see it
     const url = cfg.SERVER_UPLOAD_URL + '/' + response.file
-    network.addState('decoration', {
+    network.setState('decoration', {
       position: {
         x: player.state.position.now.x,
         y: player.state.position.now.y,
@@ -257,6 +124,7 @@ async function start() {
   const playerId = await security.getOrCreateId()
   const player = window.player = Player({
     uuid: playerId,
+    type: 'player',
     label: guestNameFromPlayerId(playerId),
     animationMeshName: avatarOptionFromPlayerId(playerId).avatarId,
     speed: 250,
@@ -264,7 +132,6 @@ async function start() {
     labelOffset: { x: 0, y: 0, z: 60 },
     videoBubbleOffset: {x: 0, y: 0, z: -240 },
     animationResourceId: 'people',
-    networkKey: 'player',
     lsKey: 'player'
   })
   LocalstoreRestoreState('player', player)
@@ -273,7 +140,7 @@ async function start() {
   stage.add(player)
   
   const mousePointer = window.mousePointer = MousePointer({
-    networkKey: 'mouse',
+    type: 'mouse',
     networkGetsStateModulus: 2,
   })
   stage.add(mousePointer)
@@ -290,9 +157,9 @@ async function start() {
   })
 
 
-  network.on('connect', (key, state) => {
-    const entity = stage.entities[state.uuid]
-    switch(key) {
+  network.on('connect', (uuid, state) => {
+    const entity = stage.entities[uuid]
+    switch(state.type) {
       case 'player':
         entity.setOpacity(1.0)
         entity.showVideoBubble()
@@ -301,13 +168,13 @@ async function start() {
         entity.showSphere()
         break
       default:
-        console.warn('"connect" issued for unhandled type', key, state)
+        console.warn('"connect" issued for unhandled type', uuid, state)
     }
   })
   
-  network.on('disconnect', (key, state) => {
-    const entity = stage.entities[state.uuid]
-    switch(key) {
+  network.on('disconnect', (uuid, state) => {
+    const entity = stage.entities[uuid]
+    switch(state.type) {
       case 'player':
         entity.setOpacity(0.2)
         entity.hideVideoBubble()
@@ -317,26 +184,22 @@ async function start() {
         entity.hideSphere()
         break
       default:
-        console.warn('"disconnect" issued for unhandled type', key, state)
+        console.warn('"disconnect" issued for unhandled type', uuid, state)
     }
   })
   
-  network.on('add', (key, state) => {
-    switch(key) {
+  network.on('add', (uuid, state) => {
+    switch(state.type) {
       case 'player':
         console.log('create other player', state)
         try {
-          const otherPlayer = OtherPlayer({
-            uuid: state.uuid,
+          const otherPlayer = OtherPlayer(Object.assign({
             speed: 250,
             animationSpeed: 1.5,
-            label: state.label,
             labelOffset: { x: 0, y: 0, z: 60 },
             videoBubbleOffset: {x: 0, y: 0, z: -240 },
             animationResourceId: 'people',
-            animationMeshName: state.animationMeshName,
-            networkKey: 'player'
-          })
+          }, state, { uuid }))
           if (state.position) {
             otherPlayer.warpToPosition(state.position)
           }
@@ -346,19 +209,16 @@ async function start() {
         }
         break
       case 'decoration':
-        const decoration = Decoration(state)
+      console.log('decoration state', state)
+        const decoration = Decoration(Object.assign({}, state, { uuid }))
         stage.add(decoration)
         break
       case 'mouse':
-        const mousePointer = OtherMousePointer({
-          uuid: state.uuid,
-          networkKey: 'mouse'
-        })
-        console.log("create mouse pointer", mousePointer)
+        const mousePointer = OtherMousePointer(Object.assign({}, state, { uuid }))
         stage.add(mousePointer)
         break
       default:
-        console.warn('"add" issued for unhandled type', key, state)
+        console.warn('"add" issued for unhandled type', uuid, state)
     }
   })
 
@@ -392,7 +252,7 @@ async function start() {
         player.warpToPosition({x:0,y:0,z:0})
         break
       case 'name':
-        player.setLabel(args[0])
+        player.setLabel(args.join(' '))
         break
       case 'character':
         const gender = args[0]
@@ -459,6 +319,10 @@ async function start() {
       // the default HTML tabIndex system
       if (e.keyCode === 9) {
         e.preventDefault()
+      } else if (e.keyCode === 191 /* Forward Slash */) {
+        e.preventDefault()
+        focusOnInput()
+        document.getElementById('input').value = '/' 
       }
     }
   })
@@ -468,6 +332,8 @@ async function start() {
       // This makes it so that 'tab' is controlled by us, rather than
       // the default HTML tabIndex system
       if (e.keyCode === 9) {
+        e.preventDefault()
+      } else if (e.keyCode === 191 /* Forward Slash */) {
         e.preventDefault()
       }
     }

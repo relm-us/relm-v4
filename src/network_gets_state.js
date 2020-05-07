@@ -18,12 +18,6 @@ import { stateToObject } from './state_to_object.js'
 const NetworkGetsState = stampit(Component, {
   props: {
     /**
-     * The networkKey can be set to the type of object, e.g. 'player', so that
-     * the state can be stored separately from other things (e.g. mouse movement).
-     */
-    networkKey: 'state',
-    
-    /**
      * If set to true, the state is sent to the presence Awareness module, rather
      * than the historical state.
      */
@@ -33,11 +27,9 @@ const NetworkGetsState = stampit(Component, {
   },
 
   init({
-    networkKey = this.networkKey,
     networkAwareness = this.networkAwareness,
     networkGetsStateModulus = this.networkGetsStateModulus
   }) {
-    this.networkKey = networkKey
     this.networkAwareness = networkAwareness
     this.networkGetsStateCounter = 0
     this.networkGetsStateModulus = networkGetsStateModulus
@@ -47,9 +39,9 @@ const NetworkGetsState = stampit(Component, {
     update(delta) {
       this.networkGetsStateCounter++
       if (this.networkGetsStateCounter % this.networkGetsStateModulus === 0 && this.network.provider) {
-        const state = stateToObject(this.uuid, this.state)
+        const state = stateToObject(this.type, this.state)
         if (this.networkAwareness) {
-          this.network.provider.awareness.setLocalStateField(this.networkKey, state)
+          this.network.provider.awareness.setLocalStateField(this.uuid, state)
         } else {
           // TODO: write state to this.network.ydoc
         }

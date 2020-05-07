@@ -29,7 +29,7 @@ const LocalstoreGetsState = stampit(Component, {
       if (!this.lsKey)
       this.lsGetsStateCounter++
       if (this.lsGetsStateCounter % 60 === 0) {
-        const object = stateToObject(this.uuid, this.state)
+        const object = Object.assign({ uuid: this.uuid }, stateToObject(this.type, this.state))
         for (let key in object) {
           let value = JSON.stringify(object[key])
           localStorage.setItem(`${this.lsKey}.${key}`, value)
@@ -40,6 +40,10 @@ const LocalstoreGetsState = stampit(Component, {
 })
 
 function LocalstoreRestoreState(lsKey, entity) {
+  // Transitional: If player.type is null or undefined, it's an old version of localstorage data, so clear it
+  if (!localStorage.getItem(`player.type`)) {
+    localStorage.clear()
+  }
   for (let key in entity.state) {
     let value = JSON.parse(localStorage.getItem(`${lsKey}.${key}`))
     if (value !== null) {

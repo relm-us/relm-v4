@@ -17,30 +17,23 @@ import { Component } from './component.js'
 const NetworkSetsState = stampit(Component, {
   props: {
     /**
-     * The networkKey can be set to the type of object, e.g. 'player', so that
-     * the state can be stored separately from other things (e.g. mouse movement).
-     */
-    networkKey: 'state',
-    
-    /**
      * If set to true, the state is sent to the presence Awareness module, rather
      * than the historical state.
      */
     networkAwareness: true,
   },
 
-  init({ networkKey = this.networkKey, networkAwareness = this.networkAwareness }) {
-    this.networkKey = networkKey
+  init({ networkAwareness = this.networkAwareness }) {
     this.networkAwareness = networkAwareness
   },
   
   methods: {
     setup() {
       if (this.networkAwareness) {
-        this.network.on('update', (key, object) => {
-          if (key === this.networkKey && this.uuid === object.uuid) {
+        this.network.on('update', (uuid, object) => {
+          if (uuid === this.uuid) {
             for (let k in object) {
-              if (k === 'uuid') { continue }
+              if (k === 'type') { continue }
               if (!this.state[k]) { this.state[k] = {} }
               this.state[k].target = object[k]
             }
