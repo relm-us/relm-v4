@@ -313,6 +313,9 @@ async function start() {
             network.setEntity(decoration)
           } else if (subCommand === 'delete') {
             network.removeEntity(decoration.uuid)
+          } else if (subCommand === 'fetch') {
+            decoration.setPosition(player.state.position.now)
+            network.setEntity(decoration)
           }
         }
         break
