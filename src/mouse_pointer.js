@@ -3,8 +3,7 @@ import stampit from 'stampit'
 import { Entity } from './entity.js'
 import { Component } from './component.js'
 import { HasObject } from './has_object.js'
-import { NetworkSetsState } from './network_sets_state.js'
-import { NetworkGetsState } from './network_gets_state.js'
+import { AwarenessGetsState, AwarenessSetsState } from './network_awareness.js'
 
 const HasSphere = stampit(Component, {
   methods: {
@@ -84,14 +83,14 @@ const MousePointer = stampit(
   HasObject,
   HasSphere,
   UpdatesPositionFromScreenCoords,
-  NetworkGetsState
+  AwarenessGetsState
 )
 
 const OtherMousePointer = stampit(
   Entity,
   HasObject,
   HasSphere,
-  NetworkSetsState,
+  AwarenessSetsState,
   MousePointerUpdate
 )
 

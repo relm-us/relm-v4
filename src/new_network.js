@@ -40,6 +40,10 @@ const Network = stampit(EventEmittable, {
       this.addState(state)
     },
     
+    getState(uuid) {
+      return this.entityStates.get(uuid)
+    },
+    
     setState(uuid, state) {
       if (state) {
         this.entityStates.set(uuid || uuidv4(), state)

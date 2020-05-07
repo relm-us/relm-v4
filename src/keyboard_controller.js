@@ -6,7 +6,7 @@ import { Component } from './component.js'
 
 const { Vector3 } = THREE
 
-const KeyboardController = stampit(Entity, Component, EventEmittable, {
+const KeyboardKeyMap = stampit(Component, {
   props: {
     /**
      * The Entity that this KeyboardController controls.
@@ -105,5 +105,11 @@ const KeyboardController = stampit(Entity, Component, EventEmittable, {
     }
   }
 })
+
+const KeyboardController = stampit(
+  Entity,
+  EventEmittable,
+  KeyboardKeyMap
+)
 
 export { KeyboardController }

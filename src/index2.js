@@ -18,8 +18,7 @@ import { WalksWhenMoving } from './walks_when_moving.js'
 import { HasThoughtBubble } from './has_thought_bubble.js'
 import { HasVideoBubble } from './has_video_bubble.js'
 import { HasOpacity } from './has_opacity.js'
-import { NetworkGetsState } from './network_gets_state.js'
-import { NetworkSetsState } from './network_sets_state.js'
+import { AwarenessGetsState, AwarenessSetsState } from './network_awareness.js'
 import { LocalstoreGetsState, LocalstoreRestoreState } from './localstore_gets_state.js'
 import { MousePointer, OtherMousePointer } from './mouse_pointer.js'
 import { Decoration } from './decoration.js'
@@ -44,7 +43,7 @@ const Player = stampit(
   HasAnimationMixer,
   WalksWhenMoving,
   // This is how the player sends updates
-  NetworkGetsState,
+  AwarenessGetsState,
   LocalstoreGetsState,
 {
   name: 'Player',
@@ -61,7 +60,7 @@ const OtherPlayer = stampit(
   HasAnimationMixer,
   WalksWhenMoving,
   // This is how OtherPlayers get updates
-  NetworkSetsState,
+  AwarenessSetsState,
 {
   name: 'OtherPlayer'
 })
@@ -142,7 +141,7 @@ async function start() {
   
   const mousePointer = window.mousePointer = MousePointer({
     type: 'mouse',
-    networkGetsStateModulus: 2,
+    awarenessUpdateFrequency: 2,
   })
   stage.add(mousePointer)
   
@@ -312,7 +311,7 @@ async function start() {
   const pressTabHelp = document.getElementById('press-tab-help')
   pressTabHelp.addEventListener('click', () => { pressTabHelp.classList.add('hide') })
   
-  const kbController = KeyboardController({ target: player })
+  const kbController = KeyboardController({ type: "keyboard", target: player })
   document.addEventListener('keydown', e => {
     if (e.target === stage.renderer.domElement) {
       kbController.keyPressed(e.keyCode, { shift: e.shiftKey, ctrl: e.ctrlKey, meta: e.metaKey })
