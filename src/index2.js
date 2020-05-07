@@ -101,7 +101,8 @@ async function start() {
     
     // Add the decoration to the network so everyone can see it
     const url = cfg.SERVER_UPLOAD_URL + '/' + response.file
-    network.setState('decoration', {
+    network.setState(null, {
+      type: 'decoration',
       position: {
         x: player.state.position.now.x,
         y: player.state.position.now.y,

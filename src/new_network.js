@@ -40,13 +40,9 @@ const Network = stampit(EventEmittable, {
       this.addState(state)
     },
     
-    setState(state) {
+    setState(uuid, state) {
       if (state) {
-        let uuid = state.uuid
-        if (!uuid) {
-          uuid = state.uuid = uuidv4()
-        }
-        this.entityStates.set(uuid, state)
+        this.entityStates.set(uuid || uuidv4(), state)
       } else {
         console.warn('attempted to add null state to network (not added)', state)
       }
@@ -130,27 +126,21 @@ const Network = stampit(EventEmittable, {
         for (let event of events) {
           if (event.path.length === 0) {
             event.changes.keys.forEach(({ action }, uuid) => {
-              const keyedState = this.entityStates.get(uuid)
-              for (let uuid in keyedState) {
-                const state = keyedState[uuid]
-                if (action === 'add') {
-                  console.log('entity added', uuid, state)
-                  this.emit('add', uuid, state)
-                } else if (action === 'delete') {
-                  console.log('entity deleted', state)
-                  this.emit('remove', uuid, state)
-                }
+              const state = this.entityStates.get(uuid)
+              if (action === 'add') {
+                console.log('entity added', uuid, state)
+                this.emit('add', uuid, state)
+              } else if (action === 'delete') {
+                console.log('entity deleted', state)
+                this.emit('remove', uuid, state)
               }
             })
           }
           if (event.path.length > 0) {
             const uuid = event.path[0]
-            const keyedState = this.entityStates.get(uuid)
-            for (let key in keyedState) {
-              const state = keyedState[key]
-              console.log('entity updated', key, state)
-              this.emit('update', key, state)
-            }
+            const state = this.entityStates.get(uuid)
+            console.log('entity updated', key, state)
+            this.emit('update', key, state)
           }
         }
       })      
