@@ -28,7 +28,8 @@ import config from './config.js'
 const cfg = config(window.location)
 const decorationLayerThickness = 0.01
 let decorationLayer = 0
-
+let nearestDecoration = null
+let previousNearestDecoration = null
 
 // Don't look for 'dropzone' in HTML tags
 Dropzone.autoDiscover = false
@@ -155,10 +156,20 @@ async function start() {
     mousePointer.setScreenCoords(event.clientX, event.clientY)
     mousePos.copy(player.object.position)
     mousePos.sub(mousePointer.object.position)
-    // mousePos.set(100, 0, 0)
-    // console.log('mousePos', player.object.position, mousePointer.object.position, mousePos)
-    // mousePointer.lineTrackEnd.copy(mousePos)
-    // console.log('mouse', {x: event.clientX, y: event.clientY}, mousePos)
+    
+    nearestDecoration = findNearestOfType('decoration', stage.entities, mousePointer.object.position, 200)
+    if (nearestDecoration) {
+      if (previousNearestDecoration === null) {
+        nearestDecoration.setSelected(true)
+      } else if (nearestDecoration.uuid !== previousNearestDecoration.uuid) {
+        nearestDecoration.setSelected(true)
+        previousNearestDecoration.setSelected(false)
+      }
+      previousNearestDecoration = nearestDecoration
+    } else if (!nearestDecoration && previousNearestDecoration) {
+      previousNearestDecoration.setSelected(false)
+      previousNearestDecoration = null
+    }
   })
 
 
@@ -266,7 +277,7 @@ async function start() {
   const findNearestOfType = (type, entities, position, maxDistance = 500) => {
     let nearest = null
     let shortestDistanceSoFar = 10000000
-    console.log('entities', entities)
+    // console.log('entities', entities)
 
     for (let uuid in entities) {
       if (entities[uuid].type !== type) { continue }
@@ -304,7 +315,8 @@ async function start() {
       case 'object':
       case 'obj':
         const subCommand = args[0]
-        const decoration = findNearestOfType('decoration', stage.entities, player.state.position.now)
+        // const decoration = findNearestOfType('decoration', stage.entities, player.state.position.now)
+        const decoration = nearestDecoration
         if (!decoration) {
           console.log('Nearest decoration not found')
           return
