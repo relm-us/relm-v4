@@ -96,7 +96,6 @@ const HasImage = stampit(Component, {
       this.mesh = new Mesh(this.geometry, this.material)
       this.mesh.receiveShadow = true
       this.mesh.position.set(0, this.texture.image.height/2 * this.state.imageScale.now, 0)
-      this.object.position.y = 1
       
       this.object.add(this.mesh)
       

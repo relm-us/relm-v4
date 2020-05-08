@@ -26,6 +26,9 @@ import { uuidv4 } from './util.js'
 import config from './config.js'
 
 const cfg = config(window.location)
+const decorationLayerThickness = 0.01
+let decorationLayer = 0
+
 
 // Don't look for 'dropzone' in HTML tags
 Dropzone.autoDiscover = false
@@ -98,13 +101,14 @@ async function start() {
     // Close the upload box automatically
     previews.classList.remove('show')
     
+    decorationLayer += decorationLayerThickness
     // Add the decoration to the network so everyone can see it
     const url = cfg.SERVER_UPLOAD_URL + '/' + response.file
     network.setState(null, {
       type: 'decoration',
       position: {
         x: player.state.position.now.x,
-        y: player.state.position.now.y,
+        y: player.state.position.now.y + decorationLayer, // a little above the ground
         z: player.state.position.now.z,
       },
       asset: {
@@ -211,7 +215,7 @@ async function start() {
         }
         break
       case 'decoration':
-      console.log('decoration state', state)
+        console.log('adding decoration, state:', state)
         const decoration = Decoration(Object.assign({
           speed: 500,
         }, state, { uuid }))
