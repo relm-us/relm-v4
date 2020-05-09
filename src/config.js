@@ -15,12 +15,15 @@ export default function config(location) {
     SERVER_UPLOAD_URL = `http://${location.hostname}:1235/asset`
   }
 
-  let ROOM = location.pathname.split('/')[1]
+  const params = new URLSearchParams(document.location.search.substring(1))
+  let ROOM = params.get('room')
   if (ROOM === '') { ROOM = 'relm' }
   
-  return {
+  window.config = {
     SERVER_YJS_URL,
     SERVER_UPLOAD_URL,
     ROOM
   }
+  
+  return window.config
 }

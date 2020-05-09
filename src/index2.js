@@ -500,7 +500,7 @@ async function start() {
         console.warn("Can't create video element for missing entity", entityId)
       }
     }
-  }, player.uuid)
+  }, player.uuid, 'relm-' + cfg.ROOM)
 }
 
 start()

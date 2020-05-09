@@ -5,8 +5,6 @@ let remoteParticipants = {}
 let conference
 let localTracks
 
-const CONFERENCE_ROOM_NAME = 'relm01'
-
 function initRemoteParticipant(participantId) {
   if (!remoteParticipants[participantId]) {
     remoteParticipants[participantId] = {
@@ -148,13 +146,13 @@ function onUserDisplayNameChanged(participantId, displayName) {
   remoteParticipants[participantId].playerId = displayName
 }
 
-function onConnectionEstablished(callbacks, playerId) {
+function onConnectionEstablished(callbacks, playerId, room) {
   console.log('onConnectionEstablished')
   
   const confOptions = {
     openBridgeChannel: true
   }
-  conference = window.conference = connection.initJitsiConference(CONFERENCE_ROOM_NAME, confOptions)
+  conference = window.conference = connection.initJitsiConference(room, confOptions)
   conference.setDisplayName(playerId)
   conference.on(JitsiMeetJS.events.conference.TRACK_ADDED, (track) => { onTrackAdded(track, playerId, callbacks) })
   conference.on(JitsiMeetJS.events.conference.TRACK_REMOVED, onTrackRemoved)
@@ -192,7 +190,7 @@ function onDeviceListChanged(a) {
   console.log('onDeviceListChanged', a)
 }
 
-async function initJitsiMeet(callbacks, playerId) {
+async function initJitsiMeet(callbacks, playerId, room) {
   JitsiMeetJS.setLogLevel(JitsiMeetJS.logLevels.ERROR)
 
   const initOptions = {
@@ -243,8 +241,7 @@ async function initJitsiMeet(callbacks, playerId) {
       useStunTurn: true
     },
     useStunTurn: true,
-    // serviceUrl: `https://meet.jit.si/http-bind?room=${CONFERENCE_ROOM_NAME}`,
-    bosh: `https://meet.jit.si/http-bind?room=${CONFERENCE_ROOM_NAME}`,
+    bosh: `https://meet.jit.si/http-bind?room=${room}`,
     websocket: 'wss://meet.jit.si/xmpp-websocket',
     clientNode: 'http://jitsi.org/jitsimeet',
   }
@@ -262,7 +259,7 @@ async function initJitsiMeet(callbacks, playerId) {
   }
   
   connection.addEventListener(JitsiMeetJS.events.connection.CONNECTION_ESTABLISHED, () => {
-    onConnectionEstablished(callbacks, playerId)
+    onConnectionEstablished(callbacks, playerId, room)
   })
   connection.addEventListener(JitsiMeetJS.events.connection.CONNECTION_FAILED, onConnectionFailed)
   connection.addEventListener(JitsiMeetJS.events.connection.CONNECTION_DISCONNECTED, onConnectionDisconnected)
@@ -298,14 +295,14 @@ async function initJitsiMeet(callbacks, playerId) {
   }
 }
 
-function initializeAVChat(callbacks, playerId) {
+function initializeAVChat(callbacks, playerId, room) {
   const intervalId = setInterval(() => {
     // Wait for JitsiMeetJS to be asynchronously, externally loaded
     if (window.JitsiMeetJS) {
       clearInterval(intervalId)
       JitsiMeetJS = window.JitsiMeetJS
       console.log('JitsiMeetJS found')
-      initJitsiMeet(callbacks, playerId)
+      initJitsiMeet(callbacks, playerId, room)
       return
     }
     // console.log("Waiting for JitsiMeetJS")
