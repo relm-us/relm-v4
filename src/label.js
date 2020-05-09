@@ -44,10 +44,19 @@ const WithLabel = stampit(UpdateCollision, {
   },
 
   methods: {
+    show() {
+      if (!this.domElement) { return }
+      this.domElement.style.display = ""
+    },
+
+    hide() {
+      if (!this.domElement) { return }
+      this.domElement.style.display = "none"
+    },
+
     setText(text) {
       this.text = text
       this.domElement.textContent = text
-      console.log('setText', this.domElement)
     },
 
     updateDomElement() {

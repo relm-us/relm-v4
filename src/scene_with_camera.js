@@ -1,6 +1,5 @@
 import stampit from 'stampit'
 
-const { PerspectiveCamera, MathUtils, Vector3 } = THREE
 
 const CAMERA_DEFAULT_ISOMETRY = 1.25 // a number between 0.25 - 16.0
 const CAMERA_DEFAULT_PERSPECTIVE_RATIO = 11.25 / CAMERA_DEFAULT_ISOMETRY
@@ -23,6 +22,8 @@ const SceneWithCamera = stampit({
     this.isometry = isometry
     this.perspectiveRatio = perspectiveRatio
     this.cameraIdealPosition = cameraIdealPosition
+
+    this.camera = null
 
     this.on('resize', this.adjustNewWindowSize)
   },

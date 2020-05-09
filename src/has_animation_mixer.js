@@ -69,10 +69,10 @@ const HasAnimationMixer = stampit(Component, {
       this.resources.get(this.animationResourceId).scene.traverse(o1 => {
         if (o1.name === meshName) { // Object3D, contains Bone & SkinnedMesh
           // Find mesh inside avatar container
-          o1.traverse(o2 => {
+          object3d = SkeletonUtils.clone(o1)
+          object3d.traverse(o2 => {
             if (o2.isMesh) { this.setMeshDefaults(o2) }
           })
-          object3d = SkeletonUtils.clone(o1)
         }
       })
 

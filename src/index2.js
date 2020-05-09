@@ -18,6 +18,7 @@ import { WalksWhenMoving } from './walks_when_moving.js'
 import { HasThoughtBubble } from './has_thought_bubble.js'
 import { HasVideoBubble } from './has_video_bubble.js'
 import { HasOpacity } from './has_opacity.js'
+import { HasOffscreenIndicator } from './has_offscreen_indicator.js'
 import { AwarenessGetsState, AwarenessSetsState } from './network_awareness.js'
 import { LocalstoreGetsState, LocalstoreRestoreState } from './localstore_gets_state.js'
 import { MousePointer, OtherMousePointer } from './mouse_pointer.js'
@@ -63,6 +64,7 @@ const OtherPlayer = stampit(
   FollowsTarget,
   HasAnimationMixer,
   WalksWhenMoving,
+  HasOffscreenIndicator,
   // This is how OtherPlayers get updates
   AwarenessSetsState,
 {
@@ -207,7 +209,7 @@ async function start() {
   network.on('add', (uuid, state) => {
     switch(state.type) {
       case 'player':
-        console.log('create other player', state)
+        console.log('create other player', uuid, state)
         try {
           const otherPlayer = OtherPlayer(Object.assign({
             speed: 250,
@@ -226,7 +228,7 @@ async function start() {
         }
         break
       case 'decoration':
-        console.log('adding decoration, state:', state)
+        // console.log('adding decoration, state:', state)
         const decoration = Decoration(Object.assign({
           speed: 500,
         }, state, { uuid }))

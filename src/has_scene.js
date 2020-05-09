@@ -31,7 +31,6 @@ const HasScene = stampit({
 
     this.ambientLight = new AmbientLight(LIGHT_COLOR, LIGHT_AMBIENT_FACTOR)
     this.directionalLight = new DirectionalLight(LIGHT_COLOR, LIGHT_DIRECTIONAL_FACTOR)
-    // this.directionalLight.position.set(-180, 450, -220)
 
     scene.fog = new Fog(new Color(this.fog.color), this.fog.near, this.fog.far)
     scene.add(this.ambientLight)

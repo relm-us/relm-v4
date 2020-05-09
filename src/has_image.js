@@ -175,10 +175,6 @@ const HasImage = stampit(Component, {
       }
     },
     
-    setup() {
-      console.log('HasImage setup')
-    },
-
     update(delta) {
       if (this.state.orientation.now !== this.state.orientation.target) {
         // TODO: animate  
