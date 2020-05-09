@@ -181,6 +181,7 @@ async function start() {
       case 'player':
         entity.setOpacity(1.0)
         entity.showVideoBubble()
+        entity.showOffscreenIndicator()
         break
       case 'mouse':
         entity.showSphere()
@@ -197,6 +198,7 @@ async function start() {
         entity.setOpacity(0.2)
         entity.hideVideoBubble()
         entity.setThought(null)
+        entity.hideOffscreenIndicator()
         break
       case 'mouse':
         entity.hideSphere()

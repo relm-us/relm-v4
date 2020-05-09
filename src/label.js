@@ -41,6 +41,8 @@ const WithLabel = stampit(UpdateCollision, {
     this.domElement = document.createElement('div')
     this.domElement.classList.add('entity-label')
     this.documentBody = body
+    
+    this.documentBody.appendChild(this.domElement)
   },
 
   methods: {
@@ -57,12 +59,6 @@ const WithLabel = stampit(UpdateCollision, {
     setText(text) {
       this.text = text
       this.domElement.textContent = text
-    },
-
-    updateDomElement() {
-      if (!this.domElement.parentNode) {
-        this.documentBody.appendChild(this.domElement)
-      }
     },
 
     destroyDomElement() {
