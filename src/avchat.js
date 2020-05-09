@@ -117,7 +117,6 @@ function onRemoteTrackMuteChanged() {
 
 function onConferenceJoined() {
   console.log('onConferenceJoined')
-  addLocalTracksToConference()
 }
 
 function onConferenceLeft() {
@@ -169,11 +168,11 @@ function onConnectionEstablished(callbacks, playerId) {
   
   conference.join()
 
+  addLocalTracksToConference()
 }
 
 function addLocalTracksToConference() {
-  console.log('addLocalTracksToConference', conference)
-  if (!conference) { return }
+  console.log('addLocalTracksToConference', conference, localTracks)
   for (let track of localTracks) {
     if (track.addedLocalTrackToConference) { next }
     conference.addTrack(track)
@@ -210,6 +209,7 @@ async function initJitsiMeet(callbacks, playerId) {
       // Whether desktop sharing should be disabled on Firefox.
     // desktopSharingFirefoxDisabled: false
   }
+  console.log("JitsiMeetJS.init()")
   JitsiMeetJS.init() // initOptions
   const options = {
     hosts: {
@@ -248,17 +248,11 @@ async function initJitsiMeet(callbacks, playerId) {
     websocket: 'wss://meet.jit.si/xmpp-websocket',
     clientNode: 'http://jitsi.org/jitsimeet',
   }
+  console.log('JitsiMeetJS.JitsiConnection()', options)
   connection = new JitsiMeetJS.JitsiConnection(null, null, options)
   
-  connection.addEventListener(JitsiMeetJS.events.connection.CONNECTION_ESTABLISHED, () => {
-    onConnectionEstablished(callbacks, playerId)
-  })
-  connection.addEventListener(JitsiMeetJS.events.connection.CONNECTION_FAILED, onConnectionFailed)
-  connection.addEventListener(JitsiMeetJS.events.connection.CONNECTION_DISCONNECTED, onConnectionDisconnected)
-  JitsiMeetJS.mediaDevices.addEventListener(JitsiMeetJS.events.mediaDevices.DEVICE_LIST_CHANGED, onDeviceListChanged)
-
   try {
-    await connection.connect()
+    console.log('JitsiMeetJS.createLocalTracks()')
     localTracks = await JitsiMeetJS.createLocalTracks({
       devices: [ 'audio', 'video' ],
       constraints: {}
@@ -267,8 +261,16 @@ async function initJitsiMeet(callbacks, playerId) {
     console.error('Connection error', err)
   }
   
-  addLocalTracksToConference()
+  connection.addEventListener(JitsiMeetJS.events.connection.CONNECTION_ESTABLISHED, () => {
+    onConnectionEstablished(callbacks, playerId)
+  })
+  connection.addEventListener(JitsiMeetJS.events.connection.CONNECTION_FAILED, onConnectionFailed)
+  connection.addEventListener(JitsiMeetJS.events.connection.CONNECTION_DISCONNECTED, onConnectionDisconnected)
+  JitsiMeetJS.mediaDevices.addEventListener(JitsiMeetJS.events.mediaDevices.DEVICE_LIST_CHANGED, onDeviceListChanged)
 
+  console.log('JitsiMeetJS connection.connect()')
+  await connection.connect()
+  
   for (let track of localTracks) {
     const type = track.getType()
     const id = `${type}-local`
