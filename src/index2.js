@@ -92,6 +92,17 @@ async function start() {
 
 
   await DOMReady()
+  
+  stage.addUpdateFunction((delta) => {
+    // TODO: make this filter for 'HasVideoBubble' instead of just looking for players
+    const players = Object.values(stage.entities).filter(e => e.type === 'player')
+    players.sort((a, b) => (a.object.position.z - b.object.position.z))
+    players.forEach((player, i) => {
+      const el = player.videoBubble.object.domElement
+      if (el) { el.style.zIndex = i + 1 }
+    })
+  })
+  
   // The stage is special in that it creates a domElement that must be added to our page
   document.getElementById('game').appendChild(stage.renderer.domElement)
   

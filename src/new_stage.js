@@ -7,6 +7,7 @@ import { HasScene } from './has_scene.js'
 import { SceneWithCamera } from './scene_with_camera.js'
 import { SceneWithRenderer } from './scene_with_renderer.js'
 import { SceneWithGround } from './scene_with_ground.js'
+import { uuidv4 } from './util.js'
 
 const Stage = stampit(
   HasScene,
@@ -40,6 +41,7 @@ const Stage = stampit(
 
   init({ width, height }) {
     this.entities = {}
+    this.updateFns = {}
     if (!width || !height) {
       throw new Error('State requires width and height')
     } else {
@@ -73,12 +75,23 @@ const Stage = stampit(
       this.emit('resize', { width: w, height: h })
     },
 
+    addUpdateFunction(fn) {
+      const id = uuidv4()
+      this.updateFns[id] = fn
+      return id
+    },
+
     update(delta) {
+      // Handle each entity's `update` function
       for (let uuid in this.entities) {
         const entity = this.entities[uuid]
         if (entity.update) {
           entity.update(delta)
         }
+      }
+      // Additionally handle any special case `update` functions
+      for (let uuid in this.updateFns) {
+        this.updateFns[uuid](delta)
       }
     },
     

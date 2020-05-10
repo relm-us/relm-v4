@@ -26,6 +26,12 @@ const WithVideoBubble = stampit(UpdateCollision, {
         this.domElement.classList.remove('show')
       }
     },
+    
+    // setZ(z) {
+    //   if (this.domElement) {
+    //     this.domElement.style.zIndex = parseInt(this.object.position.z) + 100000
+    //   }
+    // },
 
     createDomElement() {
       if (this.domElement) {
