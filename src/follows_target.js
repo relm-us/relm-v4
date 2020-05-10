@@ -85,26 +85,25 @@ const FollowsTarget = stampit(Component, HasObject, {
     },
 
     update(delta) {
-      if (this.state.position.target) {
-        this.followAdd.normalize()
-        this.followAdd.multiplyScalar(100.0)
-        this.followAdd.add(this.state.position.now)
-        try {
-          this.state.position.target.copy(this.followAdd)
-        } catch(e) {
-          console.error(e, this.state.position.target)
-        }
-        this.followAdd.set(0, 0, 0)
-        
-        if (this.state.position.now) {
-          this.distanceToTarget = this.state.position.now.distanceTo(this.state.position.target)
-          this.updatePosition(delta, this.distanceToTarget)
-          if (this.followTurning) {
-            this.updateDirection(delta, this.distanceToTarget)
-          }
-        }
+      // FIXME: Sometimes we are getting an object, rather than a Vector3
+      //        in this.state.position.target. This is a terrible hack that
+      //        acknowledges that untyped languages suck.
+      if (!this.state.position.target.copy) {
+        value = this.state.position.target
+        this.state.position.target = new THREE.Vector3()
+        this.state.position.target.copy(value)
       }
-      
+      this.followAdd.normalize()
+      this.followAdd.multiplyScalar(100.0)
+      this.followAdd.add(this.state.position.now)
+      this.state.position.target.copy(this.followAdd)
+      this.followAdd.set(0, 0, 0)
+        
+      this.distanceToTarget = this.state.position.now.distanceTo(this.state.position.target)
+      this.updatePosition(delta, this.distanceToTarget)
+      if (this.followTurning) {
+        this.updateDirection(delta, this.distanceToTarget)
+      }
     },
   }
 
