@@ -4,7 +4,7 @@ import { CanProject, UpdateCollision } from './label.js'
 
 const { Vector3 } = THREE
 
-const VIDEO_BUBBLE_DIAMETER = 200
+const VIDEO_BUBBLE_DIAMETER = 100
 
 const WithVideoBubble = stampit(UpdateCollision, {
   init({ body }) {
