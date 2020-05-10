@@ -345,16 +345,18 @@
       align-items: flex-end;
     }
 
-    #invite {
+    .panel-button {
+      font-size: 18px;
       border-radius: 8px;
       border: 3px solid #efaa22;
       background: #eee;
       color: #333;
       padding: 5px 10px;
+      margin-top: 5px;
       
       cursor: pointer;
     }
-    #invite:hover {
+    .panel-button:hover {
       background: #fff;
       border-color: #ef9911;
     }
@@ -370,11 +372,6 @@
     }
     #invitation-input {
       width: 200px;
-    }
-    #upload-button {
-      position: absolute;
-      right: 0px;
-      bottom: 50px;
     }
     
     #previews {
@@ -424,8 +421,9 @@
   <div id="game"></div>
 
   <div id="right-panel">
-    <div id="invite">Invite Others</div>
+    <div id="invite" class="panel-button">Invite Others</div>
     <div id="invitation">Copy One-Time Link: <input id="invitation-input"/></div>
+    <button id="upload-button" class="panel-button">Upload</button>
   </div>
   
   <div id="previews" class="dropzone dropzone-previews"></div>
@@ -452,7 +450,6 @@
 
     <input id="input" type="text" placeholder="Thought ..." value="">
   </div>
-    <button id="upload-button">Upload</button>
 
 
   <script src="./index2.js"></script>
