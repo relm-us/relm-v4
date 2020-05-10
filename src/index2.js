@@ -28,9 +28,14 @@ import config from './config.js'
 
 const cfg = config(window.location)
 const decorationLayerThickness = 0.01
+const DECORATION_NORMAL_COLOR = new THREE.Color(0x000000)
+const DECORATION_HOVER_COLOR = new THREE.Color(0x333300)
+const DECORATION_SELECTED_COLOR = new THREE.Color(0x666600)
+const DECORATION_NEAREST_MAX_RANGE = 400
 let decorationLayer = 0
 let nearestDecoration = null
 let previousNearestDecoration = null
+let selectedDecoration = null
 
 // Don't look for 'dropzone' in HTML tags
 Dropzone.autoDiscover = false
@@ -159,18 +164,42 @@ async function start() {
     mousePos.copy(player.object.position)
     mousePos.sub(mousePointer.object.position)
     
-    nearestDecoration = findNearestOfType('decoration', stage.entities, mousePointer.object.position, 200)
+    nearestDecoration = findNearestOfType(
+      'decoration',
+      stage.entities,
+      mousePointer.object.position,
+      DECORATION_NEAREST_MAX_RANGE
+    )
     if (nearestDecoration) {
-      if (previousNearestDecoration === null) {
-        nearestDecoration.setSelected(true)
+      if (nearestDecoration === selectedDecoration) {
+        // do nothing
+        if (nearestDecoration.uuid !== previousNearestDecoration.uuid) {
+          previousNearestDecoration.setEmissive(DECORATION_NORMAL_COLOR)
+        }
+      } else if (previousNearestDecoration === null) {
+        nearestDecoration.setEmissive(DECORATION_HOVER_COLOR)
       } else if (nearestDecoration.uuid !== previousNearestDecoration.uuid) {
-        nearestDecoration.setSelected(true)
-        previousNearestDecoration.setSelected(false)
+        nearestDecoration.setEmissive(DECORATION_HOVER_COLOR)
+        if (previousNearestDecoration !== selectedDecoration) {
+          previousNearestDecoration.setEmissive(DECORATION_NORMAL_COLOR)
+        }
       }
       previousNearestDecoration = nearestDecoration
     } else if (!nearestDecoration && previousNearestDecoration) {
-      previousNearestDecoration.setSelected(false)
+      if (previousNearestDecoration !== selectedDecoration) {
+        previousNearestDecoration.setEmissive(DECORATION_NORMAL_COLOR)
+      }
       previousNearestDecoration = null
+    }
+  })
+  
+  window.addEventListener('mousedown', (event) => {
+    if (selectedDecoration) {
+      selectedDecoration.setEmissive(DECORATION_NORMAL_COLOR)
+    }
+    selectedDecoration = nearestDecoration
+    if (selectedDecoration) {
+      selectedDecoration.setEmissive(DECORATION_SELECTED_COLOR)
     }
   })
 
@@ -320,12 +349,12 @@ async function start() {
       case 'obj':
         const subCommand = args[0]
         // const decoration = findNearestOfType('decoration', stage.entities, player.state.position.now)
-        const decoration = nearestDecoration
+        const decoration = selectedDecoration
         if (!decoration) {
-          console.log('Nearest decoration not found')
+          console.log('Selected decoration not found')
           return
         } else {
-          console.log('Nearest decoration', decoration)
+          console.log('Selected decoration', decoration)
           if (subCommand === 'up') {
             decoration.state.orientation.target = 0
             network.setEntity(decoration)

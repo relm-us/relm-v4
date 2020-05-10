@@ -76,14 +76,10 @@ const HasImage = stampit(Component, {
   },
 
   methods: {
-    setSelected(isSelected) {
-      if (isSelected) {
-        this.emissiveColor = new THREE.Color(0x666600)
-      } else {
-        this.emissiveColor = new THREE.Color(0x000000)
-      }
+    setEmissive(color) {
+      this.emissiveColor = color
       if (this.material) {
-        this.material.emissive = this.emissiveColor
+        this.material.emissive = color
       }
     },
 
