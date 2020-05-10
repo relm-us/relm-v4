@@ -12,6 +12,7 @@ const WithVideoBubble = stampit(EventEmittable, {
   init({ body }) {
     this.domElement = null
     this.documentBody = body || document.body
+    this.muteButton = null
     this.muted = false
   },
   
@@ -28,6 +29,24 @@ const WithVideoBubble = stampit(EventEmittable, {
         this.domElement.classList.add('hide')
         this.domElement.classList.remove('show')
       }
+    },
+    
+    enterMutedState() {
+      if (this.muteButton) {
+        this.muteButton.classList.remove('unmuted')
+        this.muteButton.classList.add('muted')
+      }
+      this.muted = true
+      this.emit('mute')
+    },
+
+    enterUnmutedState() {
+      if (this.muteButton) {
+        this.muteButton.classList.remove('muted')
+        this.muteButton.classList.add('unmuted')
+      }
+      this.muted = false
+      this.emit('unmute')
     },
     
     createDomElement() {
@@ -54,20 +73,14 @@ const WithVideoBubble = stampit(EventEmittable, {
       circle.classList.add('video-circle')
       circle.append(video)
       
-      const muteButton = document.createElement('div')
+      const muteButton = this.muteButton = document.createElement('div')
       muteButton.classList.add('mute-button')
       muteButton.classList.add('unmuted')
       muteButton.addEventListener('click', () => {
         if (this.muted) {
-          muteButton.classList.remove('muted')
-          muteButton.classList.add('unmuted')
-          this.emit('unmute')
-          this.muted = false
+          this.enterUnmutedState()
         } else {
-          muteButton.classList.remove('unmuted')
-          muteButton.classList.add('muted')
-          this.emit('mute')
-          this.muted = true
+          this.enterMutedState()
         }
       })
       

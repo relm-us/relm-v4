@@ -576,10 +576,20 @@ async function start() {
   ])
   await resources.load()
   
-  initializeAVChat({
+  initializeAVChat(player.uuid, 'relm-' + cfg.ROOM, {
+    onMuteChanged: (track, playerId) => {
+      const muted = track.isMuted()
+      const otherPlayer = stage.entities[playerId]
+      // console.log('onMuteChanged', playerId, muted, otherPlayer)
+      if (muted) {
+        otherPlayer.videoBubble.object.enterMutedState()
+      } else {
+        otherPlayer.videoBubble.object.enterUnmutedState()
+      }
+    },
     createVideoElement: (entityId) => {
-      console.log('playerId', playerId)
-      console.log('createVideoElement', entityId)
+      // console.log('playerId', playerId)
+      // console.log('createVideoElement', entityId)
       const entity = stage.entities[entityId]
       if (entity) {
         if (entity.videoBubble) {
@@ -591,7 +601,7 @@ async function start() {
         console.warn("Can't create video element for missing entity", entityId)
       }
     }
-  }, player.uuid, 'relm-' + cfg.ROOM)
+  })
 }
 
 start()

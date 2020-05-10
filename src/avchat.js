@@ -51,6 +51,15 @@ function onRemoteTrackAdded(track, playerId, callbacks) {
   track.addEventListener(JitsiMeetJS.events.track.TRACK_AUDIO_LEVEL_CHANGED, onRemoteTrackAudioLevelChanged)
   track.addEventListener(JitsiMeetJS.events.track.TRACK_AUDIO_OUTPUT_CHANGED, onRemoteTrackAudioOutputChanged)
   track.addEventListener(JitsiMeetJS.events.track.TRACK_MUTE_CHANGED, onRemoteTrackMuteChanged)
+  if (callbacks.onMuteChanged) {
+    track.addEventListener(
+      JitsiMeetJS.events.track.TRACK_MUTE_CHANGED,
+      (track) => {
+        const participant = remoteParticipants[track.getParticipantId()]
+        callbacks.onMuteChanged(track, participant.playerId)
+      }
+    )
+  }
 
   const participantId = track.getParticipantId()
   initRemoteParticipant(participantId)
@@ -295,7 +304,7 @@ async function initJitsiMeet(callbacks, playerId, room) {
   }
 }
 
-function initializeAVChat(callbacks, playerId, room) {
+function initializeAVChat(playerId, room, callbacks) {
   const intervalId = setInterval(() => {
     // Wait for JitsiMeetJS to be asynchronously, externally loaded
     if (window.JitsiMeetJS) {
