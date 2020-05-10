@@ -97,11 +97,13 @@ const KeyboardKeyMap = stampit(Component, {
 
     update() {
       // Add up all of the vectors associated with each keypress, e.g. up, down, left, right
-      this.controlDirection.set(0, 0, 0)
-      this.actions.forEach(action => this.controlDirection.add(this.getVectorFromAction(action)))
+      // this.controlDirection.set(0, 0, 0)
+      // this.actions.forEach(action => this.controlDirection.add(this.getVectorFromAction(action)))
 
-      this.controlDirection.add(this.target.getPosition())
-      this.target.setPosition(this.controlDirection)
+      // this.controlDirection.add(this.target.getPosition())
+      // this.target.setPosition(this.controlDirection)
+      
+      this.actions.forEach(action => this.target.addPosition(this.getVectorFromAction(action)))
     }
   }
 })

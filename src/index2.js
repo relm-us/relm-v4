@@ -25,6 +25,7 @@ import { MousePointer, OtherMousePointer } from './mouse_pointer.js'
 import { Decoration } from './decoration.js'
 import { uuidv4 } from './util.js'
 import config from './config.js'
+import { PadController } from './pad_controller.js'
 
 const cfg = config(window.location)
 const decorationLayerThickness = 0.01
@@ -163,6 +164,37 @@ async function start() {
   player.warpToPosition(player.state.position.target)
   stage.add(player)
   
+  const padController = PadController({ type: 'pad', target: player })
+  const controlPadEl = document.getElementById('control-pad')
+  // controlPadEl.addEventListener('mousemove', (event) => {
+  //   const rect = controlPadEl.getBoundingClientRect()
+  //   const x = (event.layerX - rect.width / 2) / (rect.width/2)
+  //   const y = (event.layerY - rect.height / 2) / (rect.height/2)
+  //   const position = new THREE.Vector3(x * 100, 0, y * 100)
+  //   padController.padDirectionChanged(position)
+  // })
+  // controlPadEl.addEventListener('mouseleave', (event) => {
+  //   padController.padDirectionChanged(new THREE.Vector3())
+  // })
+  const onTouchEvent = (event) => {
+    const rect = controlPadEl.getBoundingClientRect()
+    const touchX = event.targetTouches[0].clientX - rect.x
+    const touchY = event.targetTouches[0].clientY - rect.y
+    const x = (touchX - rect.width / 2) / (rect.width/2)
+    const y = (touchY - rect.height / 2) / (rect.height/2)
+    const position = new THREE.Vector3(x * 100, 0, y * 100)
+    padController.padDirectionChanged(position)
+  }
+  controlPadEl.addEventListener('touchstart', onTouchEvent)
+  controlPadEl.addEventListener('touchmove', onTouchEvent)
+  controlPadEl.addEventListener('touchend', (event) => {
+    padController.padDirectionChanged(new THREE.Vector3())
+  })
+  controlPadEl.addEventListener('touchcancel', (event) => {
+    padController.padDirectionChanged(new THREE.Vector3())
+  })
+  stage.add(padController)
+  
   const mousePointer = window.mousePointer = MousePointer({
     type: 'mouse',
     awarenessUpdateFrequency: 2,
@@ -184,7 +216,7 @@ async function start() {
     if (nearestDecoration) {
       if (nearestDecoration === selectedDecoration) {
         // do nothing
-        if (nearestDecoration !== previousNearestDecoration) {
+        if (previousNearestDecoration && nearestDecoration !== previousNearestDecoration) {
           previousNearestDecoration.setEmissive(DECORATION_NORMAL_COLOR)
         }
       } else if (previousNearestDecoration === null) {
@@ -299,10 +331,18 @@ async function start() {
   const focusOnInput = () => { document.getElementById('input').focus() }
   // Do it once when the page finishes loading, too:
   focusOnGame()
+
+  document.body.addEventListener('mousedown', (event) => {
+    if (event.target.id === 'game') {
+      focusOnGame()
+      event.preventDefault()
+    }
+  }, true)
+  
   // If at any time we discover that the focus is on the document body instead of the canvas, correct it
-  setInterval(() => {
-    if (document.activeElement === document.body) { focusOnGame() }
-  }, 250)
+  // setInterval(() => {
+  //   if (document.activeElement === document.body) { focusOnGame() }
+  // }, 250)
 
   const invite = document.getElementById('invite')
   const invitation = document.getElementById('invitation')
