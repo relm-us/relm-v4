@@ -88,7 +88,7 @@ const FollowsTarget = stampit(Component, HasObject, {
       // FIXME: Sometimes we are getting an object, rather than a Vector3
       //        in this.state.position.target. This is a terrible hack that
       //        acknowledges that untyped languages suck.
-      if (!this.state.position.target.copy) {
+      if (this.state.position.target && !this.state.position.target.copy) {
         const value = this.state.position.target
         this.state.position.target = new THREE.Vector3()
         this.state.position.target.copy(value)
