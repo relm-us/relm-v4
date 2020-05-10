@@ -85,17 +85,22 @@ const FollowsTarget = stampit(Component, HasObject, {
     },
 
     update(delta) {
-      this.followAdd.normalize()
-      this.followAdd.multiplyScalar(100.0)
-      this.followAdd.add(this.state.position.now)
-      this.state.position.target.copy(this.followAdd)
-      this.followAdd.set(0, 0, 0)
-      
-      this.distanceToTarget = this.state.position.now.distanceTo(this.state.position.target)
-      this.updatePosition(delta, this.distanceToTarget)
-      if (this.followTurning) {
-        this.updateDirection(delta, this.distanceToTarget)
+      if (this.state.position.target) {
+        this.followAdd.normalize()
+        this.followAdd.multiplyScalar(100.0)
+        this.followAdd.add(this.state.position.now)
+        this.state.position.target.copy(this.followAdd)
+        this.followAdd.set(0, 0, 0)
+        
+        if (this.state.position.now) {
+          this.distanceToTarget = this.state.position.now.distanceTo(this.state.position.target)
+          this.updatePosition(delta, this.distanceToTarget)
+          if (this.followTurning) {
+            this.updateDirection(delta, this.distanceToTarget)
+          }
+        }
       }
+      
     },
   }
 
