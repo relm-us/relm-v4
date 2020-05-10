@@ -89,7 +89,11 @@ const FollowsTarget = stampit(Component, HasObject, {
         this.followAdd.normalize()
         this.followAdd.multiplyScalar(100.0)
         this.followAdd.add(this.state.position.now)
-        this.state.position.target.copy(this.followAdd)
+        try {
+          this.state.position.target.copy(this.followAdd)
+        } catch(e) {
+          console.error(e, this.state.position.target)
+        }
         this.followAdd.set(0, 0, 0)
         
         if (this.state.position.now) {
