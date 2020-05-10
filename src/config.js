@@ -16,8 +16,16 @@ export default function config(location) {
   }
 
   const params = new URLSearchParams(document.location.search.substring(1))
-  let ROOM = params.get('room')
-  if (ROOM === '') { ROOM = 'relm' }
+  const roomParam = params.get('room')
+  const roomPath = location.pathname.split('/')[1]
+  let ROOM
+  if (roomParam) {
+    ROOM = roomParam
+  } else if (roomPath !== '') {
+    ROOM = roomPath
+  } else {
+    ROOM = 'relm'
+  }
   
   window.config = {
     SERVER_YJS_URL,
