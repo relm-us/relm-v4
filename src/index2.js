@@ -5,7 +5,7 @@ import { DOMReady } from './domready.js'
 import { addManifestTo } from './manifest_loaders.js'
 import { guestNameFromPlayerId, avatarOptionFromPlayerId, avatarOptionsOfGender } from './avatars.js'
 import { Security } from './security.js'
-import { initializeAVChat } from './avchat.js'
+import { initializeAVChat, muteAudio } from './avchat.js'
 
 import { Entity } from './entity.js'
 import { HasObject } from './has_object.js'
@@ -442,6 +442,14 @@ async function start() {
             network.setEntity(decoration)
           }
         }
+        break
+
+      case 'mute':
+        muteAudio(true)
+        break
+      
+      case 'unmute':
+        muteAudio(false)
         break
     }
   }
