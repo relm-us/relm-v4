@@ -55,6 +55,11 @@ function LocalstoreRestoreState(lsKey, entity) {
         //   see: https://github.com/stampit-org/stamp/issues/79
         specificState.target.copy(value)
       } else {
+        if (typeof value === 'object' && 'x' in value && 'y' in value && 'z' in value) {
+          console.warn(`Assigning xyz value to ${key}`, value, specificState.target)
+          // specificState.target = new THREE.Vector3()
+          // specificState.target.copy(value)
+        }
         specificState.target = value
       }
     }
