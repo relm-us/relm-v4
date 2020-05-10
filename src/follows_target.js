@@ -25,7 +25,6 @@ const FollowsTarget = stampit(Component, HasObject, {
   }) {
     this.speed = speed
     this.followTurning = followTurning
-    this.followAdd = new Vector3()
 
     this.quaternion = new Quaternion()
     this.matrix = new Matrix4()
@@ -50,6 +49,9 @@ const FollowsTarget = stampit(Component, HasObject, {
      * @param {Vector3} coords
      */
     addPosition(coords) {
+      if (!this.followAdd) {
+        this.followAdd = new Vector3()
+      }
       this.followAdd.add(coords)
     },
     
@@ -93,11 +95,16 @@ const FollowsTarget = stampit(Component, HasObject, {
         this.state.position.target = new THREE.Vector3()
         this.state.position.target.copy(value)
       }
-      this.followAdd.normalize()
-      this.followAdd.multiplyScalar(100.0)
-      this.followAdd.add(this.state.position.now)
-      this.state.position.target.copy(this.followAdd)
-      this.followAdd.set(0, 0, 0)
+
+      if (this.followAdd) {
+        this.followAdd.normalize()
+        this.followAdd.multiplyScalar(100.0)
+        this.followAdd.add(this.state.position.now)
+        this.state.position.target.copy(this.followAdd)
+        this.followAdd.set(0, 0, 0)
+      } else {
+
+      }
         
       this.distanceToTarget = this.state.position.now.distanceTo(this.state.position.target)
       this.updatePosition(delta, this.distanceToTarget)
