@@ -173,12 +173,12 @@ async function start() {
     if (nearestDecoration) {
       if (nearestDecoration === selectedDecoration) {
         // do nothing
-        if (nearestDecoration.uuid !== previousNearestDecoration.uuid) {
+        if (nearestDecoration !== previousNearestDecoration) {
           previousNearestDecoration.setEmissive(DECORATION_NORMAL_COLOR)
         }
       } else if (previousNearestDecoration === null) {
         nearestDecoration.setEmissive(DECORATION_HOVER_COLOR)
-      } else if (nearestDecoration.uuid !== previousNearestDecoration.uuid) {
+      } else if (nearestDecoration !== previousNearestDecoration) {
         nearestDecoration.setEmissive(DECORATION_HOVER_COLOR)
         if (previousNearestDecoration !== selectedDecoration) {
           previousNearestDecoration.setEmissive(DECORATION_NORMAL_COLOR)
