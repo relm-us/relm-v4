@@ -18,6 +18,18 @@
       height: 100%;
       font-family: Verdana, Geneva, Tahoma, sans-serif;
     }
+    body::after{
+      /* Hide & pre-cache some CSS images: */
+      position:absolute;
+      width:0;
+      height:0;
+      overflow: hidden;
+      z-index:-1;
+      content:
+        url(./icons/muted.png)
+        url(./icons/unmuted.png)
+      ;
+    }
     .translucent {
       opacity: 0.3;
     }
@@ -395,13 +407,6 @@
     
     .video-wrapper {
       position: absolute;
-      width: 100px;
-      height: 100px;
-      /* Firefox on Windows has a bug that prevents 100% border-radius and video from working together, so use px instead */
-      border-radius: 50px;
-      border: 2px solid white;
-      overflow: hidden; 
-      background-color: #ddd;
       transform: translate(-50%, -100%);
     }
     .video-wrapper.show {
@@ -411,6 +416,19 @@
       animation: fadeout 0.5s;
       animation-fill-mode: forwards;
     }
+    .video-circle {
+      width: 100px;
+      height: 100px;
+      /* Firefox on Windows has a bug that prevents
+         100% border-radius and video from working
+         together, so use px instead */
+      border-radius: 50px;
+      border: 2px solid white;
+      overflow: hidden; 
+      background-color: #ddd;
+      position: relative;
+      z-index: 1;
+    }
     .video-feed {
       position: relative;
       left: 50%;
@@ -419,6 +437,22 @@
     }
     .video-feed.local {
       transform: translate(-50%,-50%) rotateY(180deg); 
+    }
+    .mute-button {
+      background: white center no-repeat url(./icons/unmuted.png);
+      background-size: 24px 24px;
+      width: 32px;
+      height: 32px;
+      position: absolute;
+      left: 50%;
+      transform: translate(-50%,0);
+      bottom: 100px;
+      border: 2px solid white;
+      border-radius: 18px;
+      z-index: 0; 
+    }
+    .mute-button.muted {
+      background-image: url(./icons/muted.png)
     }
     
   </style>

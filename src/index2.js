@@ -5,7 +5,7 @@ import { DOMReady } from './domready.js'
 import { addManifestTo } from './manifest_loaders.js'
 import { guestNameFromPlayerId, avatarOptionFromPlayerId, avatarOptionsOfGender } from './avatars.js'
 import { Security } from './security.js'
-import { initializeAVChat, muteAudio } from './avchat.js'
+import { initializeAVChat, muteAudio, unmuteAudio } from './avchat.js'
 
 import { Entity } from './entity.js'
 import { HasObject } from './has_object.js'
@@ -163,6 +163,9 @@ async function start() {
   // Warp the player to their 'saved' location, if any
   player.warpToPosition(player.state.position.target)
   stage.add(player)
+  
+  player.videoBubble.object.on('mute', muteAudio)
+  player.videoBubble.object.on('unmute', unmuteAudio)
   
   const padController = PadController({ type: 'pad', target: player })
   const controlPadEl = document.getElementById('control-pad')
@@ -445,11 +448,11 @@ async function start() {
         break
 
       case 'mute':
-        muteAudio(true)
+        muteAudio()
         break
       
       case 'unmute':
-        muteAudio(false)
+        unmuteAudio()
         break
     }
   }

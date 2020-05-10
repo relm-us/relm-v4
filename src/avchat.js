@@ -309,20 +309,28 @@ function initializeAVChat(callbacks, playerId, room) {
   }, 200)
 }
 
-function muteAudio(mute) {
+function muteAudio() {
   if (!localTracks) {
     console.warn("Can't mute audio, localTracks not available")
     return
   }
   for (let track of localTracks) {
     if (track.getType() === 'audio') {
-      if (mute) {
-        track.mute()
-      } else {
-        track.unmute()
-      }
+      track.mute()
     }
   }
 }
 
-export { initializeAVChat, muteAudio }
+function unmuteAudio() {
+  if (!localTracks) {
+    console.warn("Can't mute audio, localTracks not available")
+    return
+  }
+  for (let track of localTracks) {
+    if (track.getType() === 'audio') {
+      track.unmute()
+    }
+  }
+}
+
+export { initializeAVChat, muteAudio, unmuteAudio }

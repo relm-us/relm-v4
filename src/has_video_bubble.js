@@ -1,15 +1,18 @@
 import stampit from 'stampit'
+import EventEmittable from '@stamp/eventemittable'
+
 import { Component } from './component.js'
-import { CanProject, UpdateCollision } from './label.js'
+import { CanProject } from './label.js'
 
 const { Vector3 } = THREE
 
 const VIDEO_BUBBLE_DIAMETER = 100
 
-const WithVideoBubble = stampit(UpdateCollision, {
+const WithVideoBubble = stampit(EventEmittable, {
   init({ body }) {
     this.domElement = null
     this.documentBody = body || document.body
+    this.muted = false
   },
   
   methods: {
@@ -27,38 +30,55 @@ const WithVideoBubble = stampit(UpdateCollision, {
       }
     },
     
-    // setZ(z) {
-    //   if (this.domElement) {
-    //     this.domElement.style.zIndex = parseInt(this.object.position.z) + 100000
-    //   }
-    // },
-
     createDomElement() {
       if (this.domElement) {
         this.destroyDomElement()
       }
-      const element = document.createElement('video')
-      element.classList.add('video-feed')
-      element.setAttribute('autoplay', 1)
+      const video = document.createElement('video')
+      video.classList.add('video-feed')
+      video.setAttribute('autoplay', 1)
       // element.id = id
-      element.addEventListener('loadedmetadata', (metadata) => {
-        const w = element.videoWidth
-        const h = element.videoHeight
+      video.addEventListener('loadedmetadata', (metadata) => {
+        const w = video.videoWidth
+        const h = video.videoHeight
         if (w > h) {
-          element.style.width = `${VIDEO_BUBBLE_DIAMETER * w / h}px`
-          element.style.height = `${VIDEO_BUBBLE_DIAMETER}px`
+          video.style.width = `${VIDEO_BUBBLE_DIAMETER * w / h}px`
+          video.style.height = `${VIDEO_BUBBLE_DIAMETER}px`
         } else {
-          element.style.width = `${VIDEO_BUBBLE_DIAMETER}px`
-          element.style.height = `${VIDEO_BUBBLE_DIAMETER * h / w}px`
+          video.style.width = `${VIDEO_BUBBLE_DIAMETER}px`
+          video.style.height = `${VIDEO_BUBBLE_DIAMETER * h / w}px`
+        }
+      })
+      
+      const circle = document.createElement('div')
+      circle.classList.add('video-circle')
+      circle.append(video)
+      
+      const muteButton = document.createElement('div')
+      muteButton.classList.add('mute-button')
+      muteButton.classList.add('unmuted')
+      muteButton.addEventListener('click', () => {
+        if (this.muted) {
+          muteButton.classList.remove('muted')
+          muteButton.classList.add('unmuted')
+          this.emit('unmute')
+          this.muted = false
+        } else {
+          muteButton.classList.remove('unmuted')
+          muteButton.classList.add('muted')
+          this.emit('mute')
+          this.muted = true
         }
       })
       
       const wrapper = this.domElement = document.createElement('div')
       wrapper.classList.add('video-wrapper')
-      wrapper.appendChild(element)
-
+      
+      wrapper.appendChild(circle)
+      wrapper.appendChild(muteButton)
+      
       this.documentBody.appendChild(wrapper)
-      return element
+      return video
     },
 
     destroyDomElement() {
