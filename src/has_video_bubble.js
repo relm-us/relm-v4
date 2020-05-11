@@ -74,14 +74,16 @@ const WithVideoBubble = stampit(EventEmittable, {
       circle.append(video)
       
       const muteButton = this.muteButton = document.createElement('div')
+      muteButton.tabIndex = -1
       muteButton.classList.add('mute-button')
       muteButton.classList.add('unmuted')
-      muteButton.addEventListener('click', () => {
+      muteButton.addEventListener('mousedown', (event) => {
         if (this.muted) {
           this.enterUnmutedState()
         } else {
           this.enterMutedState()
         }
+        event.preventDefault()
       })
       
       const wrapper = this.domElement = document.createElement('div')
