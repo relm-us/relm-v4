@@ -11,9 +11,29 @@ const {
 } = THREE
 
 function createGround (scene, groundSize) {
-  // Don't require texture to be loaded at first. TODO: add setTexture method?
-  //
+  const geometry = new PlaneBufferGeometry(groundSize, groundSize)
 
+  geometry.rotateX(-Math.PI / 2)
+  
+  const material = new MeshPhongMaterial({
+    color: 0xAAAAAA,
+  })
+
+  const ground = new Mesh(geometry, material)
+  ground.rotation.x = -Math.PI
+  ground.rotation.z = +Math.PI
+  ground.position.y -= 420
+  ground.scale.y = 14
+  // note that because the ground does not cast a shadow, .castShadow is left false
+  ground.receiveShadow = true
+  ground.texturedMaterials = [material]
+
+  scene.attach(ground)
+  
+  return ground
+}
+
+function createGround2(scene, groundSize) {
   const texturedMaterials = []
 
   // setup terrain

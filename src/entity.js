@@ -18,4 +18,4 @@ const network = window.network = Network()
 // Create a new Entity stamp with configuration bound to it
 const Entity = EntityUnconfigured.conf({ stage, resources, network })
 
-export { Entity }
+export { Entity, stage, network }

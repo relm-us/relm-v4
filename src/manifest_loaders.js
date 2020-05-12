@@ -15,19 +15,8 @@ const textureLoader = new THREE.TextureLoader()
 
 const manifestMeta = {
   'TextureLoader': [
-    ['skybox', 'ayanarrablueskyfog.jpg'],
-    ['grass', 'grasstexture2.jpg'],
-    ['green tree', 'tree01.png'],
-    ['yellow tree', 'tree04.png'],
-    ['hollow stump', 'tree06.png'],
-    ['tree7', 'tree07.png'],
-    ['rock', 'rock02.png'],
-    ['stump', 'tree05.png'],
-    ['shrub', 'plant02.png'],
-    ['mushroom', 'plant04.png'],
+    ['marble', 'marble-tile.jpg'],
     ['sparkle', 'sparkle_blue.png'],
-    ['signpost', 'sign01.png'],
-    ['signpole', 'sign02.png'],
   ],
   'RegularGLTFLoader': [
     // ['town', 'town.glb'],

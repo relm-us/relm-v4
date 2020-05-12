@@ -7,7 +7,7 @@ import { guestNameFromPlayerId, avatarOptionFromPlayerId, avatarOptionsOfGender 
 import { Security } from './security.js'
 import { initializeAVChat, muteAudio, unmuteAudio } from './avchat.js'
 
-import { Entity } from './entity.js'
+import { Entity, stage, network } from './entity.js'
 import { HasObject } from './has_object.js'
 import { HasLabel } from './has_label.js'
 import { FollowsTarget } from './follows_target.js'
@@ -77,17 +77,17 @@ const OtherPlayer = stampit(
   name: 'OtherPlayer'
 })
 
-async function start() {
+const start = async () => {
   // We first add all resources from the manifest so that the progress
   // bar can add up all the resource's sizes. The actual loading doesn't
   // happen until we `enqueue` and `load`.
   addManifestTo(resources)
   
   // Stage 1 Resource Load: Bare essentials
-  resources.enqueue(['people', 'grass'])
+  resources.enqueue(['people', 'sparkle', 'marble'])
   await resources.load()
 
-  stage.setGroundTexture(resources.get('grass'))
+  stage.setGroundTexture(resources.get('marble'))
   window.addEventListener('resize', _ => stage.windowResized(window.innerWidth, window.innerHeight))
   stage.start()
 
@@ -571,11 +571,6 @@ async function start() {
   // so that we don't miss any inital 'add' events
   network.connect(params)
 
-  resources.enqueue([
-    'sparkle'
-  ])
-  await resources.load()
-  
   initializeAVChat(player.uuid, 'relm-' + cfg.ROOM, {
     onMuteChanged: (track, playerId) => {
       const muted = track.isMuted()

@@ -3,7 +3,7 @@ import stampit from 'stampit'
 import { createGround } from './ground.js'
 
 const GROUND_DEFAULT_SIZE = 12000
-const GROUND_DEFAULT_REPEAT = 18
+const GROUND_DEFAULT_REPEAT = 10
 
 const SceneWithGround = stampit({
   props: {

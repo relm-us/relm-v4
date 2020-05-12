@@ -1,7 +1,6 @@
 const manifest = {
-  "grasstexture2.jpg": 20386,
+  "marble-tile.jpg": 142310,
   "people-packed.glb": 1256496,
-  "sparkle.png": 10589,
   "sparkle_blue.png": 37374,
 }
 
