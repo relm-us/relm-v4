@@ -22,7 +22,7 @@ function createGround (scene, groundSize) {
   const ground = new Mesh(geometry, material)
   ground.rotation.x = -Math.PI
   ground.rotation.z = +Math.PI
-  ground.position.y -= 420
+  ground.position.y = 0
   ground.scale.y = 14
   // note that because the ground does not cast a shadow, .castShadow is left false
   ground.receiveShadow = true
