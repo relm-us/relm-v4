@@ -104,6 +104,11 @@ const start = async () => {
     })
   })
   
+  window.addEventListener('wheel', function(event) {
+    // console.log('wheel', event.deltaY)
+    stage.setFov(stage.fov + event.deltaY);
+  })
+
   // The stage is special in that it creates a domElement that must be added to our page
   document.getElementById('game').appendChild(stage.renderer.domElement)
   

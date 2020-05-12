@@ -23,11 +23,17 @@ const SceneWithCamera = stampit({
     this.isometry = isometry
     this.perspectiveRatio = perspectiveRatio
     this.cameraIdealPosition = cameraIdealPosition
+    this.fov = 100.0
 
     this.on('resize', this.adjustNewWindowSize)
   },
 
   methods: {
+    setFov(value) {
+      this.fov = MathUtils.clamp(value, 50.0, 150.0)
+      this.adjustNewWindowSize()
+    },
+
     adjustNewWindowSize () {
       if (!this.camera) {
         this.camera = new PerspectiveCamera(
@@ -42,8 +48,7 @@ const SceneWithCamera = stampit({
       }
       const aspect = this.width / this.height 
       this.camera.aspect = aspect
-      this.camera.fov = this.height / 100
-      // this.camera.fov = this.perspectiveRatio / aspect // MathUtils.clamp(aspect / 1.78, 0.6, 1.5)
+      this.camera.fov = this.height / this.fov
       this.camera.updateProjectionMatrix()
     }
   }
