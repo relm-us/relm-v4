@@ -27,6 +27,8 @@ export default function config(location) {
     ROOM = 'relm'
   }
   
+  ROOM = ROOM.toLowerCase().replace(/[^a-z\-]/, '')
+  
   window.config = {
     SERVER_YJS_URL,
     SERVER_UPLOAD_URL,

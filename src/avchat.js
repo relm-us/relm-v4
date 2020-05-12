@@ -305,14 +305,13 @@ async function initJitsiMeet(callbacks, playerId, room) {
 }
 
 function initializeAVChat(playerId, room, callbacks) {
-  const validRoomName = (room || "relm").toLowerCase().replace(/[^a-z\-]/, '')
   const intervalId = setInterval(() => {
     // Wait for JitsiMeetJS to be asynchronously, externally loaded
     if (window.JitsiMeetJS) {
       clearInterval(intervalId)
       JitsiMeetJS = window.JitsiMeetJS
       console.log('JitsiMeetJS found')
-      initJitsiMeet(callbacks, playerId, validRoomName)
+      initJitsiMeet(callbacks, playerId, room)
       return
     }
     // console.log("Waiting for JitsiMeetJS")
