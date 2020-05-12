@@ -42,7 +42,8 @@ const SceneWithCamera = stampit({
       }
       const aspect = this.width / this.height 
       this.camera.aspect = aspect
-      this.camera.fov = this.perspectiveRatio * 1.4
+      this.camera.fov = this.height / 100
+      // this.camera.fov = this.perspectiveRatio / aspect // MathUtils.clamp(aspect / 1.78, 0.6, 1.5)
       this.camera.updateProjectionMatrix()
     }
   }
