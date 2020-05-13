@@ -365,6 +365,26 @@
       align-items: flex-end;
     }
 
+    #invitation.show {
+      display: block;
+    }
+    #invitation-input {
+      width: 200px;
+    }
+    
+
+    #help-panel {
+      width: 280px;
+      height: 400px;
+      overflow-y: auto;
+    }
+    #help-panel pre {
+      font-size: 16px;
+      background-color: #e0e0e0;
+      padding: 3px 5px;
+      margin-bottom: 25px;
+    }
+    
     .panel-button {
       font-size: 18px;
       border-radius: 8px;
@@ -380,19 +400,17 @@
       background: #fff;
       border-color: #ef9911;
     }
-    #invitation {
+    .panel-subpanel {
       display: none;
       padding: 5px 10px;
       margin-top: 5px;
       background: #fff;
       border-radius: 4px;
     }
-    #invitation.show {
+    .panel-subpanel.show {
       display: block;
     }
-    #invitation-input {
-      width: 200px;
-    }
+    
     
     #previews {
       top: 50%;
@@ -462,7 +480,6 @@
     window.dataLayer = window.dataLayer || [];
     function gtag(){dataLayer.push(arguments);}
     gtag('js', new Date());
-
     gtag('config', 'UA-166245735-1');
   </script>
 </head>
@@ -473,8 +490,31 @@
 
   <div id="right-panel">
     <div id="invite" class="panel-button">Invite Others</div>
-    <div id="invitation">Copy One-Time Link: <input id="invitation-input"/></div>
+    <div id="invitation" class="panel-subpanel">Copy One-Time Link: <input id="invitation-input"/></div>
     <button id="upload-button" class="panel-button">Upload</button>
+    <div id="help-button" class="panel-button">Help</div>
+    <div id="help-panel" class="panel-subpanel">
+      <strong>Welcome!</strong>
+      <p>We're under construction, but if you want to kick the tires here are some advanced commands you can use:</p>
+      <strong>Set Your Name</strong>
+      <p><pre>/name [YOURNAME]</pre></p>
+      <strong>Choose a Character</strong>
+      <p>f: female, m: male<pre>/character [f or m] [0-8]</pre></p>
+      <strong>Objects</strong>
+      <p>First, click an object so it shines bright yellow, then try one of these:</p>
+      <p>Delete an object<pre>/object delete</pre></p>
+      <p>Grow or shrink an object (N should be between about 0.5 and 2):<pre>/object scale [N]</pre></p>
+      <p>Stand an object up:<pre>/object up</pre></p>
+      <p>Flatten an object to the ground:<pre>/object down</pre></p>
+      <p>Bring object to you:<pre>/object fetch</pre></p>
+      <p>Move object left/right:<pre>/object x [UNITS]</pre></p>
+      <p>Move object up/down (into sky/into ground):<pre>/object y [UNITS]</pre></p>
+      <p>Move object up/down (into screen/out of screen):<pre>/object z [UNITS]</pre></p>
+      <strong>Teleportals</strong>
+      <p>Create a portal:<pre>/link https://[URL] [radius]</pre>(Radius is optional)</p>
+      <strong>Misc.</strong>
+      <p>Reset everything about you (clears localStorage):<pre>/reset</pre></p>
+    </div>
   </div>
   
   <div id="previews" class="dropzone dropzone-previews"></div>
@@ -503,6 +543,19 @@
   </div>
 
 
+  <script>
+    const helpPanel = document.getElementById('help-panel')
+    const helpButton = document.getElementById('help-button')
+    helpButton.addEventListener('mousedown', (event) => {
+      if (helpPanel.classList.contains('show')) {
+        helpPanel.classList.remove('show')
+      } else {
+        helpPanel.classList.add('show')
+      }
+      // make it so clicking doesn't take focus off of the game canvas
+      event.preventDefault()
+    })
+  </script>
   <script src="./index2.js"></script>
   
   <!-- Lib Jitsi Meet is availabble as an include from their site -->
