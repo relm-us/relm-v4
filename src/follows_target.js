@@ -28,6 +28,8 @@ const FollowsTarget = stampit(Component, HasObject, {
 
     this.quaternion = new Quaternion()
     this.matrix = new Matrix4()
+    
+    this.followsTargetEnabled = true
   },
 
   methods: {
@@ -53,6 +55,14 @@ const FollowsTarget = stampit(Component, HasObject, {
         this.followAdd = new Vector3()
       }
       this.followAdd.add(coords)
+    },
+
+    enableFollowsTarget() {
+      this.followsTargetEnabled = true
+    },
+
+    disableFollowsTarget() {
+      this.followsTargetEnabled = false
     },
     
     /**
@@ -87,6 +97,9 @@ const FollowsTarget = stampit(Component, HasObject, {
     },
 
     update(delta) {
+      if (!this.followsTargetEnabled) {
+        return
+      }
       // FIXME: Sometimes we are getting an object, rather than a Vector3
       //        in this.state.position.target. This is a terrible hack that
       //        acknowledges that untyped languages suck.
@@ -102,8 +115,6 @@ const FollowsTarget = stampit(Component, HasObject, {
         this.followAdd.add(this.state.position.now)
         this.state.position.target.copy(this.followAdd)
         this.followAdd.set(0, 0, 0)
-      } else {
-
       }
         
       this.distanceToTarget = this.state.position.now.distanceTo(this.state.position.target)

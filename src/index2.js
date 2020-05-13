@@ -23,6 +23,7 @@ import { AwarenessGetsState, AwarenessSetsState } from './network_awareness.js'
 import { LocalstoreGetsState, LocalstoreRestoreState } from './localstore_gets_state.js'
 import { MousePointer, OtherMousePointer } from './mouse_pointer.js'
 import { Decoration } from './decoration.js'
+import { Teleportal } from './teleportal.js'
 import { uuidv4 } from './util.js'
 import config from './config.js'
 import { PadController } from './pad_controller.js'
@@ -167,6 +168,8 @@ const start = async () => {
   LocalstoreRestoreState('player', player)
   // Warp the player to their 'saved' location, if any
   player.warpToPosition(player.state.position.target)
+  // Restore to fully opaque, in case we were saved in a translucent state
+  player.state.opacity.target = 1.0
   stage.add(player)
   
   player.videoBubble.object.on('mute', muteAudio)
@@ -289,6 +292,10 @@ const start = async () => {
   })
   
   network.on('add', (uuid, state) => {
+    if (Object.keys(stage.entities).includes(uuid)) {
+      console.warn(`Stage already has entity with UUID ${uuid}, not adding`)
+      return
+    }
     switch(state.type) {
       case 'player':
         console.log('create other player', uuid, state)
@@ -309,6 +316,7 @@ const start = async () => {
           console.error(e)
         }
         break
+      
       case 'decoration':
         // console.log('adding decoration, state:', state)
         const decoration = Decoration(Object.assign({
@@ -316,10 +324,22 @@ const start = async () => {
         }, state, { uuid }))
         stage.add(decoration)
         break
+      
       case 'mouse':
         const mousePointer = OtherMousePointer(Object.assign({}, state, { uuid }))
         stage.add(mousePointer)
         break
+      
+      case 'teleportal':
+        const teleportal = Teleportal(Object.assign({
+          target: player,
+          active: false,
+          speed: 500,
+        }, state, { uuid }))
+        console.log('Added teleportal', state, teleportal)
+        stage.add(teleportal)
+        break
+        
       default:
         console.warn('"add" issued for unhandled type', uuid, state)
     }
@@ -387,9 +407,11 @@ const start = async () => {
       case 'home':
         player.warpToPosition({x:0,y:0,z:0})
         break
+        
       case 'name':
         player.setLabel(args.join(' '))
         break
+        
       case 'character':
         const gender = args[0]
         if (gender === 'f' || gender === 'm') {
@@ -404,6 +426,7 @@ const start = async () => {
           console.warn('Gender not available')
         }
         break
+        
       case 'object':
       case 'obj':
         const subCommand = args[0]
@@ -458,6 +481,38 @@ const start = async () => {
       
       case 'unmute':
         unmuteAudio()
+        break
+        
+      case 'link':
+        if (!args || args.length === 0) {
+          console.warn('URL is required')
+          break
+        }
+        const radius = parseInt(args[1] || '150')
+        const url = args[0]
+        const tp = Teleportal({
+          type: 'teleportal',
+          target: player,
+          url: url,
+          active: false,
+          radius: radius,
+          position: player.state.position.now,
+        })
+        tp.object.position.copy(player.state.position.now)
+        network.setEntity(tp)
+        stage.add(tp)
+        break
+        
+      case 'stop':
+        stage.continueRendering = false
+        break
+
+      case 'reset':
+        stage.continueRendering = false
+        setTimeout(() => {
+          localStorage.clear()
+          window.location.reload()
+        }, 100)
         break
     }
   }
