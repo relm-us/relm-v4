@@ -30,7 +30,9 @@ const SceneWithCamera = stampit({
 
   methods: {
     setFov(value) {
-      this.fov = MathUtils.clamp(value, 50.0, 150.0)
+      const maxZoomOut = 75.0
+      const maxZoomIn = 180.0
+      this.fov = MathUtils.clamp(value, maxZoomOut, maxZoomIn)
       this.adjustNewWindowSize()
     },
 

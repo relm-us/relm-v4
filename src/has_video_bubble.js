@@ -6,14 +6,13 @@ import { CanProject } from './label.js'
 
 const { Vector3 } = THREE
 
-const VIDEO_BUBBLE_DIAMETER = 100
-
 const WithVideoBubble = stampit(EventEmittable, {
-  init({ body }) {
+  init({ body, diameter }) {
     this.domElement = null
     this.documentBody = body || document.body
     this.muteButton = null
     this.muted = false
+    this.diameter = diameter || 100
   },
   
   methods: {
@@ -29,6 +28,11 @@ const WithVideoBubble = stampit(EventEmittable, {
         this.domElement.classList.add('hide')
         this.domElement.classList.remove('show')
       }
+    },
+    
+    setDiameter(d) {
+      this.diameter = d
+      this.setVideoElementSize()
     },
     
     enterMutedState() {
@@ -49,27 +53,40 @@ const WithVideoBubble = stampit(EventEmittable, {
       this.emit('unmute')
     },
     
+    setVideoElementSize() {
+      const video = this.video
+      const circle = this.circle
+      
+      if (this.video && this.circle) {
+        const w = video.videoWidth
+        const h = video.videoHeight
+        if (w > h) {
+          video.style.width = `${this.diameter * w / h}px`
+          video.style.height = `${this.diameter}px`
+        } else {
+          video.style.width = `${this.diameter}px`
+          video.style.height = `${this.diameter * h / w}px`
+        }
+        circle.style.width = `${this.diameter}px`
+        circle.style.height = `${this.diameter}px`
+        circle.style.borderRadius = `${this.diameter/2}px`
+      } else {
+        console.warn('Attempted to set video element size, but video element does not exist yet')
+      }
+    },
+    
     createDomElement() {
       if (this.domElement) {
         this.destroyDomElement()
       }
-      const video = document.createElement('video')
+      const video = this.video = document.createElement('video')
       video.classList.add('video-feed')
       video.setAttribute('autoplay', 1)
-      // element.id = id
       video.addEventListener('loadedmetadata', (metadata) => {
-        const w = video.videoWidth
-        const h = video.videoHeight
-        if (w > h) {
-          video.style.width = `${VIDEO_BUBBLE_DIAMETER * w / h}px`
-          video.style.height = `${VIDEO_BUBBLE_DIAMETER}px`
-        } else {
-          video.style.width = `${VIDEO_BUBBLE_DIAMETER}px`
-          video.style.height = `${VIDEO_BUBBLE_DIAMETER * h / w}px`
-        }
+        this.setVideoElementSize()
       })
       
-      const circle = document.createElement('div')
+      const circle = this.circle = document.createElement('div')
       circle.classList.add('video-circle')
       circle.append(video)
       

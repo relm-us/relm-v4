@@ -1,11 +1,13 @@
 import stampit from 'stampit'
 
 import Dropzone from 'dropzone'
+import { normalizeWheel } from 'normalize-wheel'
 import { DOMReady } from './domready.js'
 import { addManifestTo } from './manifest_loaders.js'
 import { guestNameFromPlayerId, avatarOptionFromPlayerId, avatarOptionsOfGender } from './avatars.js'
 import { Security } from './security.js'
 import { initializeAVChat, muteAudio, unmuteAudio } from './avchat.js'
+// import { MapControls } from './lib/OrbitControls.js'
 
 import { Entity, stage, network } from './entity.js'
 import { HasObject } from './has_object.js'
@@ -34,6 +36,9 @@ const DECORATION_NORMAL_COLOR = new THREE.Color(0x000000)
 const DECORATION_HOVER_COLOR = new THREE.Color(0x333300)
 const DECORATION_SELECTED_COLOR = new THREE.Color(0x666600)
 const DECORATION_NEAREST_MAX_RANGE = 400
+const PIXEL_STEP  = 10
+const LINE_HEIGHT = 40
+const PAGE_HEIGHT = 800
 let decorationLayer = 0
 let nearestDecoration = null
 let previousNearestDecoration = null
@@ -97,17 +102,21 @@ const start = async () => {
   
   stage.addUpdateFunction((delta) => {
     // TODO: make this filter for 'HasVideoBubble' instead of just looking for players
-    const players = Object.values(stage.entities).filter(e => e.type === 'player')
-    players.sort((a, b) => (a.object.position.z - b.object.position.z))
-    players.forEach((player, i) => {
+    const sortByZ = (a, b) => (a.object.position.z - b.object.position.z)
+    stage.forEachEntityOfType('player', (player, i) => {
       const el = player.videoBubble.object.domElement
       if (el) { el.style.zIndex = i + 1 }
-    })
+    }, sortByZ)
   })
-  
-  window.addEventListener('wheel', function(event) {
+    
+  // Mouse wheel zooms in and out
+  document.addEventListener('wheel', function(event) {
     if (event.target.id === 'game') {
+      console.log('mousewheel event', event.deltaMode)
       stage.setFov(stage.fov + event.deltaY);
+      stage.forEachEntityOfType('player', player => {
+        player.videoBubble.object.setDiameter(stage.fov)
+      })
     }
   })
 
