@@ -1,6 +1,7 @@
 import stampit from 'stampit'
 
 import Dropzone from 'dropzone'
+import Toastify from 'toastify-js'
 import { DOMReady } from './domready.js'
 import { addManifestTo } from './manifest_loaders.js'
 import { guestNameFromPlayerId, avatarOptionFromPlayerId, avatarOptionsOfGender } from './avatars.js'
@@ -29,6 +30,8 @@ import { uuidv4 } from './util.js'
 import config from './config.js'
 import { PadController } from './pad_controller.js'
 import { stateToObject } from './state_to_object.js'
+
+import "toastify-js/src/toastify.css"
 
 const cfg = config(window.location)
 const decorationLayerThickness = 0.01
@@ -350,7 +353,7 @@ const start = async () => {
         console.log('Added teleportal', state, teleportal)
         stage.add(teleportal)
         break
-        
+      
       default:
         console.warn('"add" issued for unhandled type', uuid, state)
     }
@@ -515,6 +518,16 @@ const start = async () => {
           localStorage.clear()
           window.location.reload()
         }, 100)
+        break
+      
+      case 'whereami':
+        const pos = player.object.position
+        Toastify({
+          text: `You are at x: ${parseInt(pos.x, 10)}, y: ${parseInt(pos.y, 10)}, z: ${parseInt(pos.z, 10)}`,
+          duration: 0,
+          close: true,
+          position: 'center'
+        }).showToast()
         break
     }
   }
