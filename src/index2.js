@@ -149,7 +149,7 @@ const start = async () => {
         url: url,
       },
       imageScale: 1.0,
-      orientation: 3
+      orientation: 0
     })
   })
   dropzone.on('complete', (a) => {
@@ -173,6 +173,9 @@ const start = async () => {
     lsKey: 'player'
   })
   LocalstoreRestoreState('player', player)
+  if (cfg.LANDING_COORDS) {
+    player.state.position.target.copy(cfg.LANDING_COORDS)
+  }
   // Warp the player to their 'saved' location, if any
   player.warpToPosition(player.state.position.target)
   // Restore to fully opaque, in case we were saved in a translucent state
@@ -482,7 +485,7 @@ const start = async () => {
         unmuteAudio()
         break
         
-      case 'link':
+      case 'portal':
         if (!args || args.length === 0) {
           console.warn('URL is required')
           break

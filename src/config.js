@@ -26,13 +26,22 @@ export default function config(location) {
   } else {
     ROOM = 'relm'
   }
-  
   ROOM = ROOM.toLowerCase().replace(/[^a-z\-]/, '')
+  
+  let LANDING_COORDS = null
+  if (params.has('x') && params.has('z')) {
+    LANDING_COORDS = {
+      x: parseInt(params.get('x'), 10),
+      y: 0,
+      z: parseInt(params.get('z'), 10),
+    }
+  }
   
   window.config = {
     SERVER_YJS_URL,
     SERVER_UPLOAD_URL,
-    ROOM
+    ROOM,
+    LANDING_COORDS
   }
   
   return window.config
