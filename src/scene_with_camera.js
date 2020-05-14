@@ -46,7 +46,7 @@ const SceneWithCamera = stampit({
           12800 * this.isometry
         )
         this.camera.position.copy(this.cameraIdealPosition)
-        this.camera.lookAt(0, 0, 0)
+        this.camera.lookAt(0, 110, 0)
       }
       const aspect = this.width / this.height 
       this.camera.aspect = aspect
