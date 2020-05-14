@@ -26,7 +26,6 @@ const Orientation = {
 const HasImage = stampit(Component, {
   props: {
     texture: null,
-    emissiveColor: null,
   },
   
   deepProps: {
@@ -47,7 +46,7 @@ const HasImage = stampit(Component, {
     }
   },
   
-  init({ asset, orientation, imageScale, emissiveColor }) {
+  init({ asset, orientation, imageScale }) {
     this.geometry = null
     this.material = null
     this.mesh = null
@@ -61,13 +60,6 @@ const HasImage = stampit(Component, {
       this.state.imageScale.now = this.state.imageScale.target = imageScale
     }
     
-    if (emissiveColor) {
-      this.emissiveColor = emissiveColor
-    } else {
-      // default of 'black' color makes no emissive effecg
-      this.emissiveColor = new THREE.Color(0x000000)
-    }
-    
     if (asset) {
       this.state.asset.now = asset
       Object.assign(this.state.asset.target, this.state.asset.now)
@@ -76,13 +68,6 @@ const HasImage = stampit(Component, {
   },
 
   methods: {
-    setEmissive(color) {
-      this.emissiveColor = color
-      if (this.material) {
-        this.material.emissive = color
-      }
-    },
-
     setTexture(texture) {
       this.texture = texture.clone()
       this.texture.needsUpdate = true
@@ -102,7 +87,6 @@ const HasImage = stampit(Component, {
         map: this.texture,
         alphaTest: 0.2,
         transparent: true,
-        emissive: this.emissiveColor,
       })
       
       if (this.mesh) {

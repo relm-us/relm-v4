@@ -4,9 +4,11 @@ import { Entity } from './entity.js'
 import { Component } from './component.js'
 import { HasObject } from './has_object.js'
 import { FollowsTarget } from './follows_target.js'
+import { ReceivesPointer } from './receives_pointer.js'
 import { NetworkSetsState } from './network_persistence.js'
+import { HasEmissiveMaterial } from './has_emissive_material.js'
 
-const { RingGeometry, Mesh, MeshBasicMaterial, DoubleSide, Color } = THREE
+const { RingGeometry, Mesh, MeshStandardMaterial, DoubleSide, Color } = THREE
 
 const ACTIVE_COLOR = new Color(0xF380F4)
 const INACTIVE_COLOR = new Color(0x999999)
@@ -65,7 +67,7 @@ const Teleports = stampit(Component, {
       }
       const radius = this.state.radius.now
       const geometry = new RingGeometry(radius - 5.0, radius + 5.0, 64, 6)
-      const material = this.material = new MeshBasicMaterial({
+      const material = this.material = new MeshStandardMaterial({
         color: (this.active ? ACTIVE_COLOR : INACTIVE_COLOR),
         side: DoubleSide,
 
@@ -142,8 +144,10 @@ const Teleportal = stampit(
   Entity,
   HasObject,
   FollowsTarget,
+  ReceivesPointer,
   NetworkSetsState,
-  Teleports
+  Teleports,
+  HasEmissiveMaterial
 )
 
 export { Teleportal }
