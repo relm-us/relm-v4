@@ -28,6 +28,8 @@ import { uuidv4 } from './util.js'
 import config from './config.js'
 import { PadController } from './pad_controller.js'
 
+const { MathUtils } = THREE
+
 const cfg = config(window.location)
 const decorationLayerThickness = 0.01
 const DECORATION_NORMAL_COLOR = new THREE.Color(0x000000)
@@ -113,20 +115,18 @@ const start = async () => {
   // Mouse wheel zooms in and out
   document.addEventListener('wheel', function(event) {
     if (event.target.id === 'game') {
-      console.log('mousewheel event', event.deltaMode)
       let pixelY = event.deltaY
       switch (event.deltaMode) {
         case 0:
-          pixelY = event.deltaY
+          pixelY = MathUtils.clamp(event.deltaY, -20, 20)
           break
         case 1:
-          pixelY = event.deltaY * LINE_HEIGHT
+          pixelY = MathUtils.clamp(event.deltaY * LINE_HEIGHT, -20, 20)
           break
         case 2:
-          pixelY = event.deltaY * PAGE_HEIGHT
+          pixelY = MathUtils.clamp(event.deltaY * PAGE_HEIGHT, -20, 20)
           break
       }
-      if (pixelY > 20) { pixelY = 20 }
       stage.setFov(stage.fov + pixelY);
       stage.forEachEntityOfType('player', player => {
         player.videoBubble.object.setDiameter(stage.fov)

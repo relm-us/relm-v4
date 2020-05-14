@@ -70,8 +70,6 @@ const WithVideoBubble = stampit(EventEmittable, {
         circle.style.width = `${this.diameter}px`
         circle.style.height = `${this.diameter}px`
         circle.style.borderRadius = `${this.diameter/2}px`
-      } else {
-        console.warn('Attempted to set video element size, but video element does not exist yet')
       }
     },
     
