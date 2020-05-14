@@ -28,6 +28,7 @@ import { Teleportal } from './teleportal.js'
 import { uuidv4 } from './util.js'
 import config from './config.js'
 import { PadController } from './pad_controller.js'
+import { stateToObject } from './state_to_object.js'
 
 const cfg = config(window.location)
 const decorationLayerThickness = 0.01
@@ -462,6 +463,13 @@ const start = async () => {
               decoration.state.imageScale.target = parseFloat(args[1])
             }
             network.setEntity(decoration)
+          } else if (subCommand === 'clone') {
+            const clonedState = stateToObject(decoration.type, decoration.state)
+            clonedState.position = Object.assign({}, clonedState.position)
+            clonedState.position.x += 50
+            clonedState.position.z += 50
+            console.log('clonedState', clonedState)
+            network.setState(uuidv4(), clonedState)
           }
         }
         break
