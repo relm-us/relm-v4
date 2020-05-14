@@ -256,9 +256,11 @@ const start = async () => {
     if (selectedDecoration) {
       selectedDecoration.setEmissive(DECORATION_NORMAL_COLOR)
     }
-    selectedDecoration = nearestDecoration
-    if (selectedDecoration) {
-      selectedDecoration.setEmissive(DECORATION_SELECTED_COLOR)
+    if (selectedDecoration != nearestDecoration) {
+      selectedDecoration = nearestDecoration
+      if (selectedDecoration) {
+        selectedDecoration.setEmissive(DECORATION_SELECTED_COLOR)
+      }
     }
   })
 
@@ -390,21 +392,6 @@ const start = async () => {
       invitation.classList.add('show')
     }
   })
-  
-  const findNearestOfType = (type, entities, position, maxDistance = 500) => {
-    let nearest = null
-    let shortestDistanceSoFar = 10000000
-    
-    for (let entity of entities) {
-      if (entity.type !== type) { continue }
-      let distance = entity.state.position.now.distanceTo(position)
-      if (distance < shortestDistanceSoFar && distance < maxDistance) {
-        shortestDistanceSoFar = distance
-        nearest = entity
-      }
-    }
-    return nearest
-  }
   
   const doCommand = (command, args) => {
     switch (command) {
