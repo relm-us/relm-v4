@@ -80,15 +80,13 @@ const UpdatesPositionFromScreenCoords = stampit(Component, {
 
       this.screenRaycaster.setFromCamera(mouse, camera)
       // This `reduce` is equivalent to a `.map` and a `.filter`, combined for speed
-      // const entitiesForObjects = {}
       const objects = this.stage.entitiesOnStage.reduce((accum, entity) => {
         if (entity.receivesPointer) {
-          // entitiesForObjects[entity.object.uuid] = entity
           accum.push(entity.object)
         }
         return accum
       }, [])
-      // objects.push(this.stage.ground)
+      objects.push(this.stage.ground)
       
       // Reduce length to zero rather than garbage collect (speed optimization)
       this.intersects.length = 0
