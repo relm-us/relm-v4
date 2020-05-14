@@ -5,6 +5,34 @@ import { Component } from './component.js'
 import { HasObject } from './has_object.js'
 import { AwarenessGetsState, AwarenessSetsState } from './network_awareness.js'
 
+/**
+ * Look for the Entity that owns an object, given that the object might be
+ * a leaf in the scene graph.
+ * 
+ * @param {Array<Entity>} entities 
+ * @param {Object3D} object 
+ */
+function findEntityForObject(entities, object) {
+  if (!object.parent) {
+    return null
+  }
+  
+  let o = object
+  // Entities that `HasObject` always have a 'dummy' object that contains
+  // the real object, so we check for grandparent being null rather than parent
+  while (o.parent.parent) {
+    o = o.parent
+  }
+  
+  for (let entity of entities) {
+    if (entity.object == o) {
+      return entity
+    }
+  }
+  
+  return null
+}
+
 const HasSphere = stampit(Component, {
   methods: {
     hideSphere() {
@@ -35,6 +63,7 @@ const UpdatesPositionFromScreenCoords = stampit(Component, {
     this.screenCoords = {x: 0, y: 0}
     this.screenVec = new THREE.Vector3()
     this.screenRaycaster = new THREE.Raycaster()
+    this.intersects = []
   },
 
   methods: {
@@ -50,14 +79,35 @@ const UpdatesPositionFromScreenCoords = stampit(Component, {
       }
 
       this.screenRaycaster.setFromCamera(mouse, camera)
-      const intersects = this.screenRaycaster.intersectObject(this.stage.ground)
+      // This `reduce` is equivalent to a `.map` and a `.filter`, combined for speed
+      // const entitiesForObjects = {}
+      const objects = this.stage.entitiesOnStage.reduce((accum, entity) => {
+        if (entity.receivesPointer) {
+          // entitiesForObjects[entity.object.uuid] = entity
+          accum.push(entity.object)
+        }
+        return accum
+      }, [])
+      // objects.push(this.stage.ground)
+      
+      // Reduce length to zero rather than garbage collect (speed optimization)
+      this.intersects.length = 0
+      this.screenRaycaster.intersectObjects(objects, true, this.intersects)
 
-      if (intersects.length > 0) {
-        this.object.position.copy(intersects[0].point)
+      // console.log('intersects', this.intersects)
+      this.intersects.forEach((intersection) => {
+        const entity = findEntityForObject(this.stage.entitiesOnStage, intersection.object)
+        intersection.entity = entity
+      })
+      
+      if (this.intersects.length > 0) {
+        const ip = this.intersects[0].point
+        const mp = this.object.position
         // TODO: make this a configurable offset. For now, it puts the HasSphere
         //       object slightly "above" the ground, and above the mouse cursor
-        this.object.position.y += 10
-        this.object.position.x -= 3
+        mp.x = ip.x - 3
+        mp.y = ip.y + 10
+        mp.z = ip.z + 10
       }
 
       if (this.state.position.target) {

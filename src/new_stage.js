@@ -41,6 +41,10 @@ const Stage = stampit(
 
   init({ width, height }) {
     this.entities = {}
+    this.formerEntitiesOnStage = []
+    this.entitiesOnStage = []
+    this.projScreenMatrix = new THREE.Matrix4()
+    this.frustum = new THREE.Frustum()
     this.updateFns = {}
     if (!width || !height) {
       throw new Error('State requires width and height')
@@ -88,9 +92,29 @@ const Stage = stampit(
     },
 
     update(delta) {
-      // Handle each entity's `update` function
+      // Calculate what is inside the PerspectiveCamera's Frustum, as an optimization
+      this.camera.updateMatrix()
+      this.camera.updateMatrixWorld()
+      this.projScreenMatrix.multiplyMatrices(
+        this.camera.projectionMatrix,
+        this.camera.matrixWorldInverse
+      )
+      this.frustum.setFromProjectionMatrix(this.projScreenMatrix)
+      this.entitiesOnStage.length = 0
       for (let uuid in this.entities) {
         const entity = this.entities[uuid]
+        // Record entities within camera view
+        if (entity.object && entity.object.children.length > 0) {
+          const child = entity.object.children[0]
+          if (child.geometry && this.frustum.intersectsObject(child)) {
+            this.entitiesOnStage.push(entity)
+          }
+        }
+      }
+      
+      for (let uuid in this.entities) {
+        const entity = this.entities[uuid]
+        // Handle each entity's `update` function
         if (entity.update) {
           entity.update(delta)
         }
@@ -99,6 +123,8 @@ const Stage = stampit(
       for (let uuid in this.updateFns) {
         this.updateFns[uuid](delta)
       }
+      
+      
     },
     
     stopRendering() {

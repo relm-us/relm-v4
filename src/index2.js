@@ -224,12 +224,11 @@ const start = async () => {
     mousePos.copy(player.object.position)
     mousePos.sub(mousePointer.object.position)
     
-    nearestDecoration = findNearestOfType(
-      'decoration',
-      stage.entities,
-      mousePointer.object.position,
-      DECORATION_NEAREST_MAX_RANGE
-    )
+    if (mousePointer.intersects.length > 0) {
+      nearestDecoration = mousePointer.intersects[0].entity
+    } else {
+      nearestDecoration = null
+    }
     if (nearestDecoration) {
       if (nearestDecoration === selectedDecoration) {
         // do nothing
@@ -395,14 +394,13 @@ const start = async () => {
   const findNearestOfType = (type, entities, position, maxDistance = 500) => {
     let nearest = null
     let shortestDistanceSoFar = 10000000
-    // console.log('entities', entities)
-
-    for (let uuid in entities) {
-      if (entities[uuid].type !== type) { continue }
-      let distance = entities[uuid].state.position.now.distanceTo(position)
+    
+    for (let entity of entities) {
+      if (entity.type !== type) { continue }
+      let distance = entity.state.position.now.distanceTo(position)
       if (distance < shortestDistanceSoFar && distance < maxDistance) {
         shortestDistanceSoFar = distance
-        nearest= entities[uuid]
+        nearest = entity
       }
     }
     return nearest
