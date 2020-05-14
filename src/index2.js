@@ -34,9 +34,12 @@ const DECORATION_NORMAL_COLOR = new THREE.Color(0x000000)
 const DECORATION_HOVER_COLOR = new THREE.Color(0x333300)
 const DECORATION_SELECTED_COLOR = new THREE.Color(0x666600)
 const DECORATION_NEAREST_MAX_RANGE = 400
-const PIXEL_STEP  = 10
-const LINE_HEIGHT = 40
-const PAGE_HEIGHT = 800
+const PIXEL_STEP  = 1
+const LINE_HEIGHT = 4
+const PAGE_HEIGHT = 80
+const DELTA_MODE_PIXEL = 0
+const DELTA_MODE_LINE = 1
+const DELTA_MODE_PAGE = 2
 let decorationLayer = 0
 let nearestDecoration = null
 let previousNearestDecoration = null
@@ -111,6 +114,9 @@ const start = async () => {
   document.addEventListener('wheel', function(event) {
     if (event.target.id === 'game') {
       console.log('mousewheel event', event.deltaMode)
+      let pixelY = event.deltaY
+      if (event.deltaMode === 1) { pixelY *= LINE_HEIGHT }
+      else if (event.deltaMode === 2 ) { pixelY *= PAGE_HEIGHT }
       stage.setFov(stage.fov + event.deltaY);
       stage.forEachEntityOfType('player', player => {
         player.videoBubble.object.setDiameter(stage.fov)
