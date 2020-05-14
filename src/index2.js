@@ -6,6 +6,7 @@ import { addManifestTo } from './manifest_loaders.js'
 import { guestNameFromPlayerId, avatarOptionFromPlayerId, avatarOptionsOfGender } from './avatars.js'
 import { Security } from './security.js'
 import { initializeAVChat, muteAudio, unmuteAudio } from './avchat.js'
+import { normalizeWheel } from './lib/normalizeWheel.js'
 
 import { Entity, stage, network } from './entity.js'
 import { HasObject } from './has_object.js'
@@ -28,20 +29,12 @@ import { uuidv4 } from './util.js'
 import config from './config.js'
 import { PadController } from './pad_controller.js'
 
-const { MathUtils } = THREE
-
 const cfg = config(window.location)
 const decorationLayerThickness = 0.01
 const DECORATION_NORMAL_COLOR = new THREE.Color(0x000000)
 const DECORATION_HOVER_COLOR = new THREE.Color(0x333300)
 const DECORATION_SELECTED_COLOR = new THREE.Color(0x666600)
 const DECORATION_NEAREST_MAX_RANGE = 400
-const PIXEL_STEP  = 1
-const LINE_HEIGHT = 8
-const PAGE_HEIGHT = 80
-const DELTA_MODE_PIXEL = 0
-const DELTA_MODE_LINE = 1
-const DELTA_MODE_PAGE = 2
 let decorationLayer = 0
 let nearestDecoration = null
 let previousNearestDecoration = null
@@ -115,18 +108,7 @@ const start = async () => {
   // Mouse wheel zooms in and out
   document.addEventListener('wheel', function(event) {
     if (event.target.id === 'game') {
-      let pixelY = event.deltaY
-      switch (event.deltaMode) {
-        case 0:
-          pixelY = MathUtils.clamp(event.deltaY, -20, 20)
-          break
-        case 1:
-          pixelY = MathUtils.clamp(event.deltaY * LINE_HEIGHT, -20, 20)
-          break
-        case 2:
-          pixelY = MathUtils.clamp(event.deltaY * PAGE_HEIGHT, -20, 20)
-          break
-      }
+      let pixelY = normalizeWheel(event.deltaY)
       stage.setFov(stage.fov + pixelY);
       stage.forEachEntityOfType('player', player => {
         player.videoBubble.object.setDiameter(stage.fov)
