@@ -1,13 +1,11 @@
 import stampit from 'stampit'
 
 import Dropzone from 'dropzone'
-import { normalizeWheel } from 'normalize-wheel'
 import { DOMReady } from './domready.js'
 import { addManifestTo } from './manifest_loaders.js'
 import { guestNameFromPlayerId, avatarOptionFromPlayerId, avatarOptionsOfGender } from './avatars.js'
 import { Security } from './security.js'
 import { initializeAVChat, muteAudio, unmuteAudio } from './avchat.js'
-// import { MapControls } from './lib/OrbitControls.js'
 
 import { Entity, stage, network } from './entity.js'
 import { HasObject } from './has_object.js'
