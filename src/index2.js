@@ -441,6 +441,12 @@ const start = async () => {
           } else if (subCommand === 'down') {
             decoration.state.orientation.target = 3
             network.setEntity(decoration)
+          } else if (subCommand === 'left') {
+            decoration.state.orientation.target = 1
+            network.setEntity(decoration)
+          } else if (subCommand === 'right') {
+            decoration.state.orientation.target = 2
+            network.setEntity(decoration)
           } else if (subCommand === 'delete') {
             network.removeEntity(decoration.uuid)
           } else if (subCommand === 'fetch') {
