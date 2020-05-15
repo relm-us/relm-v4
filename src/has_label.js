@@ -4,7 +4,7 @@ import stampit from 'stampit'
 import { Component } from './component.js'
 import { Label } from './label.js'
 
-const { Vector3 } = THREE
+const { Vector3, Color } = THREE
 
 const HasLabel = stampit(Component, {
   name: 'HasLabel',
@@ -12,6 +12,7 @@ const HasLabel = stampit(Component, {
   props: {
     labelPosition: null,
     labelOffset: null,
+    labelColor: null,
   },
 
   deepProps: {
@@ -25,12 +26,15 @@ const HasLabel = stampit(Component, {
 
   init({
     label = this.state.label.target,
-    labelOffset = this.labelOffset
+    labelOffset = this.labelOffset,
+    labelColor = this.labelColor
   }) {
     this.labelPosition = new Vector3()
     this.labelOffset = labelOffset || new Vector3()
+    this.labelColor = labelColor || new Color()
     this.labelObj = new Label()
     this.setLabel(label)
+    this.setLabelColor(labelColor)
   },
 
   methods: {
@@ -46,6 +50,17 @@ const HasLabel = stampit(Component, {
      */
     setLabel(text) {
       this.state.label.target = text
+    },
+    
+    setLabelColor(color) {
+      this.labelColor = color
+      if (color) {
+        this.labelObj.domElement.style.color = '#' + color.getHexString()
+      }
+    },
+    
+    setLabelUnderlineColor(color) {
+      this.labelObj.domElement.style.borderBottom = `3px solid #${color.getHexString()}`
     },
 
     update() {

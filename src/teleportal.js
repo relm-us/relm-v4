@@ -11,7 +11,7 @@ import { HasEmissiveMaterial } from './has_emissive_material.js'
 const { RingGeometry, Mesh, MeshStandardMaterial, DoubleSide, Color } = THREE
 
 const ACTIVE_COLOR = new Color(0xF380F4)
-const INACTIVE_COLOR = new Color(0x999999)
+const INACTIVE_COLOR = new Color(0x444444)
 
 const Teleports = stampit(Component, {
   props: {
@@ -68,9 +68,9 @@ const Teleports = stampit(Component, {
       const radius = this.state.radius.now
       const geometry = new RingGeometry(radius - 5.0, radius + 5.0, 64, 6)
       const material = this.material = new MeshStandardMaterial({
-        color: (this.active ? ACTIVE_COLOR : INACTIVE_COLOR),
+        // color: (this.active ? ACTIVE_COLOR : INACTIVE_COLOR),
+        color: INACTIVE_COLOR,
         side: DoubleSide,
-
       })
       this.ring = new Mesh(geometry, material)
       this.ring.position.y = 1
@@ -82,7 +82,8 @@ const Teleports = stampit(Component, {
     setActive() {
       this.active = true
       if (this.material) {
-        this.material.color = ACTIVE_COLOR
+        // Don't show active state for now
+        // this.material.color = ACTIVE_COLOR
       }
     },
 

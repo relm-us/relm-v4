@@ -4,6 +4,7 @@ import { Entity } from './entity.js'
 import { Component } from './component.js'
 import { HasObject } from './has_object.js'
 import { AwarenessGetsState, AwarenessSetsState } from './network_awareness.js'
+import { HasUniqueColor, CopiesUniqueColor } from './has_unique_color.js'
 
 /**
  * Look for the Entity that owns an object, given that the object might be
@@ -46,7 +47,7 @@ const HasSphere = stampit(Component, {
     setup() {
       const geometry = new THREE.SphereGeometry(7)
       const material = new THREE.MeshBasicMaterial({
-        color: 0xff9900,
+        color: 0xffffff,
         depthTest: true,
         transparent: true, // so that it shows up on top of images
       })
@@ -55,6 +56,52 @@ const HasSphere = stampit(Component, {
       
       this.showSphere()
     },
+  }
+})
+
+const HasRing = stampit(Component, {
+  props: {
+    ringColor: null
+  },
+  
+  init({ ringColor }) {
+    this.ringColor = ringColor || 0x000000
+  },
+
+  methods: {
+    hideRing() {
+      this.object.remove(this.ringMesh)
+    },
+
+    showRing() {
+      this.object.add(this.ringMesh)
+    },
+
+    setup() {
+      const ringThickness = 10
+      const radius = 7
+      const geometry = new THREE.RingGeometry(
+        radius - ringThickness/2,
+        radius + ringThickness/2,
+        32,
+        6
+      )
+      const material = this.material = new THREE.MeshStandardMaterial({
+        color: new THREE.Color(this.ringColor),
+        side: THREE.DoubleSide,
+      })
+      this.ringMesh = new THREE.Mesh(geometry, material)
+      this.ringMesh.rotation.x = -Math.PI * 0.2
+      
+      this.showRing()
+    },
+
+    update(delta) {
+      if (this.ringColor !== this.getUniqueColor()) {
+        this.ringColor = this.getUniqueColor()
+        this.material.color = new THREE.Color(this.ringColor)
+      }
+    }
   }
 })
 
@@ -142,6 +189,9 @@ const MousePointer = stampit(
   Entity,
   HasObject,
   HasSphere,
+  HasRing,
+  HasUniqueColor,
+  CopiesUniqueColor,
   UpdatesPositionFromScreenCoords,
   AwarenessGetsState
 )
@@ -150,6 +200,8 @@ const OtherMousePointer = stampit(
   Entity,
   HasObject,
   HasSphere,
+  HasRing,
+  HasUniqueColor,
   AwarenessSetsState,
   MousePointerUpdate
 )

@@ -23,16 +23,18 @@ import { HasVideoBubble } from './has_video_bubble.js'
 import { HasOpacity } from './has_opacity.js'
 import { HasOffscreenIndicator } from './has_offscreen_indicator.js'
 import { AwarenessGetsState, AwarenessSetsState } from './network_awareness.js'
-import { LocalstoreGetsState, LocalstoreRestoreState } from './localstore_gets_state.js'
+import { LocalstoreGetsState, localstoreRestoreState } from './localstore_gets_state.js'
 import { MousePointer, OtherMousePointer } from './mouse_pointer.js'
 import { Decoration } from './decoration.js'
 import { Teleportal } from './teleportal.js'
+import { Component } from './component.js'
 import { uuidv4 } from './util.js'
 import config from './config.js'
 import { PadController } from './pad_controller.js'
 import { stateToObject } from './state_to_object.js'
 
 import "toastify-js/src/toastify.css"
+import { HasUniqueColor } from './has_unique_color.js'
 
 const cfg = config(window.location)
 const decorationLayerThickness = 0.01
@@ -45,6 +47,18 @@ Dropzone.autoDiscover = false
 
 const security = Security()
 
+const UpdatesLabelToUniqueColor = stampit(Component, {
+  init() {
+    this.updatesLabelColor = new THREE.Color()
+  },
+  
+  methods: {
+    update(delta) {
+      this.updatesLabelColor.setHex(this.getUniqueColor())
+      this.setLabelUnderlineColor(this.updatesLabelColor)
+    }
+  }
+})
 const Player = stampit(
   Entity,
   HasObject,
@@ -55,6 +69,8 @@ const Player = stampit(
   FollowsTarget,
   HasAnimationMixer,
   WalksWhenMoving,
+  HasUniqueColor,
+  UpdatesLabelToUniqueColor,
   // This is how the player sends updates
   AwarenessGetsState,
   LocalstoreGetsState,
@@ -72,6 +88,8 @@ const OtherPlayer = stampit(
   FollowsTarget,
   HasAnimationMixer,
   WalksWhenMoving,
+  HasUniqueColor,
+  UpdatesLabelToUniqueColor,
   HasOffscreenIndicator,
   // This is how OtherPlayers get updates
   AwarenessSetsState,
@@ -176,7 +194,7 @@ const start = async () => {
     animationResourceId: 'people',
     lsKey: 'player'
   })
-  LocalstoreRestoreState('player', player)
+  localstoreRestoreState('player', player)
   if (cfg.LANDING_COORDS) {
     player.state.position.target.copy(cfg.LANDING_COORDS)
   }
@@ -223,6 +241,7 @@ const start = async () => {
   const mousePointer = window.mousePointer = MousePointer({
     type: 'mouse',
     awarenessUpdateFrequency: 2,
+    colorSource: player
   })
   stage.add(mousePointer)
   
@@ -305,6 +324,7 @@ const start = async () => {
         break
       case 'mouse':
         entity.showSphere()
+        entity.showRing()
         break
       default:
         console.warn('"connect" issued for unhandled type', uuid, state)
@@ -322,6 +342,7 @@ const start = async () => {
         break
       case 'mouse':
         entity.hideSphere()
+        entity.hideRing()
         break
       default:
         console.warn('"disconnect" issued for unhandled type', uuid, state)
@@ -775,7 +796,6 @@ const start = async () => {
         y: pubkey.y
       })
     }
-    console.log('sec params', params)
     await security.verify(playerId, signature)
   } else {
     console.log("Not using crypto.subtle")
