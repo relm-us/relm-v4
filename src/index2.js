@@ -474,7 +474,7 @@ const start = async () => {
             decoration.state.orientation.target = 2
             network.setEntity(decoration)
           } else if (subCommand === 'rotate') {
-            decoration.state.imageRotation.target = parseFloat(args[1])
+            decoration.state.imageRotation.target = parseFloat(args[1]) * -THREE.Math.DEG2RAD
             network.setEntity(decoration)
           } else if (subCommand === 'delete') {
             network.removeEntity(decoration.uuid)
