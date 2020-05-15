@@ -36,6 +36,7 @@ import "toastify-js/src/toastify.css"
 
 const cfg = config(window.location)
 const decorationLayerThickness = 0.01
+let toastMsg = null
 let decorationLayer = 0
 let mostRecentlyCreatedObjectId = null
 
@@ -476,38 +477,37 @@ const start = async () => {
 
       case 'object':
       case 'obj':
-        let resultMsg = null
         const object = selectedObject
         const subCommand = args[0]
         if (!selectedObject) {
-          resultMsg = 'Selected object not found'
+          toastMsg = 'Selected object not found'
         } else {
           console.log('Selected object', selectedObject)
           if (subCommand === 'up') {
             object.state.orientation.target = 0
             network.setEntity(object)
-            resultMsg = 'Object is standing up (orientation 0)'
+            toastMsg = 'Object is standing up (orientation 0)'
           } else if (subCommand === 'down') {
             object.state.orientation.target = 3
             network.setEntity(object)
-            resultMsg = 'Object is lying down (orientation 3)'
+            toastMsg = 'Object is lying down (orientation 3)'
           } else if (subCommand === 'left') {
             object.state.orientation.target = 1
             network.setEntity(object)
-            resultMsg = 'Object is standing left (orientation 1)'
+            toastMsg = 'Object is standing left (orientation 1)'
           } else if (subCommand === 'right') {
             object.state.orientation.target = 2
             network.setEntity(object)
-            resultMsg = 'Object is standing right (orientation 2)'
+            toastMsg = 'Object is standing right (orientation 2)'
           } else if (subCommand === 'rotate') {
             const degrees = parseFloat(args[1])
             const radians = degrees * -THREE.Math.DEG2RAD
             object.state.imageRotation.target = radians
             network.setEntity(object)
-            resultMsg = `Object rotated to ${degrees} deg (${radians} rad)`
+            toastMsg = `Object rotated to ${degrees} deg (${radians} rad)`
           } else if (subCommand === 'delete') {
             network.removeEntity(object.uuid)
-            resultMsg = `Object ${object.uuid} deleted`
+            toastMsg = `Object ${object.uuid} deleted`
           } else if (subCommand === 'fetch') {
             const destination = new THREE.Vector3()
             const y = object.state.position.now.y
@@ -515,51 +515,51 @@ const start = async () => {
             destination.y = y
             object.setPosition(destination)
             network.setEntity(object)
-            resultMsg = `Object ${object.uuid} moved to x: ${parseInt(destination.x, 10)}, y: ${parseInt(destination.y, 10)}, z: ${parseInt(destionation.z, 10)}`
+            toastMsg = `Object ${object.uuid} moved to x: ${parseInt(destination.x, 10)}, y: ${parseInt(destination.y, 10)}, z: ${parseInt(destionation.z, 10)}`
           } else if (subCommand === 'moveTo') {
             if (typeof args[1] === 'undefined' ||
                 typeof args[2] === 'undefined' ||
                 typeof args[3] === 'undefined') {
-              resultMsg = 'moveTo requires x, y, z coordinates'
+              toastMsg = 'moveTo requires x, y, z coordinates'
             } else {
               const x = parseFloat(args[1])
               const y = parseFloat(args[2])
               const z = parseFloat(args[3])
               object.state.position.target.copy({x, y, z})
               network.setEntity(object)
-              resultMsg = `Moved object to x: ${parseInt(x, 10)}, y: ${parseInt(y, 10)}, z: ${parseInt(z, 10)}`
+              toastMsg = `Moved object to x: ${parseInt(x, 10)}, y: ${parseInt(y, 10)}, z: ${parseInt(z, 10)}`
             }
           } else if (subCommand === 'x') {
             if (typeof args[1] === 'undefined') {
-              resultMsg = 'x command requires a value to move X by'
+              toastMsg = 'x command requires a value to move X by'
             } else {
               object.state.position.target.x += parseFloat(args[1])
               network.setEntity(object)
-              resultMsg = `Moved X to ${parseInt(object.state.position.target.x, 10)}`
+              toastMsg = `Moved X to ${parseInt(object.state.position.target.x, 10)}`
             }
           } else if (subCommand === 'y') {
             if (typeof args[1] === 'undefined') {
-              resultMsg = 'y command requires a value to move Y by'
+              toastMsg = 'y command requires a value to move Y by'
             } else {
               object.state.position.target.y += parseFloat(args[1])
               network.setEntity(object)
-              resultMsg = `Moved Y to ${parseInt(object.state.position.target.y, 10)}`
+              toastMsg = `Moved Y to ${parseInt(object.state.position.target.y, 10)}`
             }
           } else if (subCommand === 'z') {
             if (typeof args[1] === 'undefined') {
-              resultMsg = 'z command requires a value to move Z by'
+              toastMsg = 'z command requires a value to move Z by'
             } else {
               object.state.position.target.z += parseFloat(args[1])
               network.setEntity(object)
-              resultMsg = `Moved Z to ${parseInt(object.state.position.target.z, 10)}`
+              toastMsg = `Moved Z to ${parseInt(object.state.position.target.z, 10)}`
             }
           } else if (subCommand === 'scale') {
             if (typeof args[1] === 'undefined') {
-              resultMsg = 'z command requires a value to move Z by'
+              toastMsg = 'z command requires a value to move Z by'
             } else {
               const scale = parseFloat(args[1])
               object.state.imageScale.target = scale
-              resultMsg = `Scaled object to ${scale}`
+              toastMsg = `Scaled object to ${scale}`
             }
             network.setEntity(object)
           } else if (subCommand === 'clone') {
@@ -569,16 +569,16 @@ const start = async () => {
             clonedState.position.z += 50
             const newUuid = uuidv4()
             network.setState(newUuid, clonedState)
-            resultMsg = `Cloned new object: ${newUuid}`
+            toastMsg = `Cloned new object: ${newUuid}`
           } else if (subCommand === 'lock') {
             if (object.uiLock) {
               object.uiLock()
               setWouldSelectObject(null)
               selectObject()
               network.setEntity(object)
-              resultMsg = `Object locked (${object.uuid})`
+              toastMsg = `Object locked (${object.uuid})`
             } else {
-              resultMsg = "Selected object can't be locked"
+              toastMsg = "Selected object can't be locked"
             }
           } else if (subCommand === 'unlock') {
             if (object.uiUnlock) {
@@ -586,19 +586,11 @@ const start = async () => {
               setWouldSelectObject(object)
               selectObject()
               network.setEntity(object)
-              resultMsg = `Object unlocked (${object.uuid})`
+              toastMsg = `Object unlocked (${object.uuid})`
             } else {
-              resultMsg = "Selected object can't be unlocked"
+              toastMsg = "Selected object can't be unlocked"
             }
           }
-        }
-        if (resultMsg) {
-          Toastify({
-            text: resultMsg,
-            duration: 3000,
-            close: true,
-            position: 'center'
-          }).showToast()
         }
         break
 
@@ -641,13 +633,9 @@ const start = async () => {
               stage.setDefaultFovRange()
               break
           }
+          toastMsg = `zoomrange set to ${stage.minFov}, ${stage.maxFov}`
         } else {
-          Toastify({
-            text: 'zoomrange requires min and max',
-            duration: 3000,
-            close: true,
-            position: 'center'
-          }).showToast()
+          toastMsg = 'zoomrange requires min and max'
         }
         break
         
@@ -665,15 +653,16 @@ const start = async () => {
       
       case 'whereami':
         const pos = player.object.position
-        Toastify({
-          text: `You are at x: ${parseInt(pos.x, 10)}, y: ${parseInt(pos.y, 10)}, z: ${parseInt(pos.z, 10)}`,
-          duration: 0,
-          close: true,
-          position: 'center'
-        }).showToast()
+        toastMsg = `You are at x: ${parseInt(pos.x, 10)}, y: ${parseInt(pos.y, 10)}, z: ${parseInt(pos.z, 10)}`
         break
-      
-        case 'lock':
+    }
+    
+    if (toastMsg) {
+      Toastify({
+        text: toastMsg,
+        duration: 3000,
+        position: 'center'
+      }).showToast()
     }
   }
   
