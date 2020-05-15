@@ -310,10 +310,8 @@ const start = async () => {
         }, state, { uuid }))
         stage.add(decoration)
         if (mostRecentlyCreatedObjectId === uuid) {
-          setTimeout(() => {
-            setWouldSelectObject(decoration)
-            selectObject()
-          }, 100)
+          setWouldSelectObject(decoration)
+          selectObject()
         }
         break
       

@@ -97,6 +97,12 @@ const HasImage = stampit(Component, {
         transparent: true,
       })
       
+      // We need this hack so that it doesn't matter in which order
+      // the material is created & the emissiveColor is set
+      if (this.emissiveColor) {
+        this.material.emissive = this.emissiveColor
+      }
+      
       if (this.mesh) {
         this.object.remove(this.mesh)
       }
