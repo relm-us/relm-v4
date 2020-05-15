@@ -70,15 +70,16 @@ const UpdatesPositionFromScreenCoords = stampit(Component, {
     setScreenCoords(x, y) {
       this.screenCoords = {x, y}
     },
-
-    update(delta) {
-      const camera = this.stage.camera
-      const mouse = {
+    
+    getMouseCoords() {
+      return {
         x: (this.screenCoords.x / window.innerWidth) * 2 - 1,
         y: -(this.screenCoords.y / window.innerHeight) * 2 + 1
       }
-
-      this.screenRaycaster.setFromCamera(mouse, camera)
+    },
+    
+    getIntersects() {
+      this.screenRaycaster.setFromCamera(this.getMouseCoords(), this.stage.camera)
       // This `reduce` is equivalent to a `.map` and a `.filter`, combined for speed
       const objects = this.stage.entitiesOnStage.reduce((accum, entity) => {
         if (entity.receivesPointer) {
@@ -98,6 +99,12 @@ const UpdatesPositionFromScreenCoords = stampit(Component, {
         intersection.entity = entity
       })
       
+      return this.intersects
+    },
+
+    update(delta) {
+      this.getIntersects()
+      
       if (this.intersects.length > 0) {
         const ip = this.intersects[0].point
         const mp = this.object.position
@@ -107,7 +114,7 @@ const UpdatesPositionFromScreenCoords = stampit(Component, {
         mp.y = ip.y + 10
         mp.z = ip.z + 10
       }
-
+      
       if (this.state.position.target) {
         this.state.position.target.copy(this.object.position)
       }

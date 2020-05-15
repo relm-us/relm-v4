@@ -226,21 +226,27 @@ const start = async () => {
   stage.add(mousePointer)
   
   let mousePos = new THREE.Vector3()
+  let dragLock = false
+  let dragStart = {}
   window.addEventListener('mousemove', (event) => {
+    // Show mouse pointer
     mousePointer.setScreenCoords(event.clientX, event.clientY)
     mousePos.copy(player.object.position)
     mousePos.sub(mousePointer.object.position)
-    
-    if (mousePointer.intersects.length > 0) {
-      setWouldSelectObject(mousePointer.intersects[0].entity)
-    } else {
-      setWouldSelectObject(null)
-    }
   })
   
   window.addEventListener('mousedown', (event) => {
+    dragStart.x = event.clientX
+    dragStart.y = event.clientY
+    
     // Selects whatever the most recent 'mousemove' event got us closest to
+    const intersects = mousePointer.intersects
+    setWouldSelectObject(intersects.length === 0 ? null : intersects[0].entity)
     selectObject()
+  })
+  
+  window.addEventListener('mouseup', (event) => {
+    dragLock = false
   })
 
 
