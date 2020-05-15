@@ -8,6 +8,7 @@ import { guestNameFromPlayerId, avatarOptionFromPlayerId, avatarOptionsOfGender 
 import { Security } from './security.js'
 import { initializeAVChat, muteAudio, unmuteAudio } from './avchat.js'
 import { normalizeWheel } from './lib/normalizeWheel.js'
+import { setWouldSelectObject, selectObject, selectedObject } from './selection.js'
 
 import { Entity, stage, network } from './entity.js'
 import { HasObject } from './has_object.js'
@@ -35,14 +36,8 @@ import "toastify-js/src/toastify.css"
 
 const cfg = config(window.location)
 const decorationLayerThickness = 0.01
-const DECORATION_NORMAL_COLOR = new THREE.Color(0x000000)
-const DECORATION_HOVER_COLOR = new THREE.Color(0x333300)
-const DECORATION_SELECTED_COLOR = new THREE.Color(0x666600)
-const DECORATION_NEAREST_MAX_RANGE = 400
 let decorationLayer = 0
-let nearestDecoration = null
-let previousNearestDecoration = null
-let selectedDecoration = null
+let mostRecentlyCreatedObjectId = null
 
 // Don't look for 'dropzone' in HTML tags
 Dropzone.autoDiscover = false
@@ -123,6 +118,9 @@ const start = async () => {
   // The stage is special in that it creates a domElement that must be added to our page
   document.getElementById('game').appendChild(stage.renderer.domElement)
   
+  document.getElementById('upload-button').addEventListener('mousedown', (event) => {
+    event.preventDefault()
+  })
   const previews = document.getElementById('previews')
   const dropzone = new Dropzone(document.body, {
     url: cfg.SERVER_UPLOAD_URL,
@@ -140,7 +138,9 @@ const start = async () => {
     decorationLayer += decorationLayerThickness
     // Add the decoration to the network so everyone can see it
     const url = cfg.SERVER_UPLOAD_URL + '/' + response.file
-    network.setState(null, {
+    mostRecentlyCreatedObjectId = uuidv4()
+    console.log('mostRecentlyCreatedObjectId', mostRecentlyCreatedObjectId)
+    network.setState(mostRecentlyCreatedObjectId, {
       type: 'decoration',
       position: {
         x: player.state.position.now.x,
@@ -232,43 +232,15 @@ const start = async () => {
     mousePos.sub(mousePointer.object.position)
     
     if (mousePointer.intersects.length > 0) {
-      nearestDecoration = mousePointer.intersects[0].entity
+      setWouldSelectObject(mousePointer.intersects[0].entity)
     } else {
-      nearestDecoration = null
-    }
-    if (nearestDecoration) {
-      if (nearestDecoration === selectedDecoration) {
-        // do nothing
-        if (previousNearestDecoration && nearestDecoration !== previousNearestDecoration) {
-          previousNearestDecoration.setEmissive(DECORATION_NORMAL_COLOR)
-        }
-      } else if (previousNearestDecoration === null) {
-        // nearestDecoration.setEmissive(DECORATION_HOVER_COLOR)
-      } else if (nearestDecoration !== previousNearestDecoration) {
-        // nearestDecoration.setEmissive(DECORATION_HOVER_COLOR)
-        if (previousNearestDecoration !== selectedDecoration) {
-          previousNearestDecoration.setEmissive(DECORATION_NORMAL_COLOR)
-        }
-      }
-      previousNearestDecoration = nearestDecoration
-    } else if (!nearestDecoration && previousNearestDecoration) {
-      if (previousNearestDecoration !== selectedDecoration) {
-        previousNearestDecoration.setEmissive(DECORATION_NORMAL_COLOR)
-      }
-      previousNearestDecoration = null
+      setWouldSelectObject(null)
     }
   })
   
   window.addEventListener('mousedown', (event) => {
-    if (selectedDecoration) {
-      selectedDecoration.setEmissive(DECORATION_NORMAL_COLOR)
-    }
-    if (selectedDecoration != nearestDecoration) {
-      selectedDecoration = nearestDecoration
-      if (selectedDecoration) {
-        selectedDecoration.setEmissive(DECORATION_SELECTED_COLOR)
-      }
-    }
+    // Selects whatever the most recent 'mousemove' event got us closest to
+    selectObject()
   })
 
 
@@ -337,6 +309,12 @@ const start = async () => {
           speed: 500,
         }, state, { uuid }))
         stage.add(decoration)
+        if (mostRecentlyCreatedObjectId === uuid) {
+          setTimeout(() => {
+            setWouldSelectObject(decoration)
+            selectObject()
+          }, 100)
+        }
         break
       
       case 'mouse':
@@ -455,7 +433,7 @@ const start = async () => {
       case 'object':
       case 'obj':
         const subCommand = args[0]
-        const decoration = selectedDecoration
+        const decoration = selectedObject
         if (!decoration) {
           console.log('Selected decoration not found')
           return

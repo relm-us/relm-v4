@@ -46,7 +46,7 @@ const Network = stampit(EventEmittable, {
     
     setState(uuid, state) {
       if (state) {
-        this.entityStates.set(uuid || uuidv4(), state)
+        this.entityStates.set(uuid, state)
       } else {
         console.warn('attempted to add null state to network (not added)', state)
       }
