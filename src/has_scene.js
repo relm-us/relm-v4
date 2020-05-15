@@ -8,7 +8,8 @@ const FOG_DEFAULT_FAR_DISTANCE = 8600
 
 const LIGHT_AMBIENT_COLOR = 0xF0F0F0
 const LIGHT_AMBIENT_FACTOR = 0.76666
-const LIGHT_DIRECTIONAL_COLOR = 0x020202
+// const LIGHT_DIRECTIONAL_COLOR = 0x666666
+const LIGHT_DIRECTIONAL_COLOR = 0x333333
 const LIGHT_DIRECTIONAL_FACTOR = 0.48
 
 const HasScene = stampit({
@@ -32,6 +33,19 @@ const HasScene = stampit({
 
     this.ambientLight = new AmbientLight(LIGHT_AMBIENT_COLOR, LIGHT_AMBIENT_FACTOR)
     this.directionalLight = new DirectionalLight(LIGHT_DIRECTIONAL_COLOR, LIGHT_DIRECTIONAL_FACTOR)
+
+    // const d = 1000
+    // this.directionalLight.position.set(0, 200, 0)
+    // this.directionalLight.castShadow = true
+    // this.directionalLight.shadow.camera.left = -d
+    // this.directionalLight.shadow.camera.right = d
+    // this.directionalLight.shadow.camera.top = d
+    // this.directionalLight.shadow.camera.bottom = -d
+    // this.directionalLight.shadow.camera.near = 0.001
+    // this.directionalLight.shadow.camera.far = d
+
+    // this.directionalLightHelper = new THREE.CameraHelper( this.directionalLight.shadow.camera )
+    // scene.add(this.directionalLightHelper)
 
     scene.fog = new Fog(new Color(this.fog.color), this.fog.near, this.fog.far)
     scene.add(this.ambientLight)
