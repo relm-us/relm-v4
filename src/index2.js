@@ -447,6 +447,9 @@ const start = async () => {
           } else if (subCommand === 'right') {
             decoration.state.orientation.target = 2
             network.setEntity(decoration)
+          } else if (subCommand === 'rotate') {
+            decoration.state.imageRotation.target = parseFloat(args[1])
+            network.setEntity(decoration)
           } else if (subCommand === 'delete') {
             network.removeEntity(decoration.uuid)
           } else if (subCommand === 'fetch') {

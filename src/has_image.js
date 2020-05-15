@@ -30,6 +30,10 @@ const HasImage = stampit(Component, {
   
   deepProps: {
     state: {
+      imageRotation: {
+        now: 0.0,
+        target: 0.0,
+      },
       orientation: {
         now: Orientation.up,
         target: Orientation.up,
@@ -46,7 +50,7 @@ const HasImage = stampit(Component, {
     }
   },
   
-  init({ asset, orientation, imageScale }) {
+  init({ asset, orientation, imageScale, imageRotation }) {
     this.geometry = null
     this.material = null
     this.mesh = null
@@ -58,6 +62,10 @@ const HasImage = stampit(Component, {
     
     if (imageScale) {
       this.state.imageScale.now = this.state.imageScale.target = imageScale
+    }
+    
+    if (imageRotation) {
+      this.state.imageRotation.now = this.state.imageRotation.target = imageRotation
     }
     
     if (asset) {
@@ -105,33 +113,36 @@ const HasImage = stampit(Component, {
     
     setRotationFromState() {
       const scale = this.state.imageScale.now
+      const rot = this.state.imageRotation.now
       switch(this.state.orientation.now) {
         case Orientation.up:
           // Standing up straight
-          this.object.rotation.y = 0
           this.object.rotation.x = 0
+          this.object.rotation.y = 0
+          this.mesh.rotation.z = rot
           break;
         case Orientation.left:
           // Standing up, but rotated to the left
-          this.object.rotation.y = Math.PI/4
           this.object.rotation.x = 0
+          this.object.rotation.y = Math.PI/4
           break;
         case Orientation.right:
           // Standing up, but rotated to the right
-          this.object.rotation.y = -Math.PI/4
           this.object.rotation.x = 0
+          this.object.rotation.y = -Math.PI/4
           break;
         case Orientation.down:
           // Place it flat, and *slightly* above the ground
-          this.object.rotation.y = 0
           this.object.rotation.x = -Math.PI/2
+          this.object.rotation.y = 0
+          this.mesh.rotation.z = rot
           break;
       }
     },
     
     setScaleFromState() {
       const scale = this.state.imageScale.now
-      this.mesh.scale.set(scale, scale, scale)
+      this.object.scale.set(scale, scale, scale)
     },
     
     /**
@@ -156,9 +167,22 @@ const HasImage = stampit(Component, {
     },
     
     update(delta) {
+      let needsSetRotation = false
+
       if (this.state.orientation.now !== this.state.orientation.target) {
         // TODO: animate  
         this.state.orientation.now = this.state.orientation.target
+        needsSetRotation = true
+      }
+      
+      const imageRotationDelta = Math.abs(this.state.imageRotation.now - this.state.imageRotation.target)
+      if (imageRotationDelta > 0.001) {
+        // TODO: animate  
+        this.state.imageRotation.now = this.state.imageRotation.target
+        needsSetRotation = true
+      }
+      
+      if (needsSetRotation) {
         this.setRotationFromState()
       }
       
