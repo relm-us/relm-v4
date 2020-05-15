@@ -109,7 +109,7 @@ const start = async () => {
   document.addEventListener('wheel', function(event) {
     if (event.target.id === 'game') {
       let pixelY = normalizeWheel(event.deltaY)
-      stage.setFov(stage.fov + pixelY);
+      stage.setFov(stage.fov - pixelY);
       stage.forEachEntityOfType('player', player => {
         player.videoBubble.object.setDiameter(stage.fov)
       })
