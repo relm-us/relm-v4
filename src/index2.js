@@ -424,11 +424,37 @@ const start = async () => {
           console.warn('Gender not available')
         }
         break
+      
+      case 'luke':
+        if (['x', 'y', 'z'].includes(args[0]) && args[1]) {
+          const axis = args[0]
+          const magnitude = parseFloat(args[1])
+          for (let entity of stage.entitiesOnStage) {
+            if (entity.receivesPointer) {
+              entity.state.position.target[axis] += magnitude
+              network.setEntity(entity)
+            }
+          }
+        }
+        break
         
+      case 'yoda':
+        if (['x', 'y', 'z'].includes(args[0]) && args[1]) {
+          const axis = args[0]
+          const magnitude = parseFloat(args[1])
+          for (let uuid in stage.entities) {
+            const entity = stage.entities[uuid]
+            if (entity.receivesPointer) {
+              entity.state.position.target[axis] += magnitude
+              network.setEntity(entity)
+            }
+          }
+        }
+        break
+
       case 'object':
       case 'obj':
         const subCommand = args[0]
-        // const decoration = findNearestOfType('decoration', stage.entities, player.state.position.now)
         const decoration = selectedDecoration
         if (!decoration) {
           console.log('Selected decoration not found')
