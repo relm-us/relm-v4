@@ -629,6 +629,27 @@ const start = async () => {
         network.setEntity(tp)
         stage.add(tp)
         break
+      
+      case 'zoomrange':
+        if (args.length === 1) {
+          switch (args[0]) {
+            case 'max':
+              stage.minFov = 50.0
+              stage.maxFov = 500.0
+              break
+            default:
+              stage.setDefaultFovRange()
+              break
+          }
+        } else {
+          Toastify({
+            text: 'zoomrange requires min and max',
+            duration: 3000,
+            close: true,
+            position: 'center'
+          }).showToast()
+        }
+        break
         
       case 'stop':
         stage.continueRendering = false

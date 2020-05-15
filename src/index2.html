@@ -499,24 +499,38 @@
       <strong>Set Your Name</strong>
       <p><pre>/name [YOURNAME]</pre></p>
       <strong>Choose a Character</strong>
-      <p>f: female, m: Addmale<pre>/character [f or m] [0-8]</pre></p>
+      <p><pre>/character [GENDER] [AVATAR]</pre>
+        Where <pre style="display:inline">[GENDER]</pre> is 
+        <pre style="display:inline">f</pre> (female) or 
+        <pre style="display:inline">m</pre> (male), and 
+        <pre style="display:inline">[AVATAR]</pre> is a number from 0-8</p>
       <strong>Objects</strong>
       <p>First, click an object so it shines bright yellow, then try one of these:</p>
       <p>Delete an object<pre>/object delete</pre></p>
       <p>Grow or shrink an object (N should be between about 0.5 and 2):<pre>/object scale [N]</pre></p>
-      <p>Stand an object up or flatten to the ground:<pre>/object [up|down]</pre></p>
-      <p>Stand object to the left or right:<pre>/object [left|right]</pre></p>
+      <p>Change flat object orientation:<pre>/object [ORIENTATION]</pre>
+        Where <pre style="display:inline">[ORIENTATION]</pre> is 
+        <pre style="display:inline">up</pre>, 
+        <pre style="display:inline">down</pre>, 
+        <pre style="display:inline">left</pre>, 
+        <pre style="display:inline">right</pre></p>
       <p>Rotate an object:<pre>/object rotate [DEGREES]</pre></p>
       <p>Bring object to you:<pre>/object fetch</pre></p>
       <p>Move object left/right:<pre>/object x [UNITS]</pre></p>
       <p>Move object up/down (into sky/into ground):<pre>/object y [UNITS]</pre></p>
       <p>Move object up/down (into screen/out of screen):<pre>/object z [UNITS]</pre></p>
+      <p>Move object to absolute position:<pre>/object moveTo [X] [Y] [Z]</pre></p>
       <p>Clone (duplicate) an object:<pre>/object clone</pre></p>
       <strong>Teleportals</strong>
-      <p>Create a portal:<pre>/portal https://[URL] [radius]</pre>(Radius is optional)</p>
+      <p>Create a portal:<pre>/portal https://[URL] <br> [RADIUS]</pre>(Radius is optional)</p>
       <p>Find out what your coordinates are:<pre>/whereami</pre></p>
       <strong>Misc.</strong>
       <p>Reset everything about you (clears localStorage):<pre>/reset</pre></p>
+      <p>Set max zoom range:<pre>/zoomrange [ZOOMPRESET]</pre>
+        Where <pre style="display:inline">[ZOOMPRESET]</pre> is
+        <pre style="display:inline">max</pre> or
+        <pre style="display:inline">default</pre>
+      </p>
     </div>
   </div>
   
