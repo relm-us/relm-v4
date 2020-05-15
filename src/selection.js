@@ -37,7 +37,10 @@ const selectObject = () => {
   if (selectedObject != wouldSelectObject) {
     selectedObject = wouldSelectObject
     if (selectedObject) {
-      selectedObject.setEmissive(DECORATION_SELECTED_COLOR)
+      const isLocked = selectedObject.isUiLocked && selectedObject.isUiLocked()
+      if (!isLocked) {
+        selectedObject.setEmissive(DECORATION_SELECTED_COLOR)
+      }
     }
   }
 }

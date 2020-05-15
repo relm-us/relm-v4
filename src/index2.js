@@ -225,7 +225,6 @@ const start = async () => {
   })
   stage.add(mousePointer)
   
-  // let mousePos = new THREE.Vector3()
   let dragLock = false
   let dragStart = false
   let dragStartPos = null
@@ -234,8 +233,6 @@ const start = async () => {
   window.addEventListener('mousemove', (event) => {
     // Show mouse pointer
     mousePointer.setScreenCoords(event.clientX, event.clientY)
-    // mousePos.copy(player.object.position)
-    // mousePos.sub(mousePointer.object.position)
     
     // If mouse has moved a certain distance since clicking, then turn into a "drag"
     if (dragStart && !dragLock) {
@@ -279,9 +276,12 @@ const start = async () => {
     // This might be the beginning of a drag & drop sequence, so prep for that possibility
     const isect2 = mousePointer.getIntersectsGround()
     if (isect2.length > 0 && selectedObject) {
-      dragStart = true
-      dragStartPos = isect2[0].point
-      dragStartObjectPos.copy(selectedObject.object.position)
+      const isLocked = selectedObject.isUiLocked && selectedObject.isUiLocked()
+      if (!isLocked) {
+        dragStart = true
+        dragStartPos = isect2[0].point
+        dragStartObjectPos.copy(selectedObject.object.position)
+      }
     }
   })
   
@@ -573,14 +573,22 @@ const start = async () => {
           } else if (subCommand === 'lock') {
             if (object.uiLock) {
               object.uiLock()
+              setWouldSelectObject(null)
+              selectObject()
+              network.setEntity(object)
+              resultMsg = `Object locked (${object.uuid})`
             } else {
-              console.warn("Selected object can't be locked")
+              resultMsg = "Selected object can't be locked"
             }
           } else if (subCommand === 'unlock') {
             if (object.uiUnlock) {
               object.uiUnlock()
+              setWouldSelectObject(object)
+              selectObject()
+              network.setEntity(object)
+              resultMsg = `Object unlocked (${object.uuid})`
             } else {
-              console.warn("Selected object can't be unlocked")
+              resultMsg = "Selected object can't be unlocked"
             }
           }
         }

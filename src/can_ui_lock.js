@@ -3,21 +3,35 @@ import stampit from 'stampit'
 import { Component } from './component.js'
 
 const CanUiLock = stampit(Component, {
-  props: {
-    uiLocked: false
+  deepProps: {
+    state: {
+      uiLocked: {
+        target: false
+      }
+    }
   },
 
-  init({ uiLocked = this.uiLocked }) {
-    this.uiLocked = uiLocked
+  init({ uiLocked }) {
+    if (typeof uiLocked === 'undefined') {
+      this.state.uiLocked.target = false
+    } else {
+      this.state.uiLocked.target = uiLocked
+    }
   },
 
   methods: {
     uiLock() {
-      this.uiLocked = true
+      this.state.uiLocked.target = true
     },
 
     uiUnlock() {
-      this.uiLocked = false
+      this.state.uiLocked.target = false
+    },
+
+    isUiLocked() {
+      return this.state.uiLocked.target
     }
   }
 })
+
+export { CanUiLock }
