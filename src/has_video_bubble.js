@@ -103,6 +103,9 @@ const WithVideoBubble = stampit(EventEmittable, {
       
       const wrapper = this.domElement = document.createElement('div')
       wrapper.classList.add('video-wrapper')
+      wrapper.addEventListener('mousedown', (event) => {
+        event.preventDefault()
+      })
       
       wrapper.appendChild(circle)
       wrapper.appendChild(muteButton)

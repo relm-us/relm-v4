@@ -269,6 +269,8 @@ const start = async () => {
   })
   
   window.addEventListener('mousedown', (event) => {
+    if (event.target.id !== 'game' && event.target.id !== 'glcanvas') { return }
+    
     // Selects whatever the most recent 'mousemove' event got us closest to
     const isect = mousePointer.intersects
     setWouldSelectObject(isect.length === 0 ? null : isect[0].entity)
@@ -413,7 +415,7 @@ const start = async () => {
   const invite = document.getElementById('invite')
   const invitation = document.getElementById('invitation')
   const invitationInput = document.getElementById('invitation-input')
-  invite.addEventListener('click', () => {
+  invite.addEventListener('mousedown', (event) => {
     if (invitation.classList.contains('show')) {
       invitation.classList.remove('show')
     } else {
@@ -422,6 +424,7 @@ const start = async () => {
       invitationInput.value = `${window.location.origin}/?t=${invitationToken}`
       invitation.classList.add('show')
     }
+    event.preventDefault()
   })
   
   const doCommand = (command, args) => {
@@ -592,7 +595,8 @@ const start = async () => {
   }
   
   // Allow TAB and ESC keys to switch from text input to game view
-  document.getElementById('input').addEventListener('keydown', e => {
+  const inputEl = document.getElementById('input')
+  inputEl.addEventListener('keydown', e => {
     const text = e.target.value.trim()
     if (e.keyCode === 9 /* TAB */) {
       // Don't allow TAB to propagate up and cause focus to be switched us back to input
@@ -629,7 +633,11 @@ const start = async () => {
   })
 
   const pressTabHelp = document.getElementById('press-tab-help')
-  pressTabHelp.addEventListener('click', () => { pressTabHelp.classList.add('hide') })
+  pressTabHelp.addEventListener('mousedown', (event) => {
+    pressTabHelp.classList.add('hide')
+    // Don't move focus away from webgl canvas
+    event.preventDefault()
+  })
   
   const kbController = KeyboardController({ type: "keyboard", target: player })
   document.addEventListener('keydown', e => {
