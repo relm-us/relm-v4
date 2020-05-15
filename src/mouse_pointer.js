@@ -77,6 +77,11 @@ const UpdatesPositionFromScreenCoords = stampit(Component, {
         y: -(this.screenCoords.y / window.innerHeight) * 2 + 1
       }
     },
+
+    getIntersectsGround() {
+      this.screenRaycaster.setFromCamera(this.getMouseCoords(), this.stage.camera)
+      return this.screenRaycaster.intersectObject(this.stage.ground)
+    },
     
     getIntersects() {
       this.screenRaycaster.setFromCamera(this.getMouseCoords(), this.stage.camera)
@@ -104,7 +109,7 @@ const UpdatesPositionFromScreenCoords = stampit(Component, {
 
     update(delta) {
       this.getIntersects()
-      
+
       if (this.intersects.length > 0) {
         const ip = this.intersects[0].point
         const mp = this.object.position

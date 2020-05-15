@@ -225,28 +225,70 @@ const start = async () => {
   })
   stage.add(mousePointer)
   
-  let mousePos = new THREE.Vector3()
+  // let mousePos = new THREE.Vector3()
   let dragLock = false
-  let dragStart = {}
+  let dragStart = false
+  let dragStartPos = null
+  let dragStartObjectPos = new THREE.Vector3()
+  let dragDelta = new THREE.Vector3()
   window.addEventListener('mousemove', (event) => {
     // Show mouse pointer
     mousePointer.setScreenCoords(event.clientX, event.clientY)
-    mousePos.copy(player.object.position)
-    mousePos.sub(mousePointer.object.position)
+    // mousePos.copy(player.object.position)
+    // mousePos.sub(mousePointer.object.position)
+    
+    // If mouse has moved a certain distance since clicking, then turn into a "drag"
+    if (dragStart && !dragLock) {
+      const isect = mousePointer.getIntersectsGround()
+      if (isect.length > 0) {
+        const mousePos = isect[0].point
+        if (mousePos.distanceTo(dragStartPos) > 10) {
+          dragLock = true
+          console.log('dragLock true', mousePos)
+        }
+      }
+    }
+    
+    if (dragLock) {
+      const isect = mousePointer.getIntersectsGround()
+      if (isect.length > 0) {
+        dragDelta.copy(isect[0].point)
+        dragDelta.sub(dragStartPos)
+        console.log('mouseDelta', dragDelta)
+        
+        if (selectedObject) {
+          selectedObject.disableFollowsTarget()
+          dragDelta.add(dragStartObjectPos)
+          selectedObject.object.position.copy(dragDelta)
+          selectedObject.state.position.now.copy(dragDelta)
+          selectedObject.state.position.target.copy(dragDelta)
+          network.setEntity(selectedObject)
+        }
+      }
+    }
   })
   
   window.addEventListener('mousedown', (event) => {
-    dragStart.x = event.clientX
-    dragStart.y = event.clientY
-    
     // Selects whatever the most recent 'mousemove' event got us closest to
-    const intersects = mousePointer.intersects
-    setWouldSelectObject(intersects.length === 0 ? null : intersects[0].entity)
+    const isect = mousePointer.intersects
+    setWouldSelectObject(isect.length === 0 ? null : isect[0].entity)
     selectObject()
+    
+    // This might be the beginning of a drag & drop sequence, so prep for that possibility
+    const isect2 = mousePointer.getIntersectsGround()
+    if (isect2.length > 0) {
+      dragStart = true
+      dragStartPos = isect2[0].point
+      dragStartObjectPos.copy(selectedObject.object.position)
+    }
   })
   
   window.addEventListener('mouseup', (event) => {
+    dragStart = false
     dragLock = false
+    if (selectedObject && selectedObject.enableFollowsTarget) {
+      selectedObject.enableFollowsTarget()
+    }
   })
 
 
