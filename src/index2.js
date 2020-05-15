@@ -278,7 +278,7 @@ const start = async () => {
     
     // This might be the beginning of a drag & drop sequence, so prep for that possibility
     const isect2 = mousePointer.getIntersectsGround()
-    if (isect2.length > 0) {
+    if (isect2.length > 0 && selectedObject) {
       dragStart = true
       dragStartPos = isect2[0].point
       dragStartObjectPos.copy(selectedObject.object.position)
@@ -407,11 +407,6 @@ const start = async () => {
     }
   }, true)
   
-  // If at any time we discover that the focus is on the document body instead of the canvas, correct it
-  // setInterval(() => {
-  //   if (document.activeElement === document.body) { focusOnGame() }
-  // }, 250)
-
   const invite = document.getElementById('invite')
   const invitation = document.getElementById('invitation')
   const invitationInput = document.getElementById('invitation-input')
@@ -481,64 +476,121 @@ const start = async () => {
 
       case 'object':
       case 'obj':
+        let resultMsg = null
+        const object = selectedObject
         const subCommand = args[0]
-        const decoration = selectedObject
-        if (!decoration) {
-          console.log('Selected decoration not found')
-          return
+        if (!selectedObject) {
+          resultMsg = 'Selected object not found'
         } else {
-          console.log('Selected decoration', decoration)
+          console.log('Selected object', selectedObject)
           if (subCommand === 'up') {
-            decoration.state.orientation.target = 0
-            network.setEntity(decoration)
+            object.state.orientation.target = 0
+            network.setEntity(object)
+            resultMsg = 'Object is standing up (orientation 0)'
           } else if (subCommand === 'down') {
-            decoration.state.orientation.target = 3
-            network.setEntity(decoration)
+            object.state.orientation.target = 3
+            network.setEntity(object)
+            resultMsg = 'Object is lying down (orientation 3)'
           } else if (subCommand === 'left') {
-            decoration.state.orientation.target = 1
-            network.setEntity(decoration)
+            object.state.orientation.target = 1
+            network.setEntity(object)
+            resultMsg = 'Object is standing left (orientation 1)'
           } else if (subCommand === 'right') {
-            decoration.state.orientation.target = 2
-            network.setEntity(decoration)
+            object.state.orientation.target = 2
+            network.setEntity(object)
+            resultMsg = 'Object is standing right (orientation 2)'
           } else if (subCommand === 'rotate') {
-            decoration.state.imageRotation.target = parseFloat(args[1]) * -THREE.Math.DEG2RAD
-            network.setEntity(decoration)
+            const degrees = parseFloat(args[1])
+            const radians = degrees * -THREE.Math.DEG2RAD
+            object.state.imageRotation.target = radians
+            network.setEntity(object)
+            resultMsg = `Object rotated to ${degrees} deg (${radians} rad)`
           } else if (subCommand === 'delete') {
-            network.removeEntity(decoration.uuid)
+            network.removeEntity(object.uuid)
+            resultMsg = `Object ${object.uuid} deleted`
           } else if (subCommand === 'fetch') {
             const destination = new THREE.Vector3()
-            const y = decoration.state.position.now.y
+            const y = object.state.position.now.y
             destination.copy(player.state.position.now)
             destination.y = y
-            decoration.setPosition(destination)
-            network.setEntity(decoration)
-          } else if (subCommand === 'move') {
-            if (args[1]) { decoration.state.position.target.x += parseFloat(args[1]) }
-            if (args[2]) { decoration.state.position.target.y += parseFloat(args[2]) }
-            if (args[3]) { decoration.state.position.target.z += parseFloat(args[3]) }
-            network.setEntity(decoration)
-          } else if (subCommand === 'x') {
-            if (args[1]) { decoration.state.position.target.x += parseFloat(args[1]) }
-            network.setEntity(decoration)
-          } else if (subCommand === 'y') {
-            if (args[1]) { decoration.state.position.target.y += parseFloat(args[1]) }
-            network.setEntity(decoration)
-          } else if (subCommand === 'z') {
-            if (args[1]) { decoration.state.position.target.z += parseFloat(args[1]) }
-            network.setEntity(decoration)
-          } else if (subCommand === 'scale') {
-            if (args[1]) {
-              decoration.state.imageScale.target = parseFloat(args[1])
+            object.setPosition(destination)
+            network.setEntity(object)
+            resultMsg = `Object ${object.uuid} moved to x: ${parseInt(destination.x, 10)}, y: ${parseInt(destination.y, 10)}, z: ${parseInt(destionation.z, 10)}`
+          } else if (subCommand === 'moveTo') {
+            if (typeof args[1] === 'undefined' ||
+                typeof args[2] === 'undefined' ||
+                typeof args[3] === 'undefined') {
+              resultMsg = 'moveTo requires x, y, z coordinates'
+            } else {
+              const x = parseFloat(args[1])
+              const y = parseFloat(args[2])
+              const z = parseFloat(args[3])
+              object.state.position.target.copy({x, y, z})
+              network.setEntity(object)
+              resultMsg = `Moved object to x: ${parseInt(x, 10)}, y: ${parseInt(y, 10)}, z: ${parseInt(z, 10)}`
             }
-            network.setEntity(decoration)
+          } else if (subCommand === 'x') {
+            if (typeof args[1] === 'undefined') {
+              resultMsg = 'x command requires a value to move X by'
+            } else {
+              object.state.position.target.x += parseFloat(args[1])
+              network.setEntity(object)
+              resultMsg = `Moved X to ${parseInt(object.state.position.target.x, 10)}`
+            }
+          } else if (subCommand === 'y') {
+            if (typeof args[1] === 'undefined') {
+              resultMsg = 'y command requires a value to move Y by'
+            } else {
+              object.state.position.target.y += parseFloat(args[1])
+              network.setEntity(object)
+              resultMsg = `Moved Y to ${parseInt(object.state.position.target.y, 10)}`
+            }
+          } else if (subCommand === 'z') {
+            if (typeof args[1] === 'undefined') {
+              resultMsg = 'z command requires a value to move Z by'
+            } else {
+              object.state.position.target.z += parseFloat(args[1])
+              network.setEntity(object)
+              resultMsg = `Moved Z to ${parseInt(object.state.position.target.z, 10)}`
+            }
+          } else if (subCommand === 'scale') {
+            if (typeof args[1] === 'undefined') {
+              resultMsg = 'z command requires a value to move Z by'
+            } else {
+              const scale = parseFloat(args[1])
+              object.state.imageScale.target = scale
+              resultMsg = `Scaled object to ${scale}`
+            }
+            network.setEntity(object)
           } else if (subCommand === 'clone') {
-            const clonedState = stateToObject(decoration.type, decoration.state)
+            const clonedState = stateToObject(object.type, object.state)
             clonedState.position = Object.assign({}, clonedState.position)
             clonedState.position.x += 50
             clonedState.position.z += 50
-            console.log('clonedState', clonedState)
-            network.setState(uuidv4(), clonedState)
+            const newUuid = uuidv4()
+            network.setState(newUuid, clonedState)
+            resultMsg = `Cloned new object: ${newUuid}`
+          } else if (subCommand === 'lock') {
+            if (object.uiLock) {
+              object.uiLock()
+            } else {
+              console.warn("Selected object can't be locked")
+            }
+          } else if (subCommand === 'unlock') {
+            if (object.uiUnlock) {
+              object.uiUnlock()
+            } else {
+              console.warn("Selected object can't be unlocked")
+            }
           }
+        }
+        if (resultMsg) {
+          Toastify({
+            text: resultMsg,
+            duration: 3000,
+            close: true,
+            position: 'center'
+          }).showToast()
         }
         break
 
@@ -591,6 +643,8 @@ const start = async () => {
           position: 'center'
         }).showToast()
         break
+      
+        case 'lock':
     }
   }
   
