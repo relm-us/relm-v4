@@ -540,11 +540,11 @@ const start = async () => {
         }
         break
         
-      case 'collectall':
+      case 'collectallscaled':
         for (let uuid in stage.entities) {
           const entity = stage.entities[uuid]
           if (entity.receivesPointer && entity.setTexture) {
-            if (entity.texture) {
+            if (entity.texture && entity.state.imageScale.now <= 0.99 && entity.state.imageScale.now >= 1.01) {
               entity.state.position.target.x = 0
               entity.state.position.target.y = 1
               entity.state.position.target.z = 0
