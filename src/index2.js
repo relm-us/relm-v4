@@ -36,6 +36,9 @@ import { stateToObject } from './state_to_object.js'
 import "toastify-js/src/toastify.css"
 import { HasUniqueColor } from './has_unique_color.js'
 
+const IMAGE_FILETYPE_RE = /\.(png|gif|jpg|jpeg)$/
+const GLTF_FILETYPE_RE = /\.(gltf|glb)$/
+
 const cfg = config(window.location)
 const decorationLayerThickness = 0.01
 let toastMsg = null
@@ -150,6 +153,14 @@ const start = async () => {
   dropzone.on('addedfile', (file) => {
     previews.classList.add('show')
   })
+  dropzone.on('error', async (dz, error, xhr) => {
+    previews.classList.remove('show')
+    Toastify({
+      text: `Unable to upload: ${error.reason}`,
+      duration: 3000,
+      position: 'center'
+    }).showToast()
+  })
   dropzone.on('success', async (dz, response) => {
     // Close the upload box automatically
     previews.classList.remove('show')
@@ -159,20 +170,36 @@ const start = async () => {
     const url = cfg.SERVER_UPLOAD_URL + '/' + response.file
     mostRecentlyCreatedObjectId = uuidv4()
     console.log('mostRecentlyCreatedObjectId', mostRecentlyCreatedObjectId)
-    network.setState(mostRecentlyCreatedObjectId, {
-      type: 'decoration',
-      position: {
-        x: player.state.position.now.x,
-        y: player.state.position.now.y + decorationLayer, // a little above the ground
-        z: player.state.position.now.z,
-      },
-      asset: {
-        id: response.id,
-        url: url,
-      },
-      imageScale: 1.0,
-      orientation: 0
-    })
+    
+    if (response.file.match(IMAGE_FILETYPE_RE)) {
+      network.setState(mostRecentlyCreatedObjectId, {
+        type: 'decoration',
+        position: {
+          x: player.state.position.now.x,
+          y: player.state.position.now.y + decorationLayer, // a little above the ground
+          z: player.state.position.now.z,
+        },
+        asset: {
+          id: response.id,
+          url: url,
+        },
+        imageScale: 1.0,
+        orientation: 0
+      })
+    } else if (response.file.match(GLTF_FILETYPE_RE)) {
+      Toastify({
+        text: `GLTF and GLB support coming soon`,
+        duration: 3000,
+        position: 'center'
+      }).showToast()
+    } else {
+      const ext = /(?:\.([^.]+))?$/.exec(response.file)[1] || 'unknown'
+      Toastify({
+        text: `Upload canceled. We don't know how to use files of type ${ext}`,
+        duration: 3000,
+        position: 'center'
+      }).showToast()
+    }
   })
   dropzone.on('complete', (a) => {
     console.log('file upload complete', a)
