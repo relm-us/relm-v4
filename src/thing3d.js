@@ -11,6 +11,8 @@ import { NetworkSetsState } from './network_persistence.js'
 
 import { addDynamicGltfTo } from './manifest_loaders.js'
 
+const DEFAULT_SIZE = 100
+
 const getClonedMesh = (gltf) => {
   let mesh
   gltf.scene.traverse( o => {
@@ -25,7 +27,8 @@ const getClonedMesh = (gltf) => {
 
 const resizeObject3D = (object3d, largestSide) => {
   const bbox = new THREE.Box3().setFromObject(object3d)
-  const size = bbox.getSize()
+  let size = new THREE.Vector3()
+  bbox.getSize(size)
   let ratio
   if (size.x > size.y && size.x > size.z) {
     ratio = largestSide / size.x
@@ -38,7 +41,7 @@ const resizeObject3D = (object3d, largestSide) => {
 }
 
 const findFirstMesh = (object3d) => {
-  if (object3d.type === 'Object3D') {
+  if (object3d.type === 'Object3D' || object3d.type === 'Mesh') {
     return object3d
   }
   for (let child of object3d.children) {
@@ -106,24 +109,16 @@ const HasThing3D = stampit(Component, {
     
     setGltf(gltf) {
       // Search for mesh within scene
-      console.log('gltf.scene', gltf.scene)
-      // let mesh
-      // gltf.scene.traverse(o => {
-      //   if (!mesh && o.isMesh) {
-      //     mesh = o
-      //   }
-      // })
-      
-      const mesh = findFirstMesh(gltf.scene)
-      console.log('mesh', mesh)
-      if (mesh) {
-        this.object.add(mesh)
+      const object = findFirstMesh(gltf.scene)
+      if (object) {
+        object.scale.set(1, 1, 1)
+        object.position.set(0, 0, 0)
+        resizeObject3D(object, DEFAULT_SIZE)
+        this.object.add(object)
+        // Adjust object so it's centered & sitting on the ground
+        // const globalbbox = new THREE.Box3().setFromObject(this.object)
+        // this.state.position.target.y -= globalbbox.y
       }
-      // this.object.add(gltf.scene)
-      
-      // Adjust object so it's centered & sitting on the ground
-      // const globalbbox = new THREE.Box3().setFromObject(this.object)
-      // this.state.position.target.y -= globalbbox.y
     },
     
     update(delta) {
