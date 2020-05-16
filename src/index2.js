@@ -541,17 +541,20 @@ const start = async () => {
         break
         
       case 'collectallscaled':
+        let collectionCount = 0
         for (let uuid in stage.entities) {
           const entity = stage.entities[uuid]
           if (entity.receivesPointer && entity.setTexture) {
-            if (entity.texture && entity.state.imageScale.now <= 0.99 && entity.state.imageScale.now >= 1.01) {
+            if (entity.texture && (entity.state.imageScale.now <= 0.99 || entity.state.imageScale.now >= 1.01)) {
               entity.state.position.target.x = 0
               entity.state.position.target.y = 1
               entity.state.position.target.z = 0
               network.setEntity(entity)
+              collectionCount++
             }
           }
         }
+        toastMsg = `Collected ${collectionCount} objects to center of world`
         break
 
       
