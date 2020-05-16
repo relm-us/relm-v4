@@ -48,4 +48,9 @@ const addDynamicImageTo = async (resourceLoader, id, path) => {
   return await resourceLoader.getAsync(id)
 }
 
-export { addManifestTo, addDynamicImageTo }
+const addDynamicGltfTo = async (resourceLoader, id, path) => {
+  resourceLoader.add(id, regularGLTFLoader, path)
+  return await resourceLoader.getAsync(id)
+}
+
+export { addManifestTo, addDynamicImageTo, addDynamicGltfTo }

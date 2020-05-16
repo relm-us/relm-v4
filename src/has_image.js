@@ -5,7 +5,7 @@ import { addDynamicImageTo } from './manifest_loaders.js'
 
 const {
   PlaneGeometry,
-  MeshPhongMaterial,
+  MeshStandardMaterial,
   Mesh,
 } = THREE
 
@@ -90,7 +90,7 @@ const HasImage = stampit(Component, {
       )
       // console.log(this.texture)
 
-      this.material = new THREE.MeshStandardMaterial({
+      this.material = new MeshStandardMaterial({
         color: 0xffffff,
         map: this.texture,
         alphaTest: 0.2,

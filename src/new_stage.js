@@ -101,12 +101,15 @@ const Stage = stampit(
       )
       this.frustum.setFromProjectionMatrix(this.projScreenMatrix)
       this.entitiesOnStage.length = 0
+      const bbox = new THREE.Box3()
       for (let uuid in this.entities) {
         const entity = this.entities[uuid]
         // Record entities within camera view
         if (entity.object && entity.object.children.length > 0) {
           const child = entity.object.children[0]
-          if (child.geometry && this.frustum.intersectsObject(child)) {
+          
+          bbox.setFromObject(child)
+          if (this.frustum.intersectsBox(bbox)) {
             this.entitiesOnStage.push(entity)
           }
         }

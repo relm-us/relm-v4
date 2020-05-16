@@ -132,6 +132,9 @@ const UpdatesPositionFromScreenCoords = stampit(Component, {
     
     getIntersects() {
       this.screenRaycaster.setFromCamera(this.getMouseCoords(), this.stage.camera)
+      // Using a list of entites that are currently on stage, filter for those 
+      // that can receive mouse pointer, and return their Object3D.
+      //
       // This `reduce` is equivalent to a `.map` and a `.filter`, combined for speed
       const objects = this.stage.entitiesOnStage.reduce((accum, entity) => {
         if (entity.receivesPointer) {

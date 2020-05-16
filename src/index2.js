@@ -35,6 +35,7 @@ import { stateToObject } from './state_to_object.js'
 
 import "toastify-js/src/toastify.css"
 import { HasUniqueColor } from './has_unique_color.js'
+import { Thing3D } from './thing3d.js'
 
 const IMAGE_FILETYPE_RE = /\.(png|gif|jpg|jpeg)$/
 const GLTF_FILETYPE_RE = /\.(gltf|glb)$/
@@ -187,11 +188,18 @@ const start = async () => {
         orientation: 0
       })
     } else if (response.file.match(GLTF_FILETYPE_RE)) {
-      Toastify({
-        text: `GLTF and GLB support coming soon`,
-        duration: 3000,
-        position: 'center'
-      }).showToast()
+      network.setState(mostRecentlyCreatedObjectId, {
+        type: 'thing3d',
+        position: {
+          x: player.state.position.now.x,
+          y: player.state.position.now.y,
+          z: player.state.position.now.z,
+        },
+        asset: {
+          id: response.id,
+          url: url,
+        }
+      })
     } else {
       const ext = /(?:\.([^.]+))?$/.exec(response.file)[1] || 'unknown'
       Toastify({
@@ -412,6 +420,13 @@ const start = async () => {
           setWouldSelectObject(decoration)
           selectObject()
         }
+        break
+      
+      case 'thing3d':
+        const thing3d = Thing3D(Object.assign({
+          speed: 500,
+        }, state, { uuid }))
+        stage.add(thing3d)
         break
       
       case 'mouse':

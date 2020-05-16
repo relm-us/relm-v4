@@ -21,9 +21,11 @@ const HasEmissiveMaterial = stampit(Component, {
   methods: {
     setEmissive(color) {
       this.emissiveColor = color
-      if (this.material) {
-        this.material.emissive = color
-      }
+      this.object.traverse(o => {
+        if (o.isMesh) {
+          o.material.emissive = color
+        }
+      })
     },
   }
 })
