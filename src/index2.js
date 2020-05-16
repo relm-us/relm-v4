@@ -544,10 +544,26 @@ const start = async () => {
         for (let uuid in stage.entities) {
           const entity = stage.entities[uuid]
           if (entity.receivesPointer && entity.setTexture) {
-            const h = entity.texture.image.height
-            const s = entity.state.imageScale.now
-            entity.state.position.target.y += ((h * s) / 2 - (h / 2)) * s
-            network.setEntity(entity)
+            if (entity.texture) {
+              const h = entity.texture.image.height
+              const s = entity.state.imageScale.now
+              entity.state.position.target.y += ((h * s) / 2 - (h / 2)) * s
+              network.setEntity(entity)
+            }
+          }
+        }
+        break
+      
+      case 'antiabracadabra':
+        for (let uuid in stage.entities) {
+          const entity = stage.entities[uuid]
+          if (entity.receivesPointer && entity.setTexture) {
+            if (entity.texture) {
+              const h = entity.texture.image.height
+              const s = entity.state.imageScale.now
+              entity.state.position.target.y += ((h * s) / 2 - (h / 2)) * s
+              network.setEntity(entity)
+            }
           }
         }
         break
