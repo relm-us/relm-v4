@@ -109,12 +109,15 @@ const HasImage = stampit(Component, {
       
       this.mesh = new Mesh(this.geometry, this.material)
       this.mesh.receiveShadow = true
-      this.mesh.position.set(0, this.texture.image.height/2 * this.state.imageScale.now, 0)
       
       this.object.add(this.mesh)
       
       this.setRotationFromState()
       this.setScaleFromState()
+    },
+    
+    setPositionFromState() {
+      this.object.position.copy(this.state.position.now)
     },
     
     setRotationFromState() {
@@ -149,6 +152,7 @@ const HasImage = stampit(Component, {
     setScaleFromState() {
       const scale = this.state.imageScale.now
       this.object.scale.set(scale, scale, scale)
+      this.mesh.position.set(0, this.texture.image.height/2, 0)
     },
     
     /**
