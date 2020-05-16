@@ -121,7 +121,6 @@ const HasImage = stampit(Component, {
     },
     
     setRotationFromState() {
-      const scale = this.state.imageScale.now
       const rot = this.state.imageRotation.now
       switch(this.state.orientation.now) {
         case Orientation.up:

@@ -39,10 +39,12 @@ import { Thing3D } from './thing3d.js'
 
 const IMAGE_FILETYPE_RE = /\.(png|gif|jpg|jpeg)$/
 const GLTF_FILETYPE_RE = /\.(gltf|glb)$/
+const TOAST_DEFAULT_WAIT = 3000
 
 const cfg = config(window.location)
 const decorationLayerThickness = 0.01
 let toastMsg = null
+let toastWait = TOAST_DEFAULT_WAIT
 let decorationLayer = 0
 let mostRecentlyCreatedObjectId = null
 
@@ -537,6 +539,18 @@ const start = async () => {
           }
         }
         break
+      
+      case 'abracadabra':
+        for (let uuid in stage.entities) {
+          const entity = stage.entities[uuid]
+          if (entity.receivesPointer && entity.setTexture) {
+            const h = entity.texture.image.height
+            const s = entity.state.imageScale.now
+            entity.state.position.target.y += ((h * s) / 2 - (h / 2)) * s
+            network.setEntity(entity)
+          }
+        }
+        break
 
       case 'object':
       case 'obj':
@@ -546,7 +560,12 @@ const start = async () => {
           toastMsg = 'Selected object not found'
         } else {
           console.log('Selected object', selectedObject)
-          if (subCommand === 'up') {
+          if (subCommand === 'info') {
+            const p = selectedObject.object.position
+            const m = selectedObject.mesh.position
+            toastMsg = `object pos: {x: ${p.x}, y: ${p.y}, z: ${p.y}}, mesh pos: {x: ${m.x}, y: ${m.y}, z: ${m.z}}`
+            toastWait = 0
+          } else if (subCommand === 'up') {
             object.state.orientation.target = 0
             network.setEntity(object)
             toastMsg = 'Object is standing up (orientation 0)'
@@ -723,9 +742,10 @@ const start = async () => {
     if (toastMsg) {
       Toastify({
         text: toastMsg,
-        duration: 3000,
+        duration: toastWait,
         position: 'center'
       }).showToast()
+      toastWait = TOAST_DEFAULT_WAIT
     }
   }
   
