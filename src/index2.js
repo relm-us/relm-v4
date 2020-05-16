@@ -156,7 +156,7 @@ const start = async () => {
   dropzone.on('error', async (dz, error, xhr) => {
     previews.classList.remove('show')
     Toastify({
-      text: `Unable to upload: ${error.reason}`,
+      text: `Unable to upload: ${error.reason} (note: 2MB file size limit)`,
       duration: 3000,
       position: 'center'
     }).showToast()
