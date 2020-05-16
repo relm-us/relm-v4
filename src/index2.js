@@ -739,8 +739,8 @@ const start = async () => {
         if (args.length === 1) {
           switch (args[0]) {
             case 'max':
-              stage.minFov = 50.0
-              stage.maxFov = 500.0
+              stage.minFov = 20.0
+              stage.maxFov = 800.0
               break
             default:
               stage.setDefaultFovRange()
