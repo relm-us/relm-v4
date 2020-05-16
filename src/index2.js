@@ -549,6 +549,9 @@ const start = async () => {
               entity.state.position.target.x = 0
               entity.state.position.target.y = 1
               entity.state.position.target.z = 0
+              if (entity.uiUnlock) {
+                entity.uiUnlock()
+              }
               network.setEntity(entity)
               collectionCount++
             }
