@@ -15,7 +15,15 @@ const NetworkSetsState = stampit(Component, {
         for (let k in object) {
           if (k === 'type') { continue }
           if (!this.state[k]) { this.state[k] = {} }
-          this.state[k].target = object[k]
+          if (k === 'quaternion') {
+            // Hack that quaternions serialize themselves with _x,_y,_z,_w
+            // but need to be unserialized with .set
+            // TODO: Fix this with get/set style assignment
+            const q = object[k]
+            this.state[k].target.set(q._x, q._y, q._z, q._w)
+          } else {
+            this.state[k].target = object[k]
+          }
         }
       })
     }
