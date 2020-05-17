@@ -39,7 +39,7 @@ import { Thing3D } from './thing3d.js'
 
 const IMAGE_FILETYPE_RE = /\.(png|gif|jpg|jpeg)$/
 const GLTF_FILETYPE_RE = /\.(gltf|glb)$/
-const TOAST_DEFAULT_WAIT = 3000
+const TOAST_DEFAULT_WAIT = 4000
 
 const cfg = config(window.location)
 const decorationLayerThickness = 0.01
@@ -52,6 +52,14 @@ let mostRecentlyCreatedObjectId = null
 Dropzone.autoDiscover = false
 
 const security = Security()
+
+const showToast = (msg, wait = TOAST_DEFAULT_WAIT) => {
+  Toastify({
+    text: msg,
+    duration: wait,
+    position: 'center'
+  }).showToast()
+}
 
 const UpdatesLabelToUniqueColor = stampit(Component, {
   init() {
@@ -158,11 +166,7 @@ const start = async () => {
   })
   dropzone.on('error', async (dz, error, xhr) => {
     previews.classList.remove('show')
-    Toastify({
-      text: `Unable to upload: ${error.reason} (note: 2MB file size limit)`,
-      duration: 3000,
-      position: 'center'
-    }).showToast()
+    showToast(`Unable to upload: ${error.reason} (note: 2MB file size limit)`)
   })
   dropzone.on('success', async (dz, response) => {
     // Close the upload box automatically
@@ -187,10 +191,12 @@ const start = async () => {
           url: url,
         },
         imageScale: 1.0,
-        orientation: 0
+        orientation: 0,
       })
     } else if (response.file.match(GLTF_FILETYPE_RE)) {
-      network.setState(mostRecentlyCreatedObjectId, {
+      // Load it before adding to the network so we can normalize the scale
+      const thing3d = Thing3D({
+        uuid: uuidv4(), // need to create
         type: 'thing3d',
         position: {
           x: player.state.position.now.x,
@@ -200,15 +206,24 @@ const start = async () => {
         asset: {
           id: response.id,
           url: url,
-        }
+        },
+        scale: 1.0,
       })
+      // The `normalize` step happens just once after loading
+      thing3d.once('loaded', () => {
+        thing3d.normalize()
+        network.setEntity(thing3d)
+        
+        // Select the thing that was just uploaded
+        setWouldSelectObject(thing3d)
+        selectObject()
+        
+        showToast(`Uploaded with scale normalized to ${parseInt(thing3d.state.scale.target, 10)}`)
+      }) 
+      stage.add(thing3d)
     } else {
       const ext = /(?:\.([^.]+))?$/.exec(response.file)[1] || 'unknown'
-      Toastify({
-        text: `Upload canceled. We don't know how to use files of type ${ext}`,
-        duration: 3000,
-        position: 'center'
-      }).showToast()
+      showToast(`Upload canceled. We don't know how to use files of type ${ext}`)
     }
   })
   dropzone.on('complete', (a) => {
@@ -413,7 +428,6 @@ const start = async () => {
         break
       
       case 'decoration':
-        // console.log('adding decoration, state:', state)
         const decoration = Decoration(Object.assign({
           speed: 500,
         }, state, { uuid }))
@@ -677,10 +691,14 @@ const start = async () => {
               toastMsg = 'z command requires a value to move Z by'
             } else {
               const scale = parseFloat(args[1])
-              object.state.imageScale.target = scale
-              toastMsg = `Scaled object to ${scale}`
+              if (object.setScale) {
+                object.setScale(scale)
+                network.setEntity(object)
+                toastMsg = `Scaled object to ${scale}`
+              } else {
+                toastMsg = "Object doesn't support setScale"
+              }
             }
-            network.setEntity(object)
           } else if (subCommand === 'clone') {
             const clonedState = stateToObject(object.type, object.state)
             clonedState.position = Object.assign({}, clonedState.position)
@@ -777,12 +795,7 @@ const start = async () => {
     }
     
     if (toastMsg) {
-      Toastify({
-        text: toastMsg,
-        duration: toastWait,
-        position: 'center'
-      }).showToast()
-      toastWait = TOAST_DEFAULT_WAIT
+      showToast(toastMsg, toastWait)
     }
   }
   

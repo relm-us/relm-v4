@@ -148,6 +148,10 @@ const HasImage = stampit(Component, {
       }
     },
     
+    setScale(scale) {
+      this.state.imageScale.target = scale
+    },
+
     setScaleFromState() {
       const scale = this.state.imageScale.now
       this.object.scale.set(scale, scale, scale)
@@ -161,12 +165,11 @@ const HasImage = stampit(Component, {
      * @param {AssetDesc} asset 
      */
     async loadAsset(asset) {
-      // Register this uploaded image as a resource that can be used as a texture
-      await addDynamicImageTo(this.resources, asset.id, asset.url)
       
       // Get the texture and create a decoration locally
       try {
-        const texture = await resources.getAsync(asset.id)
+        // Register this uploaded image as a resource that can be used as a texture
+        const texture = await addDynamicImageTo(this.resources, asset.id, asset.url)
         if (texture) {
           this.setTexture(texture)
         }
