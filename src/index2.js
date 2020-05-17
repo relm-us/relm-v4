@@ -27,6 +27,7 @@ import { LocalstoreGetsState, localstoreRestoreState } from './localstore_gets_s
 import { MousePointer, OtherMousePointer } from './mouse_pointer.js'
 import { Decoration } from './decoration.js'
 import { Teleportal } from './teleportal.js'
+import { InteractionDiamond } from './interaction_diamond.js'
 import { Component } from './component.js'
 import { uuidv4 } from './util.js'
 import config from './config.js'
@@ -437,6 +438,13 @@ const start = async () => {
         }, state, { uuid }))
         stage.add(thing3d)
         break
+        
+      case 'diamond':
+        const diamond = InteractionDiamond(Object.assign({
+
+        }, state, { uuid }))
+        stage.add(diamond)
+        break
       
       case 'mouse':
         const mousePointer = OtherMousePointer(Object.assign({}, state, { uuid }))
@@ -497,6 +505,17 @@ const start = async () => {
   
   const doCommand = (command, args) => {
     switch (command) {
+      case 'dia':
+        const position = player.state.position.now
+        const diamond = InteractionDiamond({
+          type: 'diamond',
+          position,
+        })
+        diamond.object.position.copy(position)
+        diamond.state.position.target.y += 100
+        network.setEntity(diamond)
+        // stage.add(diamond)
+        break
       case 'home':
         player.warpToPosition({x:0,y:0,z:0})
         break
@@ -746,6 +765,7 @@ const start = async () => {
         const radius = parseInt(args[1] || '150')
         const url = args[0]
         const tp = Teleportal({
+          // FIXME: should add UUID here
           type: 'teleportal',
           target: player,
           url: url,
