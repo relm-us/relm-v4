@@ -7,7 +7,7 @@ const CAMERA_DEFAULT_PERSPECTIVE_RATIO = 11.25 / CAMERA_DEFAULT_ISOMETRY
 const CAMERA_DEFAULT_POSITION = new Vector3(0, 4000, 5000)
 
 const FOV_DEFAULT_MIN = 75.0
-const FOV_DEFAULT_MAX = 180.0
+const FOV_DEFAULT_MAX = 220.0
 
 const SceneWithCamera = stampit({
   name: 'SceneWithCamera',
