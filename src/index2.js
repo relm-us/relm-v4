@@ -850,16 +850,16 @@ const start = async () => {
   
   const kbController = KeyboardController({ type: "keyboard", target: player })
   document.addEventListener('keydown', e => {
-    if (e.keyCode === 8) {
-      // Don't accidentally allow backspace to trigger browser back
-      e.preventDefault()
-    }
     
     if (e.target === stage.renderer.domElement) {
       kbController.keyPressed(e.keyCode, { shift: e.shiftKey, ctrl: e.ctrlKey, meta: e.metaKey })
+      // Don't accidentally allow backspace to trigger browser back
+      if (e.keyCode === 8) {
+        e.preventDefault()
+      }
       // This makes it so that 'tab' is controlled by us, rather than
       // the default HTML tabIndex system
-      if (e.keyCode === 9) {
+      else if (e.keyCode === 9) {
         e.preventDefault()
       } else if (e.keyCode === 191 /* Forward Slash */) {
         e.preventDefault()
