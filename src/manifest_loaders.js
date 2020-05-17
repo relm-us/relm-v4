@@ -19,8 +19,7 @@ const manifestMeta = {
     ['sparkle', 'sparkle_blue.png'],
   ],
   'RegularGLTFLoader': [
-    // ['town', 'town.glb'],
-    // ['island', 'oneisland.glb'],
+    ['interact', 'interact-diamond.glb'],
   ],
   'MeshoptGLTFLoader': [
     ['people', 'people-packed.glb']

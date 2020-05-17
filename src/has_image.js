@@ -151,6 +151,10 @@ const HasImage = stampit(Component, {
     setScale(scale) {
       this.state.imageScale.target = scale
     },
+    
+    getScale() {
+      return this.state.imageScale.now
+    },
 
     setScaleFromState() {
       const scale = this.state.imageScale.now
@@ -160,6 +164,10 @@ const HasImage = stampit(Component, {
     
     setRotation(radians) {
       this.state.imageRotation.target = radians
+    },
+    
+    getRotation() {
+      return this.state.imageRotation.now
     },
     
     /**

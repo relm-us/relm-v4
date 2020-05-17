@@ -1,7 +1,6 @@
 import stampit from 'stampit'
 
 import Dropzone from 'dropzone'
-import Toastify from 'toastify-js'
 import { DOMReady } from './domready.js'
 import { addManifestTo } from './manifest_loaders.js'
 import { guestNameFromPlayerId, avatarOptionFromPlayerId, avatarOptionsOfGender } from './avatars.js'
@@ -9,6 +8,7 @@ import { Security } from './security.js'
 import { initializeAVChat, muteAudio, unmuteAudio } from './avchat.js'
 import { normalizeWheel } from './lib/normalizeWheel.js'
 import { setWouldSelectObject, selectObject, selectedObject } from './selection.js'
+import { showToast, showPrevioustToast } from './lib/Toast.js'
 
 import { Entity, stage, network } from './entity.js'
 import { HasObject } from './has_object.js'
@@ -36,15 +36,13 @@ import { stateToObject } from './state_to_object.js'
 import "toastify-js/src/toastify.css"
 import { HasUniqueColor } from './has_unique_color.js'
 import { Thing3D } from './thing3d.js'
+import { UpdatesLabelToUniqueColor } from './updates_label_to_unique_color.js'
 
 const IMAGE_FILETYPE_RE = /\.(png|gif|jpg|jpeg)$/
 const GLTF_FILETYPE_RE = /\.(gltf|glb)$/
-const TOAST_DEFAULT_WAIT = 4000
 
 const cfg = config(window.location)
 const decorationLayerThickness = 0.01
-let toastMsg = null
-let toastWait = TOAST_DEFAULT_WAIT
 let decorationLayer = 0
 let mostRecentlyCreatedObjectId = null
 
@@ -53,26 +51,6 @@ Dropzone.autoDiscover = false
 
 const security = Security()
 
-const showToast = (msg, wait = TOAST_DEFAULT_WAIT) => {
-  Toastify({
-    text: msg,
-    duration: wait,
-    position: 'center'
-  }).showToast()
-}
-
-const UpdatesLabelToUniqueColor = stampit(Component, {
-  init() {
-    this.updatesLabelColor = new THREE.Color()
-  },
-  
-  methods: {
-    update(delta) {
-      this.updatesLabelColor.setHex(this.getUniqueColor())
-      this.setLabelUnderlineColor(this.updatesLabelColor)
-    }
-  }
-})
 const Player = stampit(
   Entity,
   HasObject,
@@ -118,7 +96,7 @@ const start = async () => {
   addManifestTo(resources)
   
   // Stage 1 Resource Load: Bare essentials
-  resources.enqueue(['people', 'sparkle', 'marble'])
+  resources.enqueue(['people', 'interact', 'sparkle', 'marble'])
   await resources.load()
 
   stage.setGroundTexture(resources.get('marble'))
@@ -571,7 +549,7 @@ const start = async () => {
             }
           }
         }
-        toastMsg = `Collected ${collectionCount} objects to center of world`
+        showToast(`Collected ${collectionCount} objects to center of world`)
         break
 
       
@@ -608,33 +586,36 @@ const start = async () => {
         const object = selectedObject
         const subCommand = args[0]
         if (!selectedObject) {
-          toastMsg = 'Selected object not found'
+          showToast('Selected object not found')
         } else {
           console.log('Selected object', selectedObject)
           if (subCommand === 'info') {
             const p = selectedObject.object.position
-            const m = selectedObject.mesh.position
-            toastMsg = `object pos: {x: ${p.x}, y: ${p.y}, z: ${p.y}}, mesh pos: {x: ${m.x}, y: ${m.y}, z: ${m.z}}`
-            toastWait = 0
+            const scale = selectedObject.getScale()
+            const rotation = selectedObject.getRotation() / -THREE.Math.DEG2RAD
+            showToast(
+              `object pos: {x: ${p.x.toFixed(1)}, y: ${p.y.toFixed(1)}, z: ${p.y.toFixed(1)}}<br>` +
+              `scale: ${scale.toFixed(1)}<br>` +
+              `rotation: ${rotation.toFixed(1)}`)
           } else if (subCommand === 'up') {
             object.state.orientation.target = 0
             network.setEntity(object)
-            toastMsg = 'Object is standing up (orientation 0)'
+            showToast('Object is standing up (orientation 0)')
           } else if (subCommand === 'down') {
             object.state.orientation.target = 3
             network.setEntity(object)
-            toastMsg = 'Object is lying down (orientation 3)'
+            showToast('Object is lying down (orientation 3)')
           } else if (subCommand === 'left') {
             object.state.orientation.target = 1
             network.setEntity(object)
-            toastMsg = 'Object is standing left (orientation 1)'
+            showToast('Object is standing left (orientation 1)')
           } else if (subCommand === 'right') {
             object.state.orientation.target = 2
             network.setEntity(object)
-            toastMsg = 'Object is standing right (orientation 2)'
+            showToast('Object is standing right (orientation 2)')
           } else if (subCommand === 'delete') {
             network.removeEntity(object.uuid)
-            toastMsg = `Object ${object.uuid} deleted`
+            showToast(`Object ${object.uuid} deleted`)
           } else if (subCommand === 'fetch') {
             const destination = new THREE.Vector3()
             const y = object.state.position.now.y
@@ -642,60 +623,60 @@ const start = async () => {
             destination.y = y
             object.setPosition(destination)
             network.setEntity(object)
-            toastMsg = `Object ${object.uuid} moved to x: ${parseInt(destination.x, 10)}, y: ${parseInt(destination.y, 10)}, z: ${parseInt(destionation.z, 10)}`
+            showToast(`Object ${object.uuid} moved to x: ${parseInt(destination.x, 10)}, y: ${parseInt(destination.y, 10)}, z: ${parseInt(destionation.z, 10)}`)
           } else if (subCommand === 'moveTo') {
             if (typeof args[1] === 'undefined' ||
                 typeof args[2] === 'undefined' ||
                 typeof args[3] === 'undefined') {
-              toastMsg = 'moveTo requires x, y, z coordinates'
+              showToast('moveTo requires x, y, z coordinates')
             } else {
               const x = parseFloat(args[1])
               const y = parseFloat(args[2])
               const z = parseFloat(args[3])
               object.state.position.target.copy({x, y, z})
               network.setEntity(object)
-              toastMsg = `Moved object to x: ${parseInt(x, 10)}, y: ${parseInt(y, 10)}, z: ${parseInt(z, 10)}`
+              showToast(`Moved object to x: ${parseInt(x, 10)}, y: ${parseInt(y, 10)}, z: ${parseInt(z, 10)}`)
             }
           } else if (subCommand === 'x') {
             if (typeof args[1] === 'undefined') {
-              toastMsg = 'x command requires a value to move X by'
+              showToast('x command requires a value to move X by')
             } else {
               object.state.position.target.x += parseFloat(args[1])
               network.setEntity(object)
-              toastMsg = `Moved X to ${parseInt(object.state.position.target.x, 10)}`
+              showToast(`Moved X to ${parseInt(object.state.position.target.x, 10)}`)
             }
           } else if (subCommand === 'y') {
             if (typeof args[1] === 'undefined') {
-              toastMsg = 'y command requires a value to move Y by'
+              showToast('y command requires a value to move Y by')
             } else {
               object.state.position.target.y += parseFloat(args[1])
               network.setEntity(object)
-              toastMsg = `Moved Y to ${parseInt(object.state.position.target.y, 10)}`
+              showToast(`Moved Y to ${parseInt(object.state.position.target.y, 10)}`)
             }
           } else if (subCommand === 'z') {
             if (typeof args[1] === 'undefined') {
-              toastMsg = 'z command requires a value to move Z by'
+              showToast('z command requires a value to move Z by')
             } else {
               object.state.position.target.z += parseFloat(args[1])
               network.setEntity(object)
-              toastMsg = `Moved Z to ${parseInt(object.state.position.target.z, 10)}`
+              showToast(`Moved Z to ${parseInt(object.state.position.target.z, 10)}`)
             }
           } else if (subCommand === 'scale') {
             if (typeof args[1] === 'undefined') {
-              toastMsg = 'scale command requires a value to scale by'
+              showToast('scale command requires a value to scale by')
             } else {
               const scale = parseFloat(args[1])
               if (object.setScale) {
                 object.setScale(scale)
                 network.setEntity(object)
-                toastMsg = `Scaled object to ${scale}`
+                showToast(`Scaled object to ${scale}`)
               } else {
-                toastMsg = "Object doesn't support setScale"
+                showToast("Object doesn't support setScale")
               }
             }
           } else if (subCommand === 'rotate') {
             if (typeof args[1] === 'undefined') {
-              toastMsg = 'rotate command requires a value to rotate by'
+              showToast('rotate command requires a value to rotate by')
             } else {
               const degrees = parseFloat(args[1])
               const radians = degrees * -THREE.Math.DEG2RAD
@@ -703,9 +684,9 @@ const start = async () => {
                 object.setRotation(radians)
                 // object.state.imageRotation.target = radians
                 network.setEntity(object)
-                toastMsg = `Object rotated to ${degrees} deg (${radians} rad)`
+                showToast(`Object rotated to ${degrees} deg (${radians} rad)`)
               } else {
-                toastMsg = "Object doesn't support setRotation"
+                showToast("Object doesn't support setRotation")
               }
             }
           } else if (subCommand === 'clone') {
@@ -715,16 +696,16 @@ const start = async () => {
             clonedState.position.z += 50
             const newUuid = uuidv4()
             network.setState(newUuid, clonedState)
-            toastMsg = `Cloned new object: ${newUuid}`
+            showToast(`Cloned new object: ${newUuid}`)
           } else if (subCommand === 'lock') {
             if (object.uiLock) {
               object.uiLock()
               setWouldSelectObject(null)
               selectObject()
               network.setEntity(object)
-              toastMsg = `Object locked (${object.uuid})`
+              showToast(`Object locked (${object.uuid})`)
             } else {
-              toastMsg = "Selected object can't be locked"
+              showToast("Selected object can't be locked")
             }
           } else if (subCommand === 'unlock') {
             if (object.uiUnlock) {
@@ -732,9 +713,9 @@ const start = async () => {
               setWouldSelectObject(object)
               selectObject()
               network.setEntity(object)
-              toastMsg = `Object unlocked (${object.uuid})`
+              showToast(`Object unlocked (${object.uuid})`)
             } else {
-              toastMsg = "Selected object can't be unlocked"
+              showToast("Selected object can't be unlocked")
             }
           }
         }
@@ -779,9 +760,9 @@ const start = async () => {
               stage.setDefaultFovRange()
               break
           }
-          toastMsg = `zoomrange set to ${stage.minFov}, ${stage.maxFov}`
+          showToast(`zoomrange set to ${stage.minFov}, ${stage.maxFov}`)
         } else {
-          toastMsg = 'zoomrange requires min and max'
+          showToast('zoomrange requires min and max')
         }
         break
         
@@ -799,12 +780,8 @@ const start = async () => {
       
       case 'whereami':
         const pos = player.object.position
-        toastMsg = `You are at x: ${parseInt(pos.x, 10)}, y: ${parseInt(pos.y, 10)}, z: ${parseInt(pos.z, 10)}`
+        showToast(`You are at x: ${parseInt(pos.x, 10)}, y: ${parseInt(pos.y, 10)}, z: ${parseInt(pos.z, 10)}`)
         break
-    }
-    
-    if (toastMsg) {
-      showToast(toastMsg, toastWait)
     }
   }
   
@@ -855,6 +832,11 @@ const start = async () => {
   
   const kbController = KeyboardController({ type: "keyboard", target: player })
   document.addEventListener('keydown', e => {
+    if (e.keyCode === 8) {
+      // Don't accidentally allow backspace to trigger browser back
+      e.preventDefault()
+    }
+    
     if (e.target === stage.renderer.domElement) {
       kbController.keyPressed(e.keyCode, { shift: e.shiftKey, ctrl: e.ctrlKey, meta: e.metaKey })
       // This makes it so that 'tab' is controlled by us, rather than

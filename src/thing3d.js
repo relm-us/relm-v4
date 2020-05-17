@@ -121,6 +121,10 @@ const HasThing3D = stampit(Component, {
       this.state.scale.target = scale
     },
     
+    getScale() {
+      return this.state.scale.now
+    },
+    
     setScaleFromState() {
       const scale = this.state.scale.now
       this.object.scale.set(scale, scale, scale)
@@ -128,6 +132,11 @@ const HasThing3D = stampit(Component, {
     
     setRotation(radians) {
       this.state.quaternion.target.setFromAxisAngle(this.object.up, radians)
+    },
+    
+    getRotation() {
+      // return this.state.quaternion.target.angleTo(this.object.up)
+      return this.object.rotation.y
     },
     
     setQuaternionFromState() {
