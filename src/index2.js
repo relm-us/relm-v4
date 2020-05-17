@@ -596,7 +596,7 @@ const start = async () => {
             if (entity.texture) {
               const h = entity.texture.image.height
               const s = entity.state.imageScale.now
-              entity.state.position.target.y += ((h * s) / 2 - (h / 2)) * s
+              entity.state.position.target.y -= ((h * s) / 2 - (h / 2)) * s
               network.setEntity(entity)
             }
           }
@@ -632,12 +632,6 @@ const start = async () => {
             object.state.orientation.target = 2
             network.setEntity(object)
             toastMsg = 'Object is standing right (orientation 2)'
-          } else if (subCommand === 'rotate') {
-            const degrees = parseFloat(args[1])
-            const radians = degrees * -THREE.Math.DEG2RAD
-            object.state.imageRotation.target = radians
-            network.setEntity(object)
-            toastMsg = `Object rotated to ${degrees} deg (${radians} rad)`
           } else if (subCommand === 'delete') {
             network.removeEntity(object.uuid)
             toastMsg = `Object ${object.uuid} deleted`
@@ -688,7 +682,7 @@ const start = async () => {
             }
           } else if (subCommand === 'scale') {
             if (typeof args[1] === 'undefined') {
-              toastMsg = 'z command requires a value to move Z by'
+              toastMsg = 'scale command requires a value to scale by'
             } else {
               const scale = parseFloat(args[1])
               if (object.setScale) {
@@ -697,6 +691,21 @@ const start = async () => {
                 toastMsg = `Scaled object to ${scale}`
               } else {
                 toastMsg = "Object doesn't support setScale"
+              }
+            }
+          } else if (subCommand === 'rotate') {
+            if (typeof args[1] === 'undefined') {
+              toastMsg = 'rotate command requires a value to rotate by'
+            } else {
+              const degrees = parseFloat(args[1])
+              const radians = degrees * -THREE.Math.DEG2RAD
+              if (object.setRotation) {
+                object.setRotation(radians)
+                // object.state.imageRotation.target = radians
+                network.setEntity(object)
+                toastMsg = `Object rotated to ${degrees} deg (${radians} rad)`
+              } else {
+                toastMsg = "Object doesn't support setRotation"
               }
             }
           } else if (subCommand === 'clone') {

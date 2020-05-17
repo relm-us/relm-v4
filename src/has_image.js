@@ -158,6 +158,10 @@ const HasImage = stampit(Component, {
       this.mesh.position.set(0, this.texture.image.height/2, 0)
     },
     
+    setRotation(radians) {
+      this.state.imageRotation.target = radians
+    },
+    
     /**
      * Loads a given asset as the image texture. Uses ResourceLoader so we keep a local cache
      * of images and save on load time in case of redundancy.

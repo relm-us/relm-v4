@@ -48,6 +48,9 @@ const findFirstMesh = (object3d) => {
 
 const HasThing3D = stampit(Component, {
   deepProps: {
+    fastforward: {
+      quaternion: true,
+    },
     state: {
       scale: {
         now: 1.0,
@@ -65,11 +68,18 @@ const HasThing3D = stampit(Component, {
       this.state.scale.now = this.state.scale.target = scale
     }
     
-    this.state.quaternion.now = new THREE.Quaternion()
+    this.state.quaternion.now = new THREE.Quaternion(0, 0, 0, 1)
     this.state.quaternion.target = new THREE.Quaternion()
     if (quaternion) {
-      this.state.quaternion.now.copy(quaternion)
-      this.state.quaternion.target.copy(quaternion)
+      const q = quaternion
+      const qtarget = this.state.quaternion.target
+      if ('_x' in q) {
+        qtarget.set(q._x, q._y, q._z, q._w)
+      } else if ('x' in q) {
+        qtarget.set(q.x, q.y, q.z, q.w)
+      } else {
+        console.error('Thing3D expects quaternion to have `x` or `_x` keys', quaternion)
+      }
     }
     
     this.loader = addDynamicGltfTo
@@ -109,11 +119,31 @@ const HasThing3D = stampit(Component, {
       this.object.scale.set(scale, scale, scale)
     },
     
+    setRotation(radians) {
+      console.log('setRotation', radians, this.state.quaternion)
+      this.state.quaternion.target.setFromAxisAngle(this.object.up, radians)
+    },
+    
+    setQuaternionFromState() {
+      this.object.quaternion.copy(this.state.quaternion.now)
+    },
+    
     update(delta) {
       const scaleDelta = Math.abs(this.state.scale.now - this.state.scale.target)
       if (scaleDelta > 0.01) {
         this.state.scale.now = this.state.scale.target
         this.setScaleFromState()
+      }
+      
+      const angleDelta = Math.abs(this.state.quaternion.now.angleTo(this.state.quaternion.target))
+      if (angleDelta > 0.01) {
+        if (this.fastforward.quaternion) {
+          this.state.quaternion.now.copy(this.state.quaternion.target)
+          this.fastforward.quaternion = false
+        } else {
+          this.state.quaternion.now.slerp(this.state.quaternion.target, 0.1)
+        }
+        this.setQuaternionFromState()
       }
     }
   }
