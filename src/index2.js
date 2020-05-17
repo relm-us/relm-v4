@@ -49,6 +49,19 @@ let mostRecentlyCreatedObjectId = null
 // Don't look for 'dropzone' in HTML tags
 Dropzone.autoDiscover = false
 
+const showInfoAboutObject = (entity) => {
+  const p = entity.object.position
+  const scale = entity.getScale()
+  const rotation = entity.getRotation() / -THREE.Math.DEG2RAD
+  showToast(
+    `type: ${entity.type}<br>` +
+    `uuid: ${entity.uuid}<br>` +
+    `position: {x: ${p.x.toFixed(1)}, y: ${p.y.toFixed(1)}, z: ${p.y.toFixed(1)}}<br>` +
+    `scale: ${scale.toFixed(1)}<br>` +
+    `rotation: ${rotation.toFixed(1)}<br>`
+  )
+}
+
 const security = Security()
 
 const Player = stampit(
@@ -590,13 +603,7 @@ const start = async () => {
         } else {
           console.log('Selected object', selectedObject)
           if (subCommand === 'info') {
-            const p = selectedObject.object.position
-            const scale = selectedObject.getScale()
-            const rotation = selectedObject.getRotation() / -THREE.Math.DEG2RAD
-            showToast(
-              `object pos: {x: ${p.x.toFixed(1)}, y: ${p.y.toFixed(1)}, z: ${p.y.toFixed(1)}}<br>` +
-              `scale: ${scale.toFixed(1)}<br>` +
-              `rotation: ${rotation.toFixed(1)}`)
+            showInfoAboutObject(selectedObject)
           } else if (subCommand === 'up') {
             object.state.orientation.target = 0
             network.setEntity(object)
@@ -827,6 +834,15 @@ const start = async () => {
   pressTabHelp.addEventListener('mousedown', (event) => {
     pressTabHelp.classList.add('hide')
     // Don't move focus away from webgl canvas
+    event.preventDefault()
+  })
+  
+  document.addEventListener('contextmenu', (event) => {
+    const isect = mousePointer.intersects
+    if (isect.length > 0) {
+      const clickedEntity = isect[0].entity
+      showInfoAboutObject(clickedEntity)
+    }
     event.preventDefault()
   })
   
