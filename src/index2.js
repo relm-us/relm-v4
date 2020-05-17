@@ -53,9 +53,11 @@ const showInfoAboutObject = (entity) => {
   const p = entity.object.position
   const scale = entity.getScale()
   const rotation = entity.getRotation() / -THREE.Math.DEG2RAD
+  const assetURL = entity.state.asset ? entity.state.asset.now.url : 'none'
   showToast(
     `type: ${entity.type}<br>` +
     `uuid: ${entity.uuid}<br>` +
+    `asset: <a href="${assetURL}" style="color:white">${assetURL}</a><br>` +
     `position: {x: ${p.x.toFixed(1)}, y: ${p.y.toFixed(1)}, z: ${p.y.toFixed(1)}}<br>` +
     `scale: ${scale.toFixed(1)}<br>` +
     `rotation: ${rotation.toFixed(1)}<br>`
