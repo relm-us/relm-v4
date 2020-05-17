@@ -52,17 +52,31 @@ Dropzone.autoDiscover = false
 
 const showInfoAboutObject = (entity) => {
   const p = entity.object.position
-  const scale = entity.getScale()
-  const rotation = entity.getRotation() / -THREE.Math.DEG2RAD
-  const assetURL = entity.state.asset ? entity.state.asset.now.url : 'none'
-  showToast(
-    `type: ${entity.type}<br>` +
-    `uuid: ${entity.uuid}<br>` +
-    `asset: <a href="${assetURL}" style="color:white">${assetURL}</a><br>` +
-    `position: {x: ${p.x.toFixed(1)}, y: ${p.y.toFixed(1)}, z: ${p.y.toFixed(1)}}<br>` +
-    `scale: ${scale.toFixed(1)}<br>` +
-    `rotation: ${rotation.toFixed(1)}<br>`
-  )
+  const infos = [
+    `type: ${entity.type}`,
+    `uuid: ${entity.uuid}`,
+    `position: {x: ${p.x.toFixed(1)}, y: ${p.y.toFixed(1)}, z: ${p.y.toFixed(1)}}`,
+  ]
+  
+  if (entity.state.asset) {
+    const url = entity.state.asset.now.url
+    infos.push(`url: <a href="${url}" style="color:white">${url}</a>`)
+  } else if (entity.state.link) {
+    const url = entity.state.link.now || '[not set]'
+    infos.push(`url: <a href="${url}" style="color:white">${url}</a>`)
+  }
+  
+  if (entity.getScale) {
+    const scale = entity.getScale()
+    infos.push(`scale: ${scale.toFixed(1)}`)
+  }
+  
+  if (entity.getRotation) {
+    const rotation = entity.getRotation() / -THREE.Math.DEG2RAD
+    infos.push(`rotation: ${rotation.toFixed(1)}`)
+  }
+  
+  showToast(infos.join('<br>'))
 }
 
 const security = Security()
@@ -336,7 +350,17 @@ const start = async () => {
     
     // Selects whatever the most recent 'mousemove' event got us closest to
     const isect = mousePointer.intersects
-    setWouldSelectObject(isect.length === 0 ? null : isect[0].entity)
+    if (isect.length === 0) {
+      setWouldSelectObject(null)
+    } else {
+      const entity = isect[0].entity
+      setWouldSelectObject(entity)
+      
+      const isLocked = entity && entity.isUiLocked && entity.isUiLocked()
+      if (isLocked && entity.onClick) {
+        entity.onClick()
+      }
+    }
     selectObject()
     
     // This might be the beginning of a drag & drop sequence, so prep for that possibility
@@ -505,17 +529,20 @@ const start = async () => {
   
   const doCommand = (command, args) => {
     switch (command) {
-      case 'dia':
+      case 'link':
         const position = player.state.position.now
+        const link = args[0]
         const diamond = InteractionDiamond({
           type: 'diamond',
           position,
+          link,
         })
         diamond.object.position.copy(position)
         diamond.state.position.target.y += 100
         network.setEntity(diamond)
         // stage.add(diamond)
         break
+      
       case 'home':
         player.warpToPosition({x:0,y:0,z:0})
         break

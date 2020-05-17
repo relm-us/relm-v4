@@ -7,10 +7,27 @@ import { ReceivesPointer } from './receives_pointer.js'
 import { FollowsTarget } from './follows_target.js'
 import { NetworkSetsState } from './network_persistence.js'
 import { GlowMaterial } from './glow_material.js'
+import { HasEmissiveMaterial } from './has_emissive_material.js'
+import { CanUiLock } from './can_ui_lock.js'
 
 /*
 */
 const HasGlowingDiamond = stampit(Component, {
+  deepProps: {
+    state: {
+      link: {
+        now: null,
+        target: null
+      }
+    }
+  },
+
+  init({ link }) {
+    if (link) {
+      this.state.link.now = this.state.link.target = link
+    }
+  },
+
   methods: {
     createDiamond() {
       const gltf = this.resources.get('interact')
@@ -38,11 +55,18 @@ const HasGlowingDiamond = stampit(Component, {
     },
     
     createLight() {
-      const light = new THREE.PointLight(0xffdd44, 0.4, 500, 2)
+      const light = new THREE.PointLight(0xffdd44, 0.4, 1000, 2)
       // light.position.set(0, 1, 0)
       this.object.add(light)
     },
-
+    
+    onClick() {
+      const link = this.state.link.now
+      if (link && link.match(/^http(s):/)) {
+        window.open(link, '_blank')
+      }
+    },
+    
     setup() {
       this.createDiamond()
       this.createGlow()
@@ -67,6 +91,8 @@ const InteractionDiamond = stampit(
   Entity,
   HasObject,
   HasGlowingDiamond,
+  HasEmissiveMaterial,
+  CanUiLock,
   ReceivesPointer,
   FollowsTarget,
   NetworkSetsState
