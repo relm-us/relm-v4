@@ -23,7 +23,6 @@ const DEFAULT_SIZE = 100
  */
 const getScaleRatio = (object3d, largestSide) => {
   const bbox = new THREE.Box3().setFromObject(object3d)
-  console.log('scalefornorm bbox', bbox, object3d)
   let size = new THREE.Vector3()
   bbox.getSize(size)
   let ratio
@@ -49,7 +48,7 @@ const findFirstMesh = (object3d) => {
 const HasThing3D = stampit(Component, {
   deepProps: {
     fastforward: {
-      quaternion: true,
+      quaternion: false,
     },
     state: {
       scale: {
@@ -72,14 +71,22 @@ const HasThing3D = stampit(Component, {
     this.state.quaternion.target = new THREE.Quaternion()
     if (quaternion) {
       const q = quaternion
-      const qtarget = this.state.quaternion.target
+      const target = this.state.quaternion.target
       if ('_x' in q) {
-        qtarget.set(q._x, q._y, q._z, q._w)
+        target.set(q._x, q._y, q._z, q._w)
       } else if ('x' in q) {
-        qtarget.set(q.x, q.y, q.z, q.w)
+        target.set(q.x, q.y, q.z, q.w)
       } else {
         console.error('Thing3D expects quaternion to have `x` or `_x` keys', quaternion)
       }
+    } else {
+      this.state.quaternion.target.copy(this.state.quaternion.now)
+    }
+    
+    // On first load, we want to skip the slerp animation if `now` and `target` differ
+    const angleDelta = Math.abs(this.state.quaternion.now.angleTo(this.state.quaternion.target))
+    if (angleDelta > 0.01) {
+      this.fastforward.quaternion = true
     }
     
     this.loader = addDynamicGltfTo
@@ -120,7 +127,6 @@ const HasThing3D = stampit(Component, {
     },
     
     setRotation(radians) {
-      console.log('setRotation', radians, this.state.quaternion)
       this.state.quaternion.target.setFromAxisAngle(this.object.up, radians)
     },
     
