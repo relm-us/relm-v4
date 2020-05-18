@@ -29,7 +29,7 @@ const GlowMaterial = new THREE.ShaderMaterial({
   uniforms: {},
   vertexShader,
   fragmentShader,
-  side: THREE.BothSide,
+  side: THREE.DoubleSide,
   blending: THREE.AdditiveBlending,
   transparent: true
 })
