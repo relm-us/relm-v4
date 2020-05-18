@@ -9,6 +9,7 @@ import { NetworkSetsState } from './network_persistence.js'
 import { GlowMaterial } from './glow_material.js'
 import { HasEmissiveMaterial } from './has_emissive_material.js'
 import { CanUiLock } from './can_ui_lock.js'
+import { HasLabel } from './has_label.js'
 
 /*
 */
@@ -99,7 +100,12 @@ const InteractionDiamond = stampit(
   CanUiLock,
   ReceivesPointer,
   FollowsTarget,
-  NetworkSetsState
+  NetworkSetsState,
+  HasLabel, {
+    init() {
+      this.labelOffset = { x: 0, y: 0, z: 120 }
+    }
+  }
 )
 
 export { InteractionDiamond }

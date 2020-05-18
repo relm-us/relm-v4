@@ -475,7 +475,6 @@ const start = async () => {
         
       case 'diamond':
         const diamond = InteractionDiamond(Object.assign({
-
         }, state, { uuid }))
         stage.add(diamond)
         break
@@ -541,16 +540,22 @@ const start = async () => {
     switch (command) {
       case 'link':
         const position = player.state.position.now
-        const link = args[0]
-        const diamond = InteractionDiamond({
-          type: 'diamond',
-          position,
-          link,
-        })
-        diamond.object.position.copy(position)
-        // Make it about chest-height by default
-        diamond.state.position.target.y += 100
-        network.setEntity(diamond)
+        if (typeof args[0] !== 'undefined') {
+          const link = args[0]
+          const label = args[1] || null
+          const diamond = InteractionDiamond({
+            type: 'diamond',
+            label,
+            position,
+            link,
+          })
+          diamond.object.position.copy(position)
+          // Make it about chest-height by default
+          diamond.state.position.target.y += 100
+          network.setEntity(diamond)
+        } else {
+          showToast('Link requires a URL')
+        }
         break
       
       case 'home':
@@ -569,10 +574,10 @@ const start = async () => {
           if (index < avatarOptions.length) {
             player.state.animationMeshName.target = avatarOptions[index].avatarId
           } else {
-            console.warn("Can't get avatar")
+            showToast('Pick a number between 0 and 8 for your avatar')
           }
         } else {
-          console.warn('Gender not available')
+          showToast('Pick a gender of "f" or "m" for your avatar')
         }
         break
       
@@ -670,8 +675,12 @@ const start = async () => {
             } else {
               const newLink = args[1]
               object.state.link.target = newLink
+              
+              const label = args[2] || null
+              object.setLabel(label)
+              
               network.setEntity(object)
-              showToast(`Object link set to ${newLink}`)
+              showToast(`Object link set to ${newLink}, label ${label}`)
             }
           } else if (subCommand === 'up') {
             object.state.orientation.target = 0
