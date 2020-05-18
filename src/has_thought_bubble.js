@@ -7,7 +7,8 @@ import { ThoughtBubble } from './thought_bubble.js'
 
 const HasThoughtBubble = stampit(Entity, Component, EventEmittable, {
   props: {
-    thoughtBubble: null
+    thoughtBubble: null,
+    thoughtBubbleOffset: null,
   },
 
   deepProps: {
@@ -18,10 +19,25 @@ const HasThoughtBubble = stampit(Entity, Component, EventEmittable, {
       }
     }
   },
+  
+  init({ thoughtBubbleOffset }) {
+    this.thoughtBubbleOffset = thoughtBubbleOffset || {x: 0, y: 0, z: 0}
+  },
 
   methods: {
     setThought(text) {
-      this.state.thought.target = text
+      if (text === "") {
+        this.state.thought.target = null
+      } else {
+        this.state.thought.target = text
+      }
+    },
+
+    hasThought() {
+      if (!this.thoughtBubble) {
+        return false
+      }
+      return !!this.state.thought.now
     },
 
     setup() {
@@ -39,13 +55,13 @@ const HasThoughtBubble = stampit(Entity, Component, EventEmittable, {
       let bounceMotion = 0
       // If we have a walking AnimationClip available, we can use its time tracker
       // to make the thought bubble look more real by making it bob up and down a bit
-      if (this.clips.walking) {
+      if (this.clips && this.clips.walking) {
         const walkCycleTime = this.clips.walking.time / this.clips.walking.getClip().duration
         bounceMotion = Math.sin(walkCycleTime * Math.PI * 4 + Math.PI/8) * 2
       }
       this.thoughtBubble.position.copy(this.object.position)
-      this.thoughtBubble.position.y += 100 + bounceMotion
-      this.thoughtBubble.position.x += 60
+      this.thoughtBubble.position.x += this.thoughtBubbleOffset.x
+      this.thoughtBubble.position.y += this.thoughtBubbleOffset.y + bounceMotion
       this.thoughtBubble.project(this.stage.width, this.stage.height)
     }
   }

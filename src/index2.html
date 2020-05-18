@@ -56,12 +56,16 @@
         width: $radius*2;
         height: $radius*2;
     */
+    .thought-bubble.centered {
+      transform: translate(-50%, -100%);
+    }
     .thought-bubble {
       position: absolute;
       transform: translate(0,-100%);
       z-index: 1;
     }
-    .thought-bubble-1 { /* smallest circle: closest to head */
+    .thought-dot-1.hide { display: none; }
+    .thought-dot-1 { /* smallest circle: closest to head */
       position: absolute;
       transform: translate(-50%,-50%);
       z-index: 1;
@@ -74,7 +78,8 @@
       bottom: 20px;
       opacity: 0.9;
     }
-    .thought-bubble-2 { /* small circle: between smallest circle & thought bubble */
+    .thought-dot-2.hide { display: none; }
+    .thought-dot-2 { /* small circle: between smallest circle & thought bubble */
       position: absolute;
       transform: translate(-50%,-50%);
       z-index: 1;
@@ -139,6 +144,7 @@
         95% 65.6%, 90% 71.8%, 80% 80%, 60% 90%, 40% 96%, 0 100%, 100% 100%
       );
     }
+    .thought-bubble-close.hide { display: none; }
     .thought-bubble-close {
       opacity: 0.9;
     }
@@ -547,11 +553,14 @@
       <p>Move object up/down (into screen/out of screen):<pre>/object z [UNITS]</pre></p>
       <p>Move object to absolute position:<pre>/object moveTo [X] [Y] [Z]</pre></p>
       <p>Clone (duplicate) an object:<pre>/object clone [COUNT]</pre>(<pre style="display:inline">[COUNT]</pre> is optional, default is 1)</p>
-      <strong>Portals & Links</strong>
+      <strong>Portals</strong>
       <p>Create a portal:<pre>/portal https://[URL] <br> [RADIUS]</pre>(<pre style="display:inline">[RADIUS]</pre> is optional, default is 150)</p>
-      <p>Create a diamond link:<pre>/link https://[URL]</pre></p>
-      <p>Find out what your coordinates are:<pre>/whereami</pre></p>
+      <strong>Signs</strong>
+      <p>Create a sign:<pre>/sign create [MESSAGE]</pre></p>
+      <p>Set a message for the selected sign:<pre>/sign message [MESSAGE]</pre></p>
+      <p>Set a label for the selected sign:<pre>/sign label [LABEL]</pre></p>
       <strong>Misc.</strong>
+      <p>Find out what your coordinates are:<pre>/whereami</pre></p>
       <p>Reset everything about you (clears localStorage):<pre>/reset</pre></p>
       <p>Set max zoom range:<pre>/zoomrange [ZOOMPRESET]</pre>
         Where <pre style="display:inline">[ZOOMPRESET]</pre> is

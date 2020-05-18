@@ -10,6 +10,9 @@ class ThoughtBubble {
     this.camera = camera
     this.text = null
     this.diameter = 0
+    this.enableCircle = true
+    this.enableDots = true
+    this.alignCenter = false
     this.position = new THREE.Vector3(0, 0, 0)
     this.screenPosition = new THREE.Vector3()
     this.createDomElement(actionCallback, closeCallback)
@@ -46,6 +49,52 @@ class ThoughtBubble {
       measurement
     }
   }
+  
+  switchToCircle() {
+    if (this.divElement) {
+      this.divElement.classList.add('circle-text')
+      this.divElement.classList.remove('rectangle-text')
+    }
+  }
+  
+  switchToRectangle() {
+    if (this.divElement) {
+      this.divElement.classList.add('rectangle-text')
+      this.divElement.classList.remove('circle-text')
+    }
+  }
+
+  showDots() {
+    [this.dot1, this.dot2].forEach(dot => {
+      if (dot) {
+        dot.classList.remove('hide')
+      }
+    })
+  }
+  
+  hideDots() {
+    [this.dot1, this.dot2].forEach(dot => {
+      if (dot) {
+        dot.classList.add('hide')
+      }
+    })
+  }
+  
+  showCloseIcon() {
+    this.closeIcon.classList.remove('hide')
+  }
+
+  hideCloseIcon() {
+    this.closeIcon.classList.add('hide')
+  }
+  
+  switchToCenterAligned() {
+    this.domElement.classList.add('centered')
+  }
+
+  switchToLeftAligned() {
+    this.domElement.classList.remove('centered')
+  }
 
   setText(text) {
     if (!text) {
@@ -74,9 +123,31 @@ class ThoughtBubble {
     // This is the thought bubble element inside the domElement wrapper
     this.divElement.style.width = this.diameter + 'px'
     this.divElement.style.height = this.diameter + 'px'
-    // Reset to 'circle' bubble, optimistic that text will fit
-    this.divElement.classList.add('circle-text')
-    this.divElement.classList.remove('rectangle-text')
+    
+    if (this.enableCircle) {
+      // Reset to 'circle' bubble, optimistic that text will fit
+      this.switchToCircle()
+    } else {
+      this.switchToRectangle()
+    }
+    
+    if (this.enableDots) {
+      this.showDots()
+    } else {
+      this.hideDots()
+    }
+
+    if (this.enableCloseIcon) {
+      this.showCloseIcon()
+    } else {
+      this.hideCloseIcon()
+    }
+    
+    if (this.alignCenter) {
+      this.switchToCenterAligned()
+    } else {
+      this.switchToLeftAligned()
+    }
 
     // Remove all <br> elements and text nodes    
     this.spanElement.innerHTML = ''
@@ -107,8 +178,8 @@ class ThoughtBubble {
     }
 
     if (checkOverflow(this.divElement)) {
-      this.divElement.classList.remove('circle-text')
-      this.divElement.classList.add('rectangle-text')
+      // Text won't fit in circle, so we must resort to a rectangle form
+      this.switchToRectangle()
     }
   }
 
@@ -131,7 +202,7 @@ class ThoughtBubble {
     // })
     wrapper.appendChild(div)
 
-    const closeIcon = document.createElement('div')
+    const closeIcon = this.closeIcon = document.createElement('div')
     closeIcon.classList.add('thought-bubble-close')
     closeIcon.classList.add('close')
     closeIcon.addEventListener('mousedown', (event) => {
@@ -140,13 +211,14 @@ class ThoughtBubble {
     })
     wrapper.appendChild(closeIcon)
     
-    const bubble1 = document.createElement('div')
-    bubble1.classList.add('thought-bubble-1')
-    wrapper.appendChild(bubble1)
+    // The "dots" here are the little visual thought bubble dots in comics
+    const dot1 = this.dot1 = document.createElement('div')
+    dot1.classList.add('thought-dot-1')
+    wrapper.appendChild(dot1)
 
-    const bubble2 = document.createElement('div')
-    bubble2.classList.add('thought-bubble-2')
-    wrapper.appendChild(bubble2)
+    const dot2 = this.dot2 = document.createElement('div')
+    dot2.classList.add('thought-dot-2')
+    wrapper.appendChild(dot2)
 
     const span = document.createElement('span')
     div.appendChild(span)

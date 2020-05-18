@@ -10,6 +10,7 @@ import { GlowMaterial } from './glow_material.js'
 import { HasEmissiveMaterial } from './has_emissive_material.js'
 import { CanUiLock } from './can_ui_lock.js'
 import { HasLabel } from './has_label.js'
+import { HasThoughtBubble } from './has_thought_bubble.js'
 
 /*
 */
@@ -62,9 +63,16 @@ const HasGlowingDiamond = stampit(Component, {
     },
     
     onClick() {
-      const link = this.state.link.now
-      if (link && link.match(/^http(s):/)) {
-        window.open(link, '_blank')
+      // Disable circle form of ThoughtBubble
+      this.thoughtBubble.enableCircle = false
+      // Disable dot..dot little circles of ThoughtBubble
+      this.thoughtBubble.enableDots = false
+      this.thoughtBubble.alignCenter = true
+      
+      if (this.hasThought()) {
+        this.setThought(null)
+      } else {
+        this.setThought(this.state.link.now)
       }
     },
     
@@ -101,11 +109,16 @@ const InteractionDiamond = stampit(
   ReceivesPointer,
   FollowsTarget,
   NetworkSetsState,
-  HasLabel, {
+  HasLabel,
+  HasThoughtBubble,
+  stampit({
     init() {
-      this.labelOffset = { x: 0, y: 0, z: 120 }
+      this.labelOffset = { x: 0, y: -70, z: 0 }
+      
+      console.log("assign this.thoughtBubbleOffset in InteractionDiamond")
+      this.thoughtBubbleOffset = { x: 0, y: 50 }
     }
-  }
+  })
 )
 
 export { InteractionDiamond }

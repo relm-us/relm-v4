@@ -366,10 +366,6 @@ const start = async () => {
       const entity = isect[0].entity
       setWouldSelectObject(entity)
       
-      const isLocked = entity && entity.isUiLocked && entity.isUiLocked()
-      if (isLocked && entity.onClick) {
-        entity.onClick()
-      }
     }
     selectObject()
     
@@ -386,11 +382,19 @@ const start = async () => {
   })
   
   window.addEventListener('mouseup', (event) => {
+    const entity = selectedObject
+    if (entity) {
+      // If we disabled FollowsTarget during drag/drop, re-enable it
+      if (entity.enableFollowsTarget) {
+        entity.enableFollowsTarget()
+      }
+      // If we didn't drag/drop the entity, call its onClick
+      if (!dragLock && entity && entity.onClick) {
+        entity.onClick()
+      }
+    }
     dragStart = false
     dragLock = false
-    if (selectedObject && selectedObject.enableFollowsTarget) {
-      selectedObject.enableFollowsTarget()
-    }
   })
 
 
@@ -538,23 +542,64 @@ const start = async () => {
   
   const doCommand = (command, args) => {
     switch (command) {
-      case 'link':
-        const position = player.state.position.now
-        if (typeof args[0] !== 'undefined') {
-          const link = args[0]
-          const label = args[1] || null
-          const diamond = InteractionDiamond({
-            type: 'diamond',
-            label,
-            position,
-            link,
-          })
-          diamond.object.position.copy(position)
-          // Make it about chest-height by default
-          diamond.state.position.target.y += 100
-          network.setEntity(diamond)
+      case 'sign':
+        if (typeof args === 'undefined' || typeof args[0] === 'undefined') {
+          showToast('`/sign` requires a subcommand, e.g. "create"')
         } else {
-          showToast('Link requires a URL')
+          const subCommand = args[0]
+          switch (subCommand) {
+            case 'create':
+              if (args.length < 2) {
+                showToast('`/sign create MESSAGE` requires MESSAGE')
+                return
+              }
+              // TODO: `link` should be renamed to something like `message`
+              const link = args.slice(1).join(' ')
+              const position = Object.assign({}, player.state.position.now)
+              const diamond = InteractionDiamond({
+                type: 'diamond',
+                position,
+                link,
+              })
+              diamond.object.position.copy(position)
+              // Make it about chest-height by default
+              diamond.state.position.target.y += 100
+              network.setEntity(diamond)
+              break
+            
+            case 'label':
+              if (!selectedObject) {
+                showToast('Requires a selected object')
+                return
+              }
+              if (args.length < 2) {
+                showToast('`/sign label LABEL` requires LABEL')
+                return
+              }
+              const label = args.slice(1).join(' ')
+              selectedObject.setLabel(label)
+              network.setEntity(selectedObject)
+              showToast(`Sign label set to "${label}" (${selectedObject.uuid})`)
+              break
+            
+            case 'message':
+              if (!selectedObject) {
+                showToast('Requires a selected object')
+                return
+              }
+              if (args.length < 2) {
+                showToast('`/link message MSG` requires MSG')
+                return
+              }
+              const message = args.slice(1).join(' ')
+              selectedObject.setThought(message)
+              network.setEntity(selectedObject)
+              showToast(`Sign message set to "${message}" (${selectedObject.uuid})`)
+              break
+            
+            default:
+              showToast('`/sign` subcommands are "create", "label", or "message"')
+          }
         }
         break
       
@@ -876,6 +921,9 @@ const start = async () => {
         const pos = player.object.position
         showToast(`You are at x: ${parseInt(pos.x, 10)}, y: ${parseInt(pos.y, 10)}, z: ${parseInt(pos.z, 10)}`)
         break
+        
+      default:
+        showToast(`As far as I know, this isn't a command: ${command}`)
     }
   }
   
