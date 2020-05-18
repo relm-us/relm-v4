@@ -83,6 +83,10 @@ const HasGlowingDiamond = stampit(Component, {
       this.diamond.scale.x = 1.0 + Math.sin(this.orbit) * 0.2
       this.diamond.scale.y = 1.0 + Math.sin(this.orbit) * 0.2
       this.object.rotation.y += Math.PI/2 * delta
+
+      if (this.state.link.now != this.state.link.target) {
+        this.state.link.now = this.state.link.target
+      }
     }
   }
 })

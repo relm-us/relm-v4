@@ -652,6 +652,17 @@ const start = async () => {
           console.log('Selected object', selectedObject)
           if (subCommand === 'info') {
             showInfoAboutObject(selectedObject)
+          } else if (subCommand === 'changelink') {
+            if (typeof args[1] === 'undefined') {
+              showToast('changelink expects URL')
+            } else if (!object.state.link) {
+              showToast("Object can't set link")
+            } else {
+              const newLink = args[1]
+              object.state.link.target = newLink
+              network.setEntity(object)
+              showToast(`Object link set to ${newLink}`)
+            }
           } else if (subCommand === 'up') {
             object.state.orientation.target = 0
             network.setEntity(object)
