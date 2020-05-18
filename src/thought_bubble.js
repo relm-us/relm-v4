@@ -92,12 +92,11 @@ class ThoughtBubble {
       },
     })
     // // If it's a short message, center it inside the bubble
-    // if (size.width < this.diameter - padding * 2) {
-    //   this.spanElement.classList.add('circle-text-center')
-    // } else {
-    //   this.spanElement.classList.remove('circle-text-center')
-    // }
-    this.spanElement.innerHTML = clickableText
+    if (size.width < this.diameter - padding * 2) {
+      this.spanElement.innerHTML = `<p>${clickableText}</p>`
+    } else {
+      this.spanElement.innerHTML = `${clickableText}`
+    }
 
     // If the clearText was called, make sure the thought bubble is now visible
     this.domElement.style.display = ''
