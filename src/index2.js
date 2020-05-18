@@ -766,13 +766,21 @@ const start = async () => {
               }
             }
           } else if (subCommand === 'clone') {
+            let count
+            if (typeof args[1] === 'undefined') {
+              count = 1
+            } else {
+              count = parseInt(args[1], 10)
+            }
             const clonedState = stateToObject(object.type, object.state)
             clonedState.position = Object.assign({}, clonedState.position)
-            clonedState.position.x += 50
-            clonedState.position.z += 50
-            const newUuid = uuidv4()
-            network.setState(newUuid, clonedState)
-            showToast(`Cloned new object: ${newUuid}`)
+            for (let i = 0; i < count; i++) {
+              clonedState.position.x += 50
+              clonedState.position.z += 50
+              const newUuid = uuidv4()
+              network.setState(newUuid, clonedState)
+              showToast(`Cloned new object: ${newUuid}`)
+            }
           } else if (subCommand === 'lock') {
             if (object.uiLock) {
               object.uiLock()

@@ -131,13 +131,13 @@ const Network = stampit(EventEmittable, {
             event.changes.keys.forEach(({ action }, uuid) => {
               const state = this.entityStates.get(uuid)
               if (action === 'add') {
-                console.log('entity added', uuid, state)
+                // console.log('entity added', uuid, state)
                 this.emit('add', uuid, state)
               } else if (action === 'delete') {
-                console.log('entity deleted', uuid)
+                // console.log('entity deleted', uuid)
                 this.emit('remove', uuid)
               } else if (action === 'update') {
-                console.log('entity updated', uuid)
+                // console.log('entity updated', uuid)
                 this.emit(`update-${uuid}`, state)
               } else {
                 console.warn('action not handled', action, uuid)
