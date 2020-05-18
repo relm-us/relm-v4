@@ -80,7 +80,6 @@ const showInfoAboutObject = (entity) => {
   if (isLockable) {
     const locked = entity.isUiLocked() ? 'locked' : 'unlocked'
     infos.push(`locked: ${locked}`)
-
   }
   
   showToast(infos.join('<br>'))
@@ -328,7 +327,7 @@ const start = async () => {
         const mousePos = isect[0].point
         if (mousePos.distanceTo(dragStartPos) > 10) {
           dragLock = true
-          console.log('dragLock true', mousePos)
+          // console.log('dragLock true', mousePos)
         }
       }
     }
@@ -338,7 +337,7 @@ const start = async () => {
       if (isect.length > 0) {
         dragDelta.copy(isect[0].point)
         dragDelta.sub(dragStartPos)
-        console.log('mouseDelta', dragDelta)
+        // console.log('mouseDelta', dragDelta)
         
         if (selectedObject) {
           selectedObject.disableFollowsTarget()
@@ -869,6 +868,7 @@ const start = async () => {
       e.stopPropagation()
       focusOnGame()
     } else if (e.keyCode === 27 /* ESC */) {
+      player.setThought(null)
       focusOnGame()
     } else if (e.keyCode === 13 /* ENTER */) {
       if (text.substring(0,1) === '/') {

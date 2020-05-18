@@ -36,14 +36,14 @@
     .mobile > img {
         position: relative;
     }
-    body, .mobile > img {
+    /* #glcanvas, .mobile > img {
       -webkit-touch-callout: none;
       -webkit-user-select: none; 
       -khtml-user-select: none; 
       -moz-user-select: none; 
       -ms-user-select: none; 
       user-select: none;
-    }
+    } */
 
     /*
       Thought Bubble CSS
@@ -87,19 +87,37 @@
       bottom: 18px;
       opacity: 0.9;
     }
+    .speech-text {
+      border: 2px solid #555;
+      background-color: white;
+      font: 14px sans-serif;
+      opacity: 0.9;
+    }
+    .speech-text a {
+      text-decoration: none;
+      font-weight: bold;
+    }
+    .rectangle-text {
+      text-align: center;
+      word-wrap: break-word;
+      overflow-y: auto;
+      border-radius: 7px;
+      text-align: left;
+      padding: 10px;
+      max-width: 300px;
+      max-height: 300px;
+    }
     .circle-text-center {
       position: relative;
       top: 25%;
     }
     .circle-text {
       border-radius: 100%;
-      border: 2px solid #555;
-      background-color: white;
-      font: 14px sans-serif;
       text-align: center;
-      overflow: hidden;
       padding: 5px;
-      opacity: 0.9;
+      overflow: hidden;
+      max-width: 300px;
+      max-height: 300px;
     }
     .circle-text::before{
       content: '';
@@ -122,9 +140,15 @@
       );
     }
     .thought-bubble-close {
+      opacity: 0.9;
+    }
+    .circle-text + .thought-bubble-close {
       right: 0px;
       top: 0px;
-      opacity: 0.9;
+    }
+    .rectangle-text + .thought-bubble-close {
+      right: -15px;
+      top: -15px;
     }
 
     .entity-label {
@@ -473,8 +497,8 @@
     .mute-button.muted {
       background-image: url(./icons/muted.png)
     }
-    
   </style>
+  
   <!-- Global site tag (gtag.js) - Google Analytics -->
   <script async src="https://www.googletagmanager.com/gtag/js?id=UA-166245735-1"></script>
   <script>

@@ -1,3 +1,10 @@
+// Creates links out of URLs
+import anchorme from 'anchorme'
+// Prevents XSS attacks in shared text messages
+import DOMPurify from 'dompurify'
+
+import { checkOverflow } from "./util.js"
+
 class ThoughtBubble {
   constructor(camera, actionCallback, closeCallback) {
     this.camera = camera
@@ -67,18 +74,30 @@ class ThoughtBubble {
     // This is the thought bubble element inside the domElement wrapper
     this.divElement.style.width = this.diameter + 'px'
     this.divElement.style.height = this.diameter + 'px'
+    // Reset to 'circle' bubble, optimistic that text will fit
+    this.divElement.classList.add('circle-text')
+    this.divElement.classList.remove('rectangle-text')
 
     // Remove all <br> elements and text nodes
     this.spanElement.innerHTML = ''
 
-    this.textNode = document.createTextNode(text)
+    const cleanText = DOMPurify.sanitize(text)
+    const clickableText = anchorme({input: cleanText,
+      options: {
+        truncate: 20,
+        middleTruncation: true,
+        attributes: {
+          target: '_blank',
+        },
+      },
+    })
     // If it's a short message, center it inside the bubble
     if (size.width < this.diameter - padding * 2) {
       this.spanElement.classList.add('circle-text-center')
     } else {
       this.spanElement.classList.remove('circle-text-center')
     }
-    this.spanElement.appendChild(this.textNode)
+    this.spanElement.innerHTML = clickableText
 
     // If the clearText was called, make sure the thought bubble is now visible
     this.domElement.style.display = ''
@@ -86,6 +105,11 @@ class ThoughtBubble {
     // createDomElement() doesn't attach the wrapper div to the document body
     if (!this.domElement.parentElement) {
       document.body.appendChild(this.domElement)
+    }
+
+    if (checkOverflow(this.divElement)) {
+      this.divElement.classList.remove('circle-text')
+      this.divElement.classList.add('rectangle-text')
     }
   }
 
@@ -100,11 +124,23 @@ class ThoughtBubble {
     
     const div = document.createElement('div') 
     div.classList.add('circle-text')
-    div.addEventListener('click', (event) => {
-      actionCallback(this, event)
-    }, true)
+    div.classList.add('speech-text')
+    // NOTE: This event listener prevents users from highlighting text (not yet sure why)
+    // div.addEventListener('mousedown', (event) => {
+    //   event.preventDefault()
+    //   actionCallback(this, event)
+    // })
     wrapper.appendChild(div)
 
+    const closeIcon = document.createElement('div')
+    closeIcon.classList.add('thought-bubble-close')
+    closeIcon.classList.add('close')
+    closeIcon.addEventListener('mousedown', (event) => {
+      event.preventDefault()
+      closeCallback(this, event)
+    })
+    wrapper.appendChild(closeIcon)
+    
     const bubble1 = document.createElement('div')
     bubble1.classList.add('thought-bubble-1')
     wrapper.appendChild(bubble1)
@@ -112,14 +148,6 @@ class ThoughtBubble {
     const bubble2 = document.createElement('div')
     bubble2.classList.add('thought-bubble-2')
     wrapper.appendChild(bubble2)
-
-    const closeIcon = document.createElement('div')
-    closeIcon.classList.add('thought-bubble-close')
-    closeIcon.classList.add('close')
-    closeIcon.addEventListener('click', (event) => {
-      closeCallback(this, event)
-    }, true)
-    wrapper.appendChild(closeIcon)
 
     const span = document.createElement('span')
     div.appendChild(span)
