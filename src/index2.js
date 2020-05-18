@@ -76,6 +76,13 @@ const showInfoAboutObject = (entity) => {
     infos.push(`rotation: ${rotation.toFixed(1)}`)
   }
   
+  const isLockable = !!entity.isUiLocked
+  if (isLockable) {
+    const locked = entity.isUiLocked() ? 'locked' : 'unlocked'
+    infos.push(`locked: ${locked}`)
+
+  }
+  
   showToast(infos.join('<br>'))
 }
 
@@ -538,9 +545,9 @@ const start = async () => {
           link,
         })
         diamond.object.position.copy(position)
+        // Make it about chest-height by default
         diamond.state.position.target.y += 100
         network.setEntity(diamond)
-        // stage.add(diamond)
         break
       
       case 'home':
