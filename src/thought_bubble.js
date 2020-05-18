@@ -84,7 +84,7 @@ class ThoughtBubble {
     const cleanText = DOMPurify.sanitize(text)
     const clickableText = anchorme({input: cleanText,
       options: {
-        truncate: 20,
+        truncate: 30,
         middleTruncation: true,
         attributes: {
           target: '_blank',
