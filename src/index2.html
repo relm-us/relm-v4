@@ -36,14 +36,14 @@
     .mobile > img {
         position: relative;
     }
-    /* #glcanvas, .mobile > img {
+    #game, .mobile > img {
       -webkit-touch-callout: none;
       -webkit-user-select: none; 
       -khtml-user-select: none; 
       -moz-user-select: none; 
       -ms-user-select: none; 
       user-select: none;
-    } */
+    }
 
     /*
       Thought Bubble CSS
@@ -58,6 +58,12 @@
     */
     .thought-bubble.centered {
       transform: translate(-50%, -100%);
+    }
+    .thought-bubble.centered .speech-text {
+      /* TODO: separate this into attribute other than `centered` */
+      color: white;
+      background-color: #444;
+      border: 2px solid white;
     }
     .thought-bubble {
       position: absolute;
@@ -98,9 +104,16 @@
       font: 14px sans-serif;
       opacity: 0.9;
     }
-    .speech-text a {
+    .thought-bubble.centered .speech-text a,
+    .thought-bubble.centered .speech-text:visited {
       text-decoration: none;
       font-weight: bold;
+      color: #f54;
+    }
+    .speech-text a, .speech-text:visited {
+      text-decoration: none;
+      font-weight: bold;
+      color: #f54;
     }
     .rectangle-text {
       text-align: center;

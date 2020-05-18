@@ -95,6 +95,19 @@ class ThoughtBubble {
   switchToLeftAligned() {
     this.domElement.classList.remove('centered')
   }
+  
+  getDiameterForCircleOfText(text) {
+    // W x H = area of a rectangle
+    // PI * r^2 = area of a circle
+    // so to find out how big of a thought bubble we need to create, we
+    // equate the two (W x H = PI * r^2) and then solve for 'r' (the radius):
+    const size = this.getTextDimensions(text)
+    const area = size.width * size.height
+    const extraSpace = 30 // add a little so bubbles are a bit bigger than they need to be
+    const radius = Math.ceil(Math.sqrt(area / Math.PI) + extraSpace) 
+
+    return radius * 2
+  }
 
   setText(text) {
     if (!text) {
@@ -108,25 +121,14 @@ class ThoughtBubble {
       return
     }
 
-    // W x H = area of a rectangle
-    // PI * r^2 = area of a circle
-    // so to find out how big of a thought bubble we need to create, we
-    // equate the two (W x H = PI * r^2) and then solve for 'r' (the radius):
-    const size = this.getTextDimensions(text)
-    const area = size.width * size.height
-    const padding = 5
-    const extraSpace = 30 // add a little so bubbles are a bit bigger than they need to be
-    const radius = Math.ceil(Math.sqrt(area / Math.PI) + extraSpace) 
 
-    this.diameter = radius * 2
-
-    // This is the thought bubble element inside the domElement wrapper
-    this.divElement.style.width = this.diameter + 'px'
-    this.divElement.style.height = this.diameter + 'px'
-    
     if (this.enableCircle) {
       // Reset to 'circle' bubble, optimistic that text will fit
       this.switchToCircle()
+      // This is the thought bubble element inside the domElement wrapper
+      this.divElement.style.width = this.diameter + 'px'
+      this.divElement.style.height = this.diameter + 'px'
+      this.diameter = this.getDiameterForCircleOfText(text)
     } else {
       this.switchToRectangle()
     }
@@ -162,9 +164,14 @@ class ThoughtBubble {
         },
       },
     })
-    // // If it's a short message, center it inside the bubble
-    if (size.width < this.diameter - padding * 2) {
-      this.spanElement.innerHTML = `<p>${clickableText}</p>`
+    if (this.enableCircle) {
+      const padding = 5
+      // If it's a short message, center it inside the bubble
+      if (size.width < this.diameter - padding * 2) {
+        this.spanElement.innerHTML = `<p>${clickableText}</p>`
+      } else {
+        this.spanElement.innerHTML = `${clickableText}`
+      }
     } else {
       this.spanElement.innerHTML = `${clickableText}`
     }
