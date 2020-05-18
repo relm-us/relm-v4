@@ -78,7 +78,7 @@ class ThoughtBubble {
     this.divElement.classList.add('circle-text')
     this.divElement.classList.remove('rectangle-text')
 
-    // Remove all <br> elements and text nodes
+    // Remove all <br> elements and text nodes    
     this.spanElement.innerHTML = ''
 
     const cleanText = DOMPurify.sanitize(text)
@@ -91,12 +91,12 @@ class ThoughtBubble {
         },
       },
     })
-    // If it's a short message, center it inside the bubble
-    if (size.width < this.diameter - padding * 2) {
-      this.spanElement.classList.add('circle-text-center')
-    } else {
-      this.spanElement.classList.remove('circle-text-center')
-    }
+    // // If it's a short message, center it inside the bubble
+    // if (size.width < this.diameter - padding * 2) {
+    //   this.spanElement.classList.add('circle-text-center')
+    // } else {
+    //   this.spanElement.classList.remove('circle-text-center')
+    // }
     this.spanElement.innerHTML = clickableText
 
     // If the clearText was called, make sure the thought bubble is now visible
