@@ -58,7 +58,11 @@ const showInfoAboutObject = (entity) => {
     `position: {x: ${p.x.toFixed(1)}, y: ${p.y.toFixed(1)}, z: ${p.y.toFixed(1)}}`,
   ]
   
-  if (entity.state.asset) {
+  if (entity.state.url) {
+    // portals have url
+    const url = entity.state.url
+    infos.push(`url: <a href="${url}" style="color:white">${url}</a>`)
+  } else if (entity.state.asset) {
     const url = entity.state.asset.now.url
     infos.push(`url: <a href="${url}" style="color:white">${url}</a>`)
   } else if (entity.state.link) {
