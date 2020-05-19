@@ -14,16 +14,25 @@ const FollowsTarget = stampit(Component, HasObject, {
     distanceToTarget: 0.0,
   },
 
+  deepProps: {
+    state: {
+      speed: {
+        now: 100.0,
+        target: 100.0,
+      }
+    }
+  },
+
   /**
    * Initializes the FollowsTarget stamp
    * @param {Vector3} position Initial position (in cartesian coordinates)
    * @param {Quaternion} direction Initial direction (as a quaternion)
    */
   init({
-    speed = this.speed,
+    speed = this.state.speed.now,
     followTurning = this.followTurning
   }) {
-    this.speed = speed
+    this.state.speed.target = speed
     this.followTurning = followTurning
 
     this.quaternion = new Quaternion()
@@ -34,9 +43,9 @@ const FollowsTarget = stampit(Component, HasObject, {
 
   methods: {
     setSpeed(speed) {
-      this.speed = speed
+      this.state.speed.target = speed
     },
-    
+
     /**
      * @returns {Vector3}
      */
@@ -82,7 +91,7 @@ const FollowsTarget = stampit(Component, HasObject, {
 
     updatePosition(delta, distance) {
       if (distance > this.closeEnough) {
-        const lerpAlpha = MathUtils.clamp(this.speed * delta / distance, 0.00001, 0.5)
+        const lerpAlpha = MathUtils.clamp(this.state.speed.now * delta / distance, 0.00001, 0.5)
         this.state.position.now.lerp(this.state.position.target, lerpAlpha)
 
         // Update the root object's position to match update
@@ -111,6 +120,10 @@ const FollowsTarget = stampit(Component, HasObject, {
         const value = this.state.position.target
         this.state.position.target = new THREE.Vector3()
         this.state.position.target.copy(value)
+      }
+      
+      if (this.state.speed.now !== this.state.speed.target) {
+        this.state.speed.now = this.state.speed.target
       }
 
       if (this.followAdd) {

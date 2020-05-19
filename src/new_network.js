@@ -35,8 +35,11 @@ const Network = stampit(EventEmittable, {
      * 
      * @param {Entity} entity 
      */
-    setEntity(entity) {
+    setEntity(entity, debug = false) {
       const state = stateToObject(entity.type, entity.state)
+      if (debug) {
+        console.log('setEntity', entity, state)
+      }
       this.setState(entity.uuid, state)
     },
     

@@ -33,7 +33,6 @@ function findAnimationClip(objectOrClipArray, condition) {
 
 const HasAnimationMixer = stampit(Component, {
   props: {
-    animationSpeed: 1.0,
     animationResourceId: null,
     animationActions: ['walking', 'falling'],
     animationMixer: null,
@@ -43,6 +42,10 @@ const HasAnimationMixer = stampit(Component, {
   
   deepProps: {
     state: {
+      animationSpeed: {
+        now: 1.0,
+        target: 1.0,
+      },
       animationMeshName: {
         now: null,
         target: null
@@ -51,9 +54,9 @@ const HasAnimationMixer = stampit(Component, {
   },
 
   init({
-    animationSpeed = this.animationSpeed,
     animationResourceId,
     animationMeshName,
+    animationSpeed = this.state.animationSpeed.now,
     animationActions = this.animationActions
   }) {
     this.clips = {}
@@ -65,9 +68,9 @@ const HasAnimationMixer = stampit(Component, {
 
   methods: {
     setAnimationSpeed(speed) {
-      this.animationSpeed = speed
+      this.state.animationSpeed.target = speed
     },
-    
+
     getClonedObjectWithSkeleton(meshName) {
       let object3d
       this.resources.get(this.animationResourceId).scene.traverse(o1 => {
@@ -149,7 +152,11 @@ const HasAnimationMixer = stampit(Component, {
         this.changeAnimationMesh(this.state.animationMeshName.now)
       }
       if (this.mixer) {
-        this.mixer.update(delta * this.animationSpeed)
+        if (this.state.animationSpeed.now !== this.state.animationSpeed.target) {
+          // TODO: transition to faster/slower speed?
+          this.state.animationSpeed.now = this.state.animationSpeed.target
+        }
+        this.mixer.update(delta * this.state.animationSpeed.now)
       }
     },
 
