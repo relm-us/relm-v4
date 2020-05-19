@@ -289,7 +289,7 @@ const start = async () => {
     followTurning: true,
     animationSpeed: 1.5,
     labelOffset: { x: 0, y: 0, z: 60 },
-    videoBubbleOffset: {x: 0, y: 0, z: -240 },
+    videoBubbleOffset: {x: 0, y: 190, z: 0 },
     animationResourceId: 'people',
     lsKey: 'player'
   })
@@ -478,7 +478,7 @@ const start = async () => {
             followTurning: true,
             animationSpeed: 1.5,
             labelOffset: { x: 0, y: 0, z: 60 },
-            videoBubbleOffset: {x: 0, y: 0, z: -240 },
+            videoBubbleOffset: {x: 0, y: 190, z: 0 },
             animationResourceId: 'people',
           }, state, { uuid }))
           if (state.position) {
