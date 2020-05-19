@@ -64,6 +64,10 @@ const HasAnimationMixer = stampit(Component, {
   },
 
   methods: {
+    setAnimationSpeed(speed) {
+      this.animationSpeed = speed
+    },
+    
     getClonedObjectWithSkeleton(meshName) {
       let object3d
       this.resources.get(this.animationResourceId).scene.traverse(o1 => {

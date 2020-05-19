@@ -33,6 +33,10 @@ const FollowsTarget = stampit(Component, HasObject, {
   },
 
   methods: {
+    setSpeed(speed) {
+      this.speed = speed
+    },
+    
     /**
      * @returns {Vector3}
      */

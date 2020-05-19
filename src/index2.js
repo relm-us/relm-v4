@@ -1056,6 +1056,14 @@ const start = async () => {
       }, 7500)
     }
   })
+  kbController.on('doublePressed', (action) => {
+    player.setSpeed(500)
+    player.setAnimationSpeed(3)
+  })
+  kbController.on('released', (action) => {
+    player.setSpeed(250)
+    player.setAnimationSpeed(1.5)
+  })
   stage.add(kbController)
 
   const camController = CameraController({

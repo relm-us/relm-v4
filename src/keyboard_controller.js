@@ -47,6 +47,8 @@ const KeyboardKeyMap = stampit(Component, {
     this.keyMap = keyMap
     this.keyCodeAction = this.invertKeyMap()
     this.actions = new Set()
+    this.doubleStopwatch = {}
+    this.releaseStopwatch = {}
     this.controlDirection = new Vector3()
   },
 
@@ -86,23 +88,34 @@ const KeyboardKeyMap = stampit(Component, {
         this.emit(action)
         this.actions.clear()
       } else {
+        // Check for 'double tap' action
+        const now = Date.now()
+        if (
+          (!this.doubleStopwatch[action] || (now - this.doubleStopwatch[action]) > 500) &&
+          (this.releaseStopwatch[action] && (now - this.releaseStopwatch[action]) < 200)
+        ) {
+          // Emit 'double tap'
+          this.emit('doublePressed', action)
+          this.doubleStopwatch[action] = now
+        }
+        
+        // Add regular action
         this.actions.add(action)
       }
     },
 
     keyReleased (keyCode) {
       const action = this.getActionFromKeyCode(keyCode)
-      this.actions.delete(action)
+      if (this.actions.has(action)) {
+        this.emit('released', action)
+        this.actions.delete(action)
+      }
+      
+      const now = Date.now()
+      this.releaseStopwatch[action] = now
     },
 
     update() {
-      // Add up all of the vectors associated with each keypress, e.g. up, down, left, right
-      // this.controlDirection.set(0, 0, 0)
-      // this.actions.forEach(action => this.controlDirection.add(this.getVectorFromAction(action)))
-
-      // this.controlDirection.add(this.target.getPosition())
-      // this.target.setPosition(this.controlDirection)
-      
       this.actions.forEach(action => this.target.addPosition(this.getVectorFromAction(action)))
     }
   }
