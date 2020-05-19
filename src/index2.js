@@ -39,7 +39,7 @@ import { HasUniqueColor } from './has_unique_color.js'
 import { Thing3D } from './thing3d.js'
 import { UpdatesLabelToUniqueColor } from './updates_label_to_unique_color.js'
 
-const IMAGE_FILETYPE_RE = /\.(png|gif|jpg|jpeg)$/
+const IMAGE_FILETYPE_RE = /\.(png|gif|jpg|jpeg|webp)$/
 const GLTF_FILETYPE_RE = /\.(gltf|glb)$/
 
 const cfg = config(window.location)
