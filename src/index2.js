@@ -237,6 +237,7 @@ const start = async () => {
           id: response.id,
           url: url,
         },
+        speed: 500,
         imageScale: 1.0,
         orientation: 0,
       })
@@ -254,6 +255,7 @@ const start = async () => {
           id: response.id,
           url: url,
         },
+        speed: 500,
         scale: 1.0,
       })
       // The `normalize` step happens just once after loading
@@ -494,7 +496,6 @@ const start = async () => {
       
       case 'decoration':
         const decoration = Decoration(Object.assign({
-          speed: 500,
         }, state, { uuid }))
         stage.add(decoration)
         if (mostRecentlyCreatedObjectId === uuid) {
@@ -505,7 +506,6 @@ const start = async () => {
       
       case 'thing3d':
         const thing3d = Thing3D(Object.assign({
-          speed: 500,
         }, state, { uuid }))
         stage.add(thing3d)
         break
@@ -529,7 +529,6 @@ const start = async () => {
         const teleportal = Teleportal(Object.assign({
           target: player,
           active: false,
-          speed: 500,
         }, state, { uuid }))
         console.log('Added teleportal', state, teleportal)
         stage.add(teleportal)
@@ -930,6 +929,7 @@ const start = async () => {
           active: false,
           radius: radius,
           position: player.state.position.now,
+          speed: 500,
         })
         tp.object.position.copy(player.state.position.now)
         network.setEntity(tp)
