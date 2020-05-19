@@ -1076,12 +1076,12 @@ const start = async () => {
   kbController.on('doublePressed', (action) => {
     player.setSpeed(500)
     player.setAnimationSpeed(3)
-    network.setEntity(player)
+    // network.setEntity(player)
   })
   kbController.on('released', (action) => {
     player.setSpeed(250)
     player.setAnimationSpeed(1.5)
-    network.setEntity(player)
+    // network.setEntity(player)
   })
   stage.add(kbController)
 
