@@ -12,6 +12,7 @@ class ThoughtBubble {
     this.diameter = 0
     this.enableCircle = true
     this.enableDots = true
+    this.enableCloseIcon = true
     this.alignCenter = false
     this.position = new THREE.Vector3(0, 0, 0)
     this.screenPosition = new THREE.Vector3()
@@ -149,14 +150,14 @@ class ThoughtBubble {
         },
       },
     })
-    console.log('clickableText', clickableText)
+    
+    this.diameter = this.getDiameterForCircleOfText(text)
     if (this.enableCircle) {
       // Reset to 'circle' bubble, optimistic that text will fit
       this.switchToCircle()
       // This is the thought bubble element inside the domElement wrapper
       this.divElement.style.width = this.diameter + 'px'
       this.divElement.style.height = this.diameter + 'px'
-      this.diameter = this.getDiameterForCircleOfText(text)
       
       const padding = 5
       // If it's a short message, try to center it inside the bubble
@@ -181,6 +182,8 @@ class ThoughtBubble {
     if (checkOverflow(this.divElement)) {
       // Text won't fit in circle, so we must resort to a rectangle form
       this.switchToRectangle()
+      this.divElement.style.width = this.diameter + 'px'
+      this.divElement.style.height = this.diameter + 'px'
     }
   }
 
