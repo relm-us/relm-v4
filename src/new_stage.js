@@ -82,6 +82,12 @@ const Stage = stampit(
       if (sortFn) { entities.sort(sortFn) }
       entities.forEach(fn)
     },
+    
+    forEachEntityOnStageOfType(type, fn, sortFn) {
+      const entities = Object.values(this.entitiesOnStage).filter(e => e.type === type)
+      if (sortFn) { entities.sort(sortFn) }
+      entities.forEach(fn)
+    },
 
     windowResized(w, h) {
       this.width = w

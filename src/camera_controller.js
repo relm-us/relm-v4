@@ -6,11 +6,17 @@ const { Vector3 } = THREE
 
 const CameraController = stampit(Entity, Component, {
   props: {
-    target: null
+    targetFar: null,
+    targetNear: null,
   },
 
-  init({ target }) {
-    this.target = target
+  init({ targetFar, targetNear }) {
+    // We track two 'targets': one for when the camera is far away ("zoomed out")
+    // and one for when the camera is near to the ground ("zoomed in"). We lerp
+    // between the two as zoom goes in and out.
+    this.targetFar = targetFar
+    this.targetNear = targetNear
+    
     this.offset = new Vector3()
     this.position = new Vector3()
   },
@@ -21,10 +27,16 @@ const CameraController = stampit(Entity, Component, {
     },
 
     update(delta) {
-      // console.log('CameraController update')
-      this.position.copy(this.target.object.position)
+      const fovRatio = this.stage.getFovRatio()
+      this.position.copy(this.targetFar)
+      this.position.lerp(this.targetNear, fovRatio)
       this.position.add(this.offset)
-      this.stage.camera.position.copy(this.position)
+      
+      if (Number.isNaN(this.stage.camera.position.x)) {
+        this.stage.camera.position.copy(this.position)
+      } else {
+        this.stage.camera.position.lerp(this.position, 0.15)
+      }
     }
   }
 })

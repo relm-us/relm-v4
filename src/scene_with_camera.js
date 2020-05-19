@@ -44,6 +44,10 @@ const SceneWithCamera = stampit({
       this.fov = MathUtils.clamp(value, maxZoomOut, maxZoomIn)
       this.adjustNewWindowSize()
     },
+    
+    getFovRatio() {
+      return (this.fov - this.minFov) / (this.maxFov - this.minFov)
+    },
 
     adjustNewWindowSize () {
       if (!this.camera) {

@@ -60,7 +60,7 @@ const showInfoAboutObject = (entity) => {
   
   if (entity.state.url) {
     // portals have url
-    const url = entity.state.url
+    const url = entity.state.url.now
     infos.push(`url: <a href="${url}" style="color:white">${url}</a>`)
   } else if (entity.state.asset) {
     const url = entity.state.asset.now.url
@@ -146,21 +146,50 @@ const start = async () => {
 
   await DOMReady()
   
+  let playersCentroid = new THREE.Vector3()
+  let occasionalUpdate = 0
+  const sortByZ = (a, b) => (a.object.position.z - b.object.position.z)
+  
+  // Perform several calculations once per game loop:
+  // 1. (occasionally) Refresh videoBubble diameter
+  // 2. Calculate centroid of all players on stage
+  // 3. Sort players by Z order
   stage.addUpdateFunction((delta) => {
+    occasionalUpdate++
+
+    // Double-count the player's position so that the camera prefers player slightly
+    let playerCount = 1
+    playersCentroid.copy(player.object.position)   
     // TODO: make this filter for 'HasVideoBubble' instead of just looking for players
-    const sortByZ = (a, b) => (a.object.position.z - b.object.position.z)
-    stage.forEachEntityOfType('player', (player, i) => {
+    stage.forEachEntityOnStageOfType('player', (player, i) => {
+      // Occasionally refresh videoBubble diameter due to new players
+      // entering scene and needing size adjusted to zoom level
+      if (occasionalUpdate % 100 === 0) {
+        player.videoBubble.object.setDiameter(stage.fov)
+      }
+      
+      // Add player positions and keep track of count so we can divide by
+      // number of players after the loop (to get average/centroid position)
+      playersCentroid.add(player.object.position)
+      playerCount++
+      
+      // Sort the visible players by Z order
       const el = player.videoBubble.object.domElement
       if (el) { el.style.zIndex = i + 1 }
     }, sortByZ)
+    
+    // Finalize player centroid calculation
+    playersCentroid.divideScalar(playerCount)
   })
     
   // Mouse wheel zooms in and out
   document.addEventListener('wheel', function(event) {
     if (event.target.id === 'game') {
       let pixelY = normalizeWheel(event.deltaY)
-      stage.setFov(stage.fov - pixelY);
-      stage.forEachEntityOfType('player', player => {
+      const newFov = stage.fov - pixelY
+      stage.setFov(newFov)
+      
+      stage.forEachEntityOnStageOfType('player', player => {
         player.videoBubble.object.setDiameter(stage.fov)
       })
     }
@@ -1029,7 +1058,10 @@ const start = async () => {
   })
   stage.add(kbController)
 
-  const camController = CameraController({ target: player })
+  const camController = CameraController({
+    targetNear: playersCentroid,
+    targetFar: player.object.position
+  })
   stage.add(camController)
   
   const params = { id: playerId }
