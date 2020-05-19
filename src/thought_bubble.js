@@ -121,18 +121,6 @@ class ThoughtBubble {
       return
     }
 
-
-    if (this.enableCircle) {
-      // Reset to 'circle' bubble, optimistic that text will fit
-      this.switchToCircle()
-      // This is the thought bubble element inside the domElement wrapper
-      this.divElement.style.width = this.diameter + 'px'
-      this.divElement.style.height = this.diameter + 'px'
-      this.diameter = this.getDiameterForCircleOfText(text)
-    } else {
-      this.switchToRectangle()
-    }
-    
     if (this.enableDots) {
       this.showDots()
     } else {
@@ -151,9 +139,6 @@ class ThoughtBubble {
       this.switchToLeftAligned()
     }
 
-    // Remove all <br> elements and text nodes    
-    this.spanElement.innerHTML = ''
-
     const cleanText = DOMPurify.sanitize(text)
     const clickableText = anchorme({input: cleanText,
       options: {
@@ -164,15 +149,24 @@ class ThoughtBubble {
         },
       },
     })
+    console.log('clickableText', clickableText)
     if (this.enableCircle) {
+      // Reset to 'circle' bubble, optimistic that text will fit
+      this.switchToCircle()
+      // This is the thought bubble element inside the domElement wrapper
+      this.divElement.style.width = this.diameter + 'px'
+      this.divElement.style.height = this.diameter + 'px'
+      this.diameter = this.getDiameterForCircleOfText(text)
+      
       const padding = 5
-      // If it's a short message, center it inside the bubble
-      if (size.width < this.diameter - padding * 2) {
+      // If it's a short message, try to center it inside the bubble
+      if (text.length < 50) {
         this.spanElement.innerHTML = `<p>${clickableText}</p>`
       } else {
         this.spanElement.innerHTML = `${clickableText}`
       }
     } else {
+      this.switchToRectangle()
       this.spanElement.innerHTML = `${clickableText}`
     }
 

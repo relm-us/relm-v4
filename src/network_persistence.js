@@ -11,7 +11,6 @@ const NetworkSetsState = stampit(Component, {
   methods: {
     setup() {
       this.network.on(`update-${this.uuid}`, (object) => {
-        console.log('update for uuid', this.uuid, object)
         for (let k in object) {
           if (k === 'type') { continue }
           if (!this.state[k]) { this.state[k] = {} }

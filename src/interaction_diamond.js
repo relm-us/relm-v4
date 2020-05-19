@@ -58,8 +58,11 @@ const HasGlowingDiamond = stampit(Component, {
     
     createLight() {
       const light = new THREE.PointLight(0xffdd44, 0.4, 1000, 2)
-      // light.position.set(0, 1, 0)
       this.object.add(light)
+    },
+
+    setMessage(text) {
+      this.state.link.target = text
     },
     
     onClick() {
@@ -81,7 +84,6 @@ const HasGlowingDiamond = stampit(Component, {
       this.createGlow()
       this.createLight()
       
-      // this.object.rotation.x = -Math.PI/4
       this.object.scale.set(5, 15, 5)
       this.orbit = 0
     },

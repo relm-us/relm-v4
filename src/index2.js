@@ -451,7 +451,9 @@ const start = async () => {
         entity.setOpacity(0.2)
         entity.hideVideoBubble()
         entity.setThought(null)
-        entity.hideOffscreenIndicator()
+        if (entity.hideOffscreenIndicator) {
+          entity.hideOffscreenIndicator()
+        }
         break
       case 'mouse':
         entity.hideSphere()
@@ -510,6 +512,10 @@ const start = async () => {
         const diamond = InteractionDiamond(Object.assign({
         }, state, { uuid }))
         stage.add(diamond)
+        if (mostRecentlyCreatedObjectId === uuid) {
+          setWouldSelectObject(diamond)
+          selectObject()
+        }
         break
       
       case 'mouse':
@@ -578,14 +584,17 @@ const start = async () => {
           const subCommand = args[0]
           switch (subCommand) {
             case 'create':
-              if (args.length < 2) {
-                showToast('`/sign create MESSAGE` requires MESSAGE')
-                return
-              }
               // TODO: `link` should be renamed to something like `message`
-              const link = args.slice(1).join(' ')
+              let link
+              if (args.length > 1) {
+                link = args.slice(1).join(' ')
+              } else {
+                link = null
+              }
+              mostRecentlyCreatedObjectId = uuidv4()
               const position = Object.assign({}, player.state.position.now)
               const diamond = InteractionDiamond({
+                uuid: mostRecentlyCreatedObjectId,
                 type: 'diamond',
                 position,
                 link,
@@ -599,6 +608,10 @@ const start = async () => {
             case 'label':
               if (!selectedObject) {
                 showToast('Requires a selected object')
+                return
+              }
+              if (!selectedObject.setLabel) {
+                showToast(`Can't set label on selected object (${selectObject.type})`)
                 return
               }
               if (args.length < 2) {
@@ -616,12 +629,16 @@ const start = async () => {
                 showToast('Requires a selected object')
                 return
               }
+              if (!selectedObject.setThought) {
+                showToast(`Can't set message on selected object (${selectObject.type})`)
+                return
+              }
               if (args.length < 2) {
                 showToast('`/link message MSG` requires MSG')
                 return
               }
               const message = args.slice(1).join(' ')
-              selectedObject.setThought(message)
+              selectedObject.setMessage(message)
               network.setEntity(selectedObject)
               showToast(`Sign message set to "${message}" (${selectedObject.uuid})`)
               break
