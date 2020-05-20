@@ -46,9 +46,12 @@ function localstoreRestoreState(lsKey, entity) {
   if (!localStorage.getItem(`player.type`)) {
     localStorage.clear()
   }
+  
+  let foundSomething = false
   for (let key in entity.state) {
     let value = JSON.parse(localStorage.getItem(`${lsKey}.${key}`))
     if (value !== null) {
+      foundSomething = true
       let specificState = entity.state[key]
       if (!specificState) { continue }
       if (specificState.target && typeof specificState.target.copy === 'function') {
@@ -66,6 +69,9 @@ function localstoreRestoreState(lsKey, entity) {
       }
     }
   }
+  
+  // If local storage had something from a previous visit, return true
+  return foundSomething
 }
 
 export { LocalstoreGetsState, localstoreRestoreState }

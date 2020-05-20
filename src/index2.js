@@ -298,7 +298,10 @@ const start = async () => {
     animationResourceId: 'people',
     lsKey: 'player'
   })
-  localstoreRestoreState('player', player)
+  if (!localstoreRestoreState('player', player)) {
+    // First-time users can choose their character
+    document.getElementById('avatars').classList.remove('hide')
+  }
   if (cfg.LANDING_COORDS) {
     player.state.position.target.copy(cfg.LANDING_COORDS)
   }
@@ -1104,7 +1107,10 @@ const start = async () => {
   document.addEventListener('keydown', e => {
     
     if (e.target === stage.renderer.domElement) {
-      kbController.keyPressed(e.keyCode, { shift: e.shiftKey, ctrl: e.ctrlKey, meta: e.metaKey })
+      if (!e.repeat) {
+        kbController.keyPressed(e.keyCode, { shift: e.shiftKey, ctrl: e.ctrlKey, meta: e.metaKey })
+      }
+      
       // Don't accidentally allow backspace to trigger browser back
       if (e.keyCode === 8) {
         e.preventDefault()
@@ -1113,7 +1119,9 @@ const start = async () => {
       // the default HTML tabIndex system
       else if (e.keyCode === 9) {
         e.preventDefault()
-      } else if (e.keyCode === 191 /* Forward Slash */) {
+      }
+      // Make it easier to type '/object` and all the other commands
+      else if (e.keyCode === 191 /* Forward Slash */) {
         e.preventDefault()
         focusOnInput()
         document.getElementById('input').value = '/' 
