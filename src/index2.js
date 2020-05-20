@@ -1032,10 +1032,12 @@ const start = async () => {
       const avatarOptions = avatarOptionsOfGender(gender)
       player.state.animationMeshName.target = avatarOptions[index].avatarId
       avatarSelection.classList.add('hide')
+      focusOnGame()
     })
   })
   avatarSelectionClose.addEventListener('click', (event) => {
     avatarSelection.classList.add('hide')
+    focusOnGame()
   })
   avatarSelectionButton.addEventListener('mousedown', (event) => {
     avatarSelection.classList.remove('hide')
