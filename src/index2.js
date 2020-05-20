@@ -360,7 +360,7 @@ const start = async () => {
     
     // If mouse has moved a certain distance since clicking, then turn into a "drag"
     if (dragStart && !dragLock) {
-      const isect = mousePointer.getIntersectsGround()
+      const isect = mousePointer.getIntersects(stage.ground)
       if (isect.length > 0) {
         const mousePos = isect[0].point
         if (mousePos.distanceTo(dragStartPos) > 10) {
@@ -371,7 +371,7 @@ const start = async () => {
     }
     
     if (dragLock) {
-      const isect = mousePointer.getIntersectsGround()
+      const isect = mousePointer.getIntersects(stage.ground)
       if (isect.length > 0) {
         dragDelta.copy(isect[0].point)
         dragDelta.sub(dragStartPos)
@@ -404,7 +404,7 @@ const start = async () => {
     selectObject()
     
     // This might be the beginning of a drag & drop sequence, so prep for that possibility
-    const isect2 = mousePointer.getIntersectsGround()
+    const isect2 = mousePointer.getIntersects(stage.ground)
     if (isect2.length > 0 && selectedObject) {
       const isLocked = selectedObject.isUiLocked && selectedObject.isUiLocked()
       if (!isLocked) {
@@ -413,6 +413,14 @@ const start = async () => {
         dragStartObjectPos.copy(selectedObject.object.position)
       }
     }
+    
+    // TODO: Why can't we detect a click on the player?
+    //
+    // const isect3 = mousePointer.getIntersects(player.object)
+    // console.log(isect3)
+    // if (isect3.length > 0) {
+    //   console.log('clicked player')
+    // }
   })
   
   window.addEventListener('mouseup', (event) => {
@@ -564,19 +572,21 @@ const start = async () => {
   }, true)
   
   const invite = document.getElementById('invite')
-  const invitation = document.getElementById('invitation')
-  const invitationInput = document.getElementById('invitation-input')
-  invite.addEventListener('mousedown', (event) => {
-    if (invitation.classList.contains('show')) {
-      invitation.classList.remove('show')
-    } else {
-      const invitationToken = uuidv4().slice(0,7)
-      network.invitations.set(invitationToken, 1)
-      invitationInput.value = `${window.location.origin}/?t=${invitationToken}`
-      invitation.classList.add('show')
-    }
-    event.preventDefault()
-  })
+  if (invite) {
+    const invitation = document.getElementById('invitation')
+    const invitationInput = document.getElementById('invitation-input')
+    invite.addEventListener('mousedown', (event) => {
+      if (invitation.classList.contains('show')) {
+        invitation.classList.remove('show')
+      } else {
+        const invitationToken = uuidv4().slice(0,7)
+        network.invitations.set(invitationToken, 1)
+        invitationInput.value = `${window.location.origin}/?t=${invitationToken}`
+        invitation.classList.add('show')
+      }
+      event.preventDefault()
+    })
+  }
   
   const doCommand = (command, args) => {
     const importExport = document.getElementById('import-export')
@@ -994,6 +1004,7 @@ const start = async () => {
   }
   
   
+  // Import/Export HTML Events
   const importExport = document.getElementById('import-export')
   const importButton = document.getElementById('import-button')
   const importExportCloseButton = document.getElementById('import-export-close-button')
@@ -1008,6 +1019,30 @@ const start = async () => {
     importExport.classList.add('hide')
   })
   
+
+  // Avatar Selection HTML Events
+  const avatarSelection = document.getElementById('avatars')
+  const avatarSelectionClose = document.getElementById('avatars-close')
+  const avatarSelectionButton = document.getElementById('my-character')
+  const avatarButtons = document.getElementsByClassName('avatar-button')
+  Array.from(avatarButtons).forEach(button => {
+    button.addEventListener('click', (event) => {
+      const gender = button.dataset.gender
+      const index = parseInt(button.dataset.index, 10)
+      const avatarOptions = avatarOptionsOfGender(gender)
+      player.state.animationMeshName.target = avatarOptions[index].avatarId
+      avatarSelection.classList.add('hide')
+    })
+  })
+  avatarSelectionClose.addEventListener('click', (event) => {
+    avatarSelection.classList.add('hide')
+  })
+  avatarSelectionButton.addEventListener('mousedown', (event) => {
+    avatarSelection.classList.remove('hide')
+    event.preventDefault()
+  })
+  
+
   // Allow TAB and ESC keys to switch from text input to game view
   const inputEl = document.getElementById('input')
   inputEl.addEventListener('keydown', e => {

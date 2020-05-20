@@ -125,12 +125,12 @@ const UpdatesPositionFromScreenCoords = stampit(Component, {
       }
     },
 
-    getIntersectsGround() {
+    getIntersects(object3d) {
       this.screenRaycaster.setFromCamera(this.getMouseCoords(), this.stage.camera)
-      return this.screenRaycaster.intersectObject(this.stage.ground)
+      return this.screenRaycaster.intersectObject(object3d, true)
     },
     
-    getIntersects() {
+    getIntersectsOnStage() {
       this.screenRaycaster.setFromCamera(this.getMouseCoords(), this.stage.camera)
       // Using a list of entites that are currently on stage, filter for those 
       // that can receive mouse pointer, and return their Object3D.
@@ -158,7 +158,7 @@ const UpdatesPositionFromScreenCoords = stampit(Component, {
     },
 
     update(delta) {
-      this.getIntersects()
+      this.getIntersectsOnStage()
 
       if (this.intersects.length > 0) {
         const ip = this.intersects[0].point

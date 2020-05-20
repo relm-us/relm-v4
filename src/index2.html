@@ -524,10 +524,10 @@
       display: flex;
       flex-direction: column;
       position: fixed;
-      left: 10%;
-      top: 10%;
-      bottom: 80px;
+      top: 80px;
       right: 10%;
+      bottom: 80px;
+      left: 10%;
       z-index: 4;
     }
     #import-export.hide, #import-export .button.hide {
@@ -537,13 +537,66 @@
       flex-grow: 1;
       padding: 15px;
     }
-    #import-export > .buttons-panel {
+    #import-export > .button-panel {
       margin-top: 10px;
       display: flex;
       justify-content: flex-end;
     }
     #import-export .button {
       margin-left: 10px;
+    }
+    
+    #avatars {
+      position: absolute;
+      padding-top: 80px;
+      padding-bottom: 80px;
+      top: 0px;
+      bottom: 0px;
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-start;
+      align-items: center;
+      overflow-y: auto;
+      z-index: 4;
+    }
+    #avatars.hide {
+      display: none;
+    }
+    #avatars .title {
+      font-size: 22px;
+      font-weight: bold;
+      padding: 20px;
+    }
+    #avatars .avatars-row {
+      min-width: 380px; max-width: 700px;
+      display: flex;
+      flex-direction: row;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+    #avatars button {
+      padding: 8px;
+    }
+    #avatars button.f img {
+      border-bottom: 3px solid pink;
+    }
+    #avatars button.m img {
+      border-bottom: 3px solid #66bbff;
+    }
+    #avatars img {
+      width: 75px;
+      height: 172px;
+    }
+    #avatars > .button-panel {
+      margin-top: 10px;
+      padding-bottom: 100px;
+      display: flex;
+      justify-content: flex-end;
+    }
+    #avatars .button {
+      margin-left: 10px;
+      margin-top: 15px;
     }
   </style>
   
@@ -563,10 +616,13 @@
   <div id="game"></div>
 
   <div id="right-panel">
-    <div id="invite" class="panel-button button">Invite Others</div>
+    
+    <div id="my-character" class="panel-button button">My Character</div>
+    <!-- <div id="invite" class="panel-button button">Invite Others</div> -->
     <div id="invitation" class="panel-subpanel">Copy One-Time Link: <input id="invitation-input"/></div>
     <button id="upload-button" class="panel-button button">Upload</button>
     <div id="help-button" class="panel-button button">Help</div>
+
     <div id="help-panel" class="panel-subpanel">
       <strong>Welcome!</strong>
       <p>We're under construction, but if you want to kick the tires here are some advanced commands you can use:</p>
@@ -640,12 +696,39 @@
 
   <div id="import-export" class="hide">
     <textarea id="import-export-data"></textarea>
-    <div class="buttons-panel">
+    <div class="button-panel">
       <button id="import-button" class="button">Import into this relm</button>
       <button id="import-export-close-button" class="button">Close</button>
     </div>
   </div>
 
+
+  <div id="avatars" class="hide">
+    <div class="title">Choose your character:</div>
+    <div class="avatars-row">
+      <button class="avatar-button f" data-gender="f" data-index="0"><img src="./avatars/f0.jpg"></button>
+      <button class="avatar-button f" data-gender="f" data-index="1"><img src="./avatars/f1.jpg"></button>
+      <button class="avatar-button f" data-gender="f" data-index="2"><img src="./avatars/f2.jpg"></button>
+      <button class="avatar-button f" data-gender="f" data-index="3"><img src="./avatars/f3.jpg"></button>
+      <button class="avatar-button f" data-gender="f" data-index="4"><img src="./avatars/f4.jpg"></button>
+      <button class="avatar-button f" data-gender="f" data-index="5"><img src="./avatars/f5.jpg"></button>
+      <button class="avatar-button f" data-gender="f" data-index="6"><img src="./avatars/f6.jpg"></button>
+      <button class="avatar-button f" data-gender="f" data-index="7"><img src="./avatars/f7.jpg"></button>
+      <button class="avatar-button f" data-gender="f" data-index="8"><img src="./avatars/f8.jpg"></button>
+      <button class="avatar-button m" data-gender="m" data-index="0"><img src="./avatars/m0.jpg"></button>
+      <button class="avatar-button m" data-gender="m" data-index="1"><img src="./avatars/m1.jpg"></button>
+      <button class="avatar-button m" data-gender="m" data-index="2"><img src="./avatars/m2.jpg"></button>
+      <button class="avatar-button m" data-gender="m" data-index="3"><img src="./avatars/m3.jpg"></button>
+      <button class="avatar-button m" data-gender="m" data-index="4"><img src="./avatars/m4.jpg"></button>
+      <button class="avatar-button m" data-gender="m" data-index="5"><img src="./avatars/m5.jpg"></button>
+      <button class="avatar-button m" data-gender="m" data-index="6"><img src="./avatars/m6.jpg"></button>
+      <button class="avatar-button m" data-gender="m" data-index="7"><img src="./avatars/m7.jpg"></button>
+      <button class="avatar-button m" data-gender="m" data-index="8"><img src="./avatars/m8.jpg"></button>
+    </div>
+    <div class="button-panel">
+      <button id="avatars-close" class="button">Close</button>
+    </div>
+  </div>
 
   <script>
     const helpPanel = document.getElementById('help-panel')
