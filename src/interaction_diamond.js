@@ -118,6 +118,7 @@ const InteractionDiamond = stampit(
       this.labelOffset = { x: 0, y: -70, z: 0 }
       this.thoughtBubbleOffset = { x: 0, y: 50 }
       this.thoughtBubble.enableCloseIcon = false
+      this.thoughtBubble.enableActionIcon = false
     }
   })
 )

@@ -172,6 +172,7 @@
         95% 65.6%, 90% 71.8%, 80% 80%, 60% 90%, 40% 96%, 0 100%, 100% 100%
       );
     }
+    /* close button */
     .thought-bubble-close.hide { display: none; }
     .thought-bubble-close {
       opacity: 0.9;
@@ -183,6 +184,33 @@
     .rectangle-text + .thought-bubble-close {
       right: -15px;
       top: -15px;
+    }
+    /* action button */
+    .thought-bubble-action.hide { display: none; }
+    .thought-bubble-action:after {
+      content: 'G';
+      padding: 5px;
+    }
+    .thought-bubble-action {
+      opacity: 0.9;
+      
+      position: absolute;
+      z-index: 1;
+      border: 2px solid #aaa;
+      background-color: white;
+      border-radius: 100%;
+      width: 25px;
+      height: 25px;
+      right: -10px;
+      top: 30px;
+    }
+    .circle-text + .thought-bubble-action {
+      right: 0px;
+      top: 40px;
+    }
+    .rectangle-text + .thought-bubble-action {
+      right: -15px;
+      top: 25px;
     }
 
     .entity-label {

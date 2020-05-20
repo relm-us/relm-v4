@@ -13,6 +13,7 @@ class ThoughtBubble {
     this.enableCircle = true
     this.enableDots = true
     this.enableCloseIcon = true
+    this.enableActionIcon = true
     this.alignCenter = false
     this.position = new THREE.Vector3(0, 0, 0)
     this.screenPosition = new THREE.Vector3()
@@ -89,6 +90,14 @@ class ThoughtBubble {
     this.closeIcon.classList.add('hide')
   }
   
+  showActionIcon() {
+    this.actionIcon.classList.remove('hide')
+  }
+
+  hideActionIcon() {
+    this.actionIcon.classList.add('hide')
+  }
+  
   switchToCenterAligned() {
     this.domElement.classList.add('centered')
   }
@@ -132,6 +141,12 @@ class ThoughtBubble {
       this.showCloseIcon()
     } else {
       this.hideCloseIcon()
+    }
+    
+    if (this.enableActionIcon) {
+      this.showActionIcon()
+    } else {
+      this.hideActionIcon()
     }
     
     if (this.alignCenter) {
@@ -214,6 +229,14 @@ class ThoughtBubble {
       closeCallback(this, event)
     })
     wrapper.appendChild(closeIcon)
+    
+    const actionIcon = this.actionIcon = document.createElement('div')
+    actionIcon.classList.add('thought-bubble-action')
+    actionIcon.addEventListener('mousedown', (event) => {
+      event.preventDefault()
+      actionCallback(this, event)
+    })
+    wrapper.appendChild(actionIcon)
     
     // The "dots" here are the little visual thought bubble dots in comics
     const dot1 = this.dot1 = document.createElement('div')

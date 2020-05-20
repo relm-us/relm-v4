@@ -309,6 +309,23 @@ const start = async () => {
   player.warpToPosition(player.state.position.target)
   // Restore to fully opaque, in case we were saved in a translucent state
   player.state.opacity.target = 1.0
+  player.on('thoughtBubbleAction', (thought) => {
+    mostRecentlyCreatedObjectId = uuidv4()
+    const position = Object.assign({}, player.state.position.now)
+    const diamond = InteractionDiamond({
+      uuid: mostRecentlyCreatedObjectId,
+      type: 'diamond',
+      link: thought,
+      position,
+    })
+    diamond.object.position.copy(position)
+    // Make it about chest-height by default
+    diamond.state.position.target.y += 100
+    diamond.state.position.target.x += 100
+    network.setEntity(diamond)
+    
+    player.setThought(null)
+  })
   stage.add(player)
   
   player.videoBubble.object.on('mute', muteAudio)
