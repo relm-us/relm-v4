@@ -38,6 +38,7 @@ import "toastify-js/src/toastify.css"
 import { HasUniqueColor } from './has_unique_color.js'
 import { Thing3D } from './thing3d.js'
 import { UpdatesLabelToUniqueColor } from './updates_label_to_unique_color.js'
+import { relmExport, relmImport } from './lib/relmExport.js'
 
 const IMAGE_FILETYPE_RE = /\.(png|gif|jpg|jpeg|webp)$/
 const GLTF_FILETYPE_RE = /\.(gltf|glb)$/
@@ -51,6 +52,7 @@ let mostRecentlyCreatedObjectId = null
 Dropzone.autoDiscover = false
 
 const showInfoAboutObject = (entity) => {
+  if (!entity) { return }
   const p = entity.object.position
   const infos = [
     `type: ${entity.type}`,
@@ -577,6 +579,8 @@ const start = async () => {
   })
   
   const doCommand = (command, args) => {
+    const importExport = document.getElementById('import-export')
+    const importExportTextarea = document.getElementById('import-export-data')
     switch (command) {
       case 'sign':
         if (typeof args === 'undefined' || typeof args[0] === 'undefined') {
@@ -913,6 +917,20 @@ const start = async () => {
       case 'unmute':
         unmuteAudio()
         break
+      
+      case 'import':
+        importExportTextarea.value = ''
+        importExport.classList.remove('hide')
+        document.getElementById('import-button').classList.remove('hide')
+        importExportTextarea.focus()
+        break
+        
+      case 'export':
+        const data = relmExport(stage, network)
+        importExportTextarea.value = JSON.stringify(data, null, 2)
+        importExport.classList.remove('hide')
+        document.getElementById('import-button').classList.add('hide')
+        break
         
       case 'portal':
         if (!args || args.length === 0) {
@@ -974,6 +992,21 @@ const start = async () => {
         showToast(`As far as I know, this isn't a command: ${command}`)
     }
   }
+  
+  
+  const importExport = document.getElementById('import-export')
+  const importButton = document.getElementById('import-button')
+  const importExportCloseButton = document.getElementById('import-export-close-button')
+  importButton.addEventListener('click', (event) => {
+    const text = document.getElementById('import-export-data')
+    const data = JSON.parse(text.value)
+    const objectCount = relmImport(network, data)
+    importExport.classList.add('hide')
+    showToast(`Imported ${objectCount} objects into this relm.`)
+  })
+  importExportCloseButton.addEventListener('click', (event) => {
+    importExport.classList.add('hide')
+  })
   
   // Allow TAB and ESC keys to switch from text input to game view
   const inputEl = document.getElementById('input')

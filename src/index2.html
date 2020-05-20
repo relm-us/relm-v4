@@ -45,6 +45,21 @@
       user-select: none;
     }
 
+    .button {
+      font-size: 18px;
+      border-radius: 8px;
+      border: 3px solid #efaa22;
+      background: #eee;
+      color: #333;
+      padding: 5px 10px;
+      
+      cursor: pointer;
+    }
+    .button:hover {
+      background: #fff;
+      border-color: #ef9911;
+    }
+   
     /*
       Thought Bubble CSS
       
@@ -430,19 +445,7 @@
     }
     
     .panel-button {
-      font-size: 18px;
-      border-radius: 8px;
-      border: 3px solid #efaa22;
-      background: #eee;
-      color: #333;
-      padding: 5px 10px;
       margin-top: 5px;
-      
-      cursor: pointer;
-    }
-    .panel-button:hover {
-      background: #fff;
-      border-color: #ef9911;
     }
     .panel-subpanel {
       display: none;
@@ -516,6 +519,32 @@
     .mute-button.muted {
       background-image: url(./icons/muted.png)
     }
+    
+    #import-export {
+      display: flex;
+      flex-direction: column;
+      position: fixed;
+      left: 10%;
+      top: 10%;
+      bottom: 80px;
+      right: 10%;
+      z-index: 4;
+    }
+    #import-export.hide, #import-export .button.hide {
+      display:none;
+    }
+    #import-export > textarea {
+      flex-grow: 1;
+      padding: 15px;
+    }
+    #import-export > .buttons-panel {
+      margin-top: 10px;
+      display: flex;
+      justify-content: flex-end;
+    }
+    #import-export .button {
+      margin-left: 10px;
+    }
   </style>
   
   <!-- Global site tag (gtag.js) - Google Analytics -->
@@ -534,10 +563,10 @@
   <div id="game"></div>
 
   <div id="right-panel">
-    <div id="invite" class="panel-button">Invite Others</div>
+    <div id="invite" class="panel-button button">Invite Others</div>
     <div id="invitation" class="panel-subpanel">Copy One-Time Link: <input id="invitation-input"/></div>
-    <button id="upload-button" class="panel-button">Upload</button>
-    <div id="help-button" class="panel-button">Help</div>
+    <button id="upload-button" class="panel-button button">Upload</button>
+    <div id="help-button" class="panel-button button">Help</div>
     <div id="help-panel" class="panel-subpanel">
       <strong>Welcome!</strong>
       <p>We're under construction, but if you want to kick the tires here are some advanced commands you can use:</p>
@@ -607,6 +636,15 @@
 
     <input id="input" type="text" placeholder="What's on your mind? ..." value="">
   </div>
+  
+
+  <div id="import-export" class="hide">
+    <textarea id="import-export-data"></textarea>
+    <div class="buttons-panel">
+      <button id="import-button" class="button">Import into this relm</button>
+      <button id="import-export-close-button" class="button">Close</button>
+    </div>
+  </div>
 
 
   <script>
@@ -621,6 +659,8 @@
       // make it so clicking doesn't take focus off of the game canvas
       event.preventDefault()
     })
+    
+
   </script>
   <script src="./index2.js"></script>
   
