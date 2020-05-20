@@ -21,7 +21,11 @@ const HasThoughtBubble = stampit(Entity, Component, EventEmittable, {
   },
   
   init({ thoughtBubbleOffset }) {
-    this.thoughtBubbleOffset = thoughtBubbleOffset || {x: 0, y: 0, z: 0}
+    this.thoughtBubbleOffset = thoughtBubbleOffset || {x: 0, y: 0}
+    
+    const action = () => { this.emit('thoughtBubbleAction') }
+    const close = () => { this.emit('thoughtBubbleClose'); this.setThought(null) }
+    this.thoughtBubble = new ThoughtBubble(this.stage.camera, action, close)
   },
 
   methods: {
@@ -38,12 +42,6 @@ const HasThoughtBubble = stampit(Entity, Component, EventEmittable, {
         return false
       }
       return !!this.state.thought.now
-    },
-
-    setup() {
-      const action = () => { this.emit('thoughtBubbleAction') }
-      const close = () => { this.emit('thoughtBubbleClose'); this.setThought(null) }
-      this.thoughtBubble = new ThoughtBubble(this.stage.camera, action, close)
     },
 
     update(delta) {
