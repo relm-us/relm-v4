@@ -10,6 +10,7 @@ thumbs.db
 *.swp
 .vscode/
 
+backups/
 dist/
 server/relm-db/
 server/assets/

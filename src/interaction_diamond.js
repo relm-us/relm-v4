@@ -46,9 +46,7 @@ const HasGlowingDiamond = stampit(Component, {
     },
 
     createGlow() {
-      const gltf = this.resources.get('interact')
       const material = GlowMaterial
-      // const geometry = gltf.scene.getObjectByName('Diamond').geometry
       const geometry = new THREE.SphereGeometry(2, 3, 2)
 
       this.glow = new THREE.Mesh(geometry, material)
@@ -57,8 +55,14 @@ const HasGlowingDiamond = stampit(Component, {
     },
     
     createLight() {
-      const light = new THREE.PointLight(0xffdd44, 0.4, 1000, 2)
+      let light
+      
+      // light = new THREE.PointLight(0xffdd44, 0.4, 1000, 2)
+      // this.object.add(light)
+      
+      light = new THREE.SpotLight(0xffee33, 0.2, 0, Math.PI/18)
       this.object.add(light)
+      this.object.add(light.target)
     },
 
     setMessage(text) {
@@ -93,7 +97,7 @@ const HasGlowingDiamond = stampit(Component, {
       this.diamond.rotation.y -= Math.PI/2 * delta
       this.diamond.scale.x = 1.0 + Math.sin(this.orbit) * 0.2
       this.diamond.scale.y = 1.0 + Math.sin(this.orbit) * 0.2
-      this.object.rotation.y += Math.PI/2 * delta
+      // this.object.rotation.y += Math.PI/2 * delta
 
       if (this.state.link.now != this.state.link.target) {
         this.state.link.now = this.state.link.target
