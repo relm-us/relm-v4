@@ -1036,6 +1036,7 @@ const start = async () => {
           gridsize = null
           showToast('Snap to grid turned off')
         }
+        break
       
       case 'lockall':
         let lockCount = 0
