@@ -1036,6 +1036,36 @@ const start = async () => {
           gridsize = null
           showToast('Snap to grid turned off')
         }
+      
+      case 'lockall':
+        let lockCount = 0
+        let lockTotal = 0
+        for (let uuid in stage.entities) {
+          let entity = stage.entities[uuid]
+          if (entity.uiLock) {
+            entity.uiLock()
+            network.setEntity(entity)
+            lockCount++
+          }
+          lockTotal++
+        }
+        showToast(`Locked ${lockCount} of ${lockTotal} objects in this relm`)
+        break
+        
+      case 'unlockall':
+        let unlockCount = 0
+        let unlockTotal = 0
+        for (let uuid in stage.entities) {
+          let entity = stage.entities[uuid]
+          if (entity.uiUnlock) {
+            entity.uiUnlock()
+            network.setEntity(entity)
+            unlockCount++
+          }
+          unlockTotal++
+        }
+        showToast(`Unlocked ${unlockCount} of ${unlockTotal} objects in this relm`)
+        break
         
       default:
         showToast(`As far as I know, this isn't a command: ${command}`)
