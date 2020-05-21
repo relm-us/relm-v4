@@ -60,7 +60,7 @@ const HasGlowingDiamond = stampit(Component, {
       // light = new THREE.PointLight(0xffdd44, 0.4, 1000, 2)
       // this.object.add(light)
       
-      light = new THREE.SpotLight(0xffee33, 0.2, 0, Math.PI/18)
+      light = new THREE.SpotLight(0xffff99, 0.2, 0, Math.PI/18)
       this.object.add(light)
       this.object.add(light.target)
     },
