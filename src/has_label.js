@@ -62,6 +62,19 @@ const HasLabel = stampit(Component, {
     setLabelUnderlineColor(color) {
       this.labelObj.domElement.style.borderBottom = `3px solid #${color.getHexString()}`
     },
+    
+    setup() {
+      this.postrenderLabel = () => {
+        // Since nametags are just HTML and CSS we have to 'manually' project
+        // their position on to the screen
+        this.labelPosition.copy(this.object.position)
+        this.labelPosition.add(this.labelOffset)
+
+        const screenSize = { width: this.stage.width, height: this.stage.height }
+        this.labelObj.project(this.labelPosition, this.stage.camera, screenSize)
+      }
+      this.stage.addPostrenderFunction(this.postrenderLabel)
+    },
 
     update() {
       // No transition, just update the name
@@ -70,17 +83,11 @@ const HasLabel = stampit(Component, {
         this.labelObj.setText(this.state.label.now)
       }
 
-      // Since nametags are just HTML and CSS we have to 'manually' project
-      // their position on to the screen
-      this.labelPosition.copy(this.object.position)
-      this.labelPosition.add(this.labelOffset)
-
-      const screenSize = { width: this.stage.width, height: this.stage.height }
-      this.labelObj.project(this.labelPosition, this.stage.camera, screenSize)
     },
 
     teardown() {
       this.labelObj.destroyDomElement()
+      this.stage.removePostrenderFunction(this.postrenderLabel)
     }
   }
 

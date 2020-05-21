@@ -45,7 +45,8 @@ const Stage = stampit(
     this.entitiesOnStage = []
     this.projScreenMatrix = new THREE.Matrix4()
     this.frustum = new THREE.Frustum()
-    this.updateFns = {}
+    this.updateFns = new Map()
+    this.postrenderFns = new Map()
     if (!width || !height) {
       throw new Error('State requires width and height')
     } else {
@@ -96,12 +97,22 @@ const Stage = stampit(
     },
 
     addUpdateFunction(fn) {
-      const id = uuidv4()
-      this.updateFns[id] = fn
-      return id
+      this.updateFns.set(fn, fn)
+    },
+    
+    removeUpdateFunction(fn) {
+      this.updateFns.delete(fn)
+    },
+    
+    addPostrenderFunction(fn) {
+      this.postrenderFns.set(fn, fn)
+    },
+    
+    removePostrenderFunction(fn) {
+      this.postrenderFns.delete(fn)
     },
 
-    update(delta) {
+    allUpdates(delta) {
       // Calculate what is inside the PerspectiveCamera's Frustum, as an optimization
       this.camera.updateMatrix()
       this.camera.updateMatrixWorld()
@@ -133,11 +144,11 @@ const Stage = stampit(
         }
       }
       // Additionally handle any special case `update` functions
-      for (let uuid in this.updateFns) {
-        this.updateFns[uuid](delta)
-      }
-      
-      
+      this.updateFns.forEach((_, fn) => fn(delta))
+    },
+    
+    allPostrenders() {
+      this.postrenderFns.forEach((_, fn) => fn())
     },
     
     stopRendering() {
@@ -153,8 +164,9 @@ const Stage = stampit(
 
         // render the animation frame for each object by calling each object's update function
         // this.stats.begin()
-        this.update(avgDelta)
+        this.allUpdates(avgDelta)
         this.render(avgDelta)
+        this.allPostrenders()
         // this.stats.end()
 
         // keep looping
