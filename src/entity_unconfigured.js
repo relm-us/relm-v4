@@ -28,7 +28,7 @@ const EntityUnconfigured = stampit(Component, {
     resources: null,
 
     /**
-     * @type {Object} See new_network.js
+     * @type {Object} See network.js
      */
     network: null,
   },

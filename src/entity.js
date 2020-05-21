@@ -1,8 +1,8 @@
 import { ResourceLoader } from './resource_loader.js'
-import { Stage } from './new_stage.js'
+import { Stage } from './stage.js'
 import { EntityUnconfigured } from './entity_unconfigured.js'
 import { ShowLoadingProgress } from './show_loading_progress.js'
-import { Network } from './new_network.js'
+import { Network } from './network.js'
 
 // Show progress as we load resources
 const resources = window.resources = ResourceLoader()
