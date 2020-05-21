@@ -47,6 +47,7 @@ const cfg = config(window.location)
 const decorationLayerThickness = 0.01
 let decorationLayer = 0
 let mostRecentlyCreatedObjectId = null
+let gridsize = null
 
 // Don't look for 'dropzone' in HTML tags
 Dropzone.autoDiscover = false
@@ -403,6 +404,12 @@ const start = async () => {
         if (selectedObject) {
           selectedObject.disableFollowsTarget()
           dragDelta.add(dragStartObjectPos)
+          
+          if (gridsize) {
+            dragDelta.x = Math.floor(dragDelta.x / gridsize) * gridsize
+            dragDelta.z = Math.floor(dragDelta.z / gridsize) * gridsize
+          }
+          
           selectedObject.object.position.copy(dragDelta)
           selectedObject.state.position.now.copy(dragDelta)
           selectedObject.state.position.target.copy(dragDelta)
@@ -1000,7 +1007,7 @@ const start = async () => {
           }
           showToast(`zoomrange set to ${stage.minFov}, ${stage.maxFov}`)
         } else {
-          showToast('zoomrange requires min and max')
+          showToast('zoomrange requires max or default')
         }
         break
         
@@ -1020,6 +1027,15 @@ const start = async () => {
         const pos = player.object.position
         showToast(`You are at x: ${parseInt(pos.x, 10)}, y: ${parseInt(pos.y, 10)}, z: ${parseInt(pos.z, 10)}`)
         break
+        
+      case 'snap':
+        if (args.length === 1) {
+          gridsize = parseFloat(args[0])
+          showToast(`Snap to grid set to ${gridsize}`)
+        } else {
+          gridsize = null
+          showToast('Snap to grid turned off')
+        }
         
       default:
         showToast(`As far as I know, this isn't a command: ${command}`)
