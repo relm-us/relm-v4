@@ -1029,7 +1029,7 @@ const start = async () => {
         break
         
       case 'snap':
-        if (args.length === 1) {
+        if (args && args.length === 1) {
           gridsize = parseFloat(args[0])
           showToast(`Snap to grid set to ${gridsize}`)
         } else {
