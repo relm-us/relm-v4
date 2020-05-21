@@ -1,11 +1,6 @@
 import stampit from 'stampit'
-import Collision from '@stamp/collision'
 
-const UpdateCollision = Collision.collisionSetup({
-  defer: ['updateDomElement']
-})
-
-const CanProject = stampit(UpdateCollision, {
+const CanProject = stampit({
   props: {
     domElement: null
   },
@@ -36,12 +31,35 @@ const CanProject = stampit(UpdateCollision, {
   }
 })
 
-const WithLabel = stampit(UpdateCollision, {
-  init({ body = document.body }) {
+const WithLabel = stampit({
+  init({ body = document.body, onLabelChanged }) {
     this.domElement = document.createElement('div')
     this.domElement.classList.add('entity-label')
-    this.documentBody = body
     
+    // If an onLabelChanged function is passed in, labels can be edited by the user
+    if (onLabelChanged) {
+      this.onLabelChanged = onLabelChanged
+      
+      this.domElement.setAttribute('contenteditable', 'true')
+      this.domElement.addEventListener('keydown', (event) => {
+        if (event.keyCode === 13) { /* ENTER confirms the edit */
+          this.domElement.blur()
+        } else if (event.keyCode === 27) { /* ESC cancels the edit */
+          this.domElement.textContent = this.labelBeforeEdit
+          this.domElement.blur()
+        }
+      })
+      this.domElement.addEventListener('focus', () => {
+        this.labelBeforeEdit = this.domElement.textContent
+        this.domElement.classList.add('editing')
+      })
+      this.domElement.addEventListener('blur', () => {
+        this.onLabelChanged(this.domElement.textContent)
+        this.domElement.classList.remove('editing')
+      })
+    }
+    
+    this.documentBody = body
     this.documentBody.appendChild(this.domElement)
   },
 
@@ -74,4 +92,4 @@ const Label = stampit(
   WithLabel
 )
 
-export { Label, WithLabel, CanProject, UpdateCollision }
+export { Label, WithLabel, CanProject }

@@ -296,7 +296,10 @@ const start = async () => {
     videoBubbleOffset: {x: 0, y: 190, z: 0 },
     thoughtBubbleOffset: {x: 50, y: 100},
     animationResourceId: 'people',
-    lsKey: 'player'
+    lsKey: 'player',
+    onLabelChanged: (newName) => {
+      player.setLabel(newName)
+    }
   })
   if (!localstoreRestoreState('player', player)) {
     // First-time users can choose their character
