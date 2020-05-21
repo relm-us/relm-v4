@@ -3,7 +3,6 @@ const path = require('path')
 const express = require('express')
 const fileupload = require('express-fileupload')
 const cors = require('cors')
-// const detect = require('detect-file-type')
 
 const config = require('./config.js')
 const uuidv4 = require('./util.js').uuidv4
@@ -40,8 +39,18 @@ function fail(res, reason) {
   }))
 }
 
+function fileUploadSuccess(res, assetId, filename) {
+  res.writeHead(200, config.CONTENT_TYPE_JSON)
+  res.end(JSON.stringify({
+    status: 'success',
+    id: assetId,
+    file: filename,
+    path: `/asset/${filename}`
+  }))
+}
+
 // Upload images and 3D assets
-app.post('/asset', cors(), (req, res) => {
+app.post('/asset', cors(), async (req, res) => {
   const asset = req.files.file
   if (asset.size > config.MAX_FILE_SIZE) {
     return fail(res, 'file too large')
@@ -50,24 +59,25 @@ app.post('/asset', cors(), (req, res) => {
   if (extension.length >= config.MAX_FILE_EXTENSION_LENGTH) {
     return fail(res, 'file extension too long')
   }
-  const assetId = uuidv4()
+  
+  const assetId = asset.md5 + '-' + asset.size
   const newName = assetId + extension
   const moveTo = config.ASSET_DIR + '/' + newName
   
-  console.log('Uploading asset to', moveTo, asset.name)
-  asset.mv(moveTo, (err) => {
-    if (err) {
-      return fail(res, err)
+  try {
+    await fs.promises.access(moveTo)
+    console.log('Asset upload skipped (already exists)', moveTo, asset.name)
+  } catch (accessError) {
+    if (accessError.code === 'ENOENT') {
+      console.log('Asset uploaded to', moveTo, asset.name)
+      asset.mv(moveTo, (err) => {
+        if (err) { return fail(res, err) }
+      })
     } else {
-      res.writeHead(200, config.CONTENT_TYPE_JSON)
-      res.end(JSON.stringify({
-        status: 'success',
-        id: assetId,
-        file: newName,
-        path: `/asset/${newName}`
-      }))
+      throw err
     }
-  })
+  }
+  return fileUploadSuccess(res, assetId, newName)
 })
 
 module.exports = app
