@@ -4,8 +4,8 @@
   "main": "index.js",
   "license": "GPL-3.0-only",
   "scripts": {
-    "start": "parcel src/index2.html",
-    "build": "parcel build --public-url / src/index2.html",
+    "start": "parcel src/index.html",
+    "build": "parcel build --public-url / src/index.html",
     "format": "standard 'src/*.js' 'lib/*.js' --fix"
   },
   "dependencies": {

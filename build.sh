@@ -8,7 +8,7 @@ echo "Writing src/manifest.js..."
 $DIR/make_manifest.sh
 
 echo "Cleaning dist/ folder & re-building..."
-rm -rf $DIR/dist/* && ./node_modules/.bin/parcel build --public-url / src/index2.html
+rm -rf $DIR/dist/* && ./node_modules/.bin/parcel build --public-url / src/index.html
 RESULT=$?
 
 if [ $RESULT -eq 0 ]; then

@@ -21,11 +21,11 @@ yarn start
 
 We recommend node 10.15.3 at the time of this writing.
 
-## Notes on the Refactor
+## Project Structure
 
-Currently, the code is undergoing a fairly large refactor from a monolithic app to more of an ECS (entity-component-system) style of modularization. We're using [stampit](https://stampit.js.org/) as a way to create Components that interact with each other when added to an Entity.
+The Relm engine uses a loose ECS (entit-component-system) style of code organization. We're using [stampit](https://stampit.js.org/) as a way to create Components that interact with each other when added to an Entity.
 
-If you want to get started understanding the code, check out `src/index2.html` for now. Eventually it will become `src/index.html`.
+If you want to get started understanding the code, check out `src/index.html`.
 
 Project structure:
 
