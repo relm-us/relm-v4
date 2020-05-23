@@ -210,6 +210,13 @@ const commands = {
         showInfoAboutObject(object)
         return true /* add to success count */
       })
+      case 'locktoggle': return actionToEachObject((object, env) => {
+        if (object.uiLockToggle) {
+          object.uiLockToggle()
+          network.setEntity(object)
+          return true /* add to success count */
+        }
+      })
       case 'lock': return actionToEachObject((object, env) => {
         if (object.uiLock) {
           object.uiLock()

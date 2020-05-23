@@ -56,7 +56,6 @@ let mostRecentlyCreatedObjectId = null
 // Don't look for 'dropzone' in HTML tags
 Dropzone.autoDiscover = false
 
-
 const security = Security()
 
 const Player = stampit(
@@ -581,6 +580,25 @@ const start = async () => {
       console.warn("Can't remove entity (not found)", uuid)
     }
   })
+  
+  
+  const runCommand = (text, targetObjects = null) => {
+    try {
+      const command = parseCommand(text)
+      const objects = targetObjects || stage.selection.getAllEntities()
+      const position = player.object.position
+      if (command) {
+        console.log('calling command')
+        command({ network, stage, player, objects, position })
+      } else {
+        showToast('Should there be a command after the `/`?')
+      }
+    } catch (err) {
+      console.trace(err)
+      showToast(err.message)
+    }
+  }
+
 
   // At various times, we need to set focus on the game so that character directional controls work
   const focusOnGame = () => { stage.renderer.domElement.focus() }
@@ -670,21 +688,7 @@ const start = async () => {
       focusOnGame()
     } else if (e.keyCode === 13 /* ENTER */) {
       if (text.substring(0,1) === '/') {
-        try {
-          const command = parseCommand(text.substring(1))
-          const objects = stage.selection.getAllEntities()
-          console.log('objects', objects, command)
-          const position = player.object.position
-          if (command) {
-            console.log('calling command')
-            command({ network, stage, player, objects, position })
-          } else {
-            showToast('Should there be a command after the `/`?')
-          }
-        } catch (err) {
-          console.trace(err)
-          showToast(err.message)
-        }
+        runCommand(text.substring(1))
         e.target.value = ''
         focusOnGame()
       } else if (text !== '') {
@@ -733,6 +737,10 @@ const start = async () => {
       // the default HTML tabIndex system
       else if (e.keyCode === 9) {
         e.preventDefault()
+      }
+      else if (e.keyCode === 220 && e.shiftKey) {
+        const objects = mousePointer.intersects.map((isect) => isect.entity)
+        runCommand("object locktoggle", objects)
       }
       // Make it easier to type '/object` and all the other commands
       else if (e.keyCode === 191 /* Forward Slash */) {

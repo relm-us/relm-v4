@@ -26,6 +26,10 @@ const ReceivesPointer = stampit({
   },
 
   methods: {
+    uiLockToggle() {
+      this.state.uiLocked.target = !this.state.uiLocked.target
+    },
+
     uiLock() {
       this.state.uiLocked.target = true
     },
