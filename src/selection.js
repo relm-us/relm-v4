@@ -42,6 +42,10 @@ const Selection = stampit({
   },
 
   methods: {
+    hasSelected() {
+      return this.selected.length > 0
+    },
+    
     addSelection(entitiesSet) {
       const added = difference(entitiesSet, this.selected)
       entitiesSet.forEach((entity) => this.selected.add(entity))

@@ -8,7 +8,6 @@ import { FollowsTarget } from './follows_target.js'
 import { NetworkSetsState } from './network_persistence.js'
 import { GlowMaterial } from './glow_material.js'
 import { HasEmissiveMaterial } from './has_emissive_material.js'
-import { CanUiLock } from './can_ui_lock.js'
 import { HasLabel } from './has_label.js'
 import { HasThoughtBubble } from './has_thought_bubble.js'
 
@@ -111,7 +110,6 @@ const InteractionDiamond = stampit(
   HasObject,
   HasGlowingDiamond,
   HasEmissiveMaterial,
-  CanUiLock,
   ReceivesPointer,
   FollowsTarget,
   NetworkSetsState,
