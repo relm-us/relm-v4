@@ -39,13 +39,14 @@ const Selection = stampit({
   init({ stage }) {
     this.stage = stage
     this.selected = new Set()
+    this.savedPositions = new Map()
   },
 
   methods: {
     hasSelected() {
-      return this.selected.length > 0
+      return this.selected.size > 0
     },
-    
+
     addSelection(entitiesSet) {
       const added = difference(entitiesSet, this.selected)
       entitiesSet.forEach((entity) => this.selected.add(entity))
@@ -92,6 +93,23 @@ const Selection = stampit({
           return this.removeSelection(selectedSet)
         default: new Error(`Only '+', '-' and null are accepted as set operations for selection`)
       }
+    },
+    
+    forEach(callback) {
+      this.selected.forEach(callback)
+    },
+
+    savePositions(id) {
+      this.savedPositions[id] = new WeakMap()
+      this.selected.forEach((entity) => {
+        const position = new THREE.Vector3()
+        position.copy(entity.object.position)
+        this.savedPositions[id][entity] = position
+      })
+    },
+
+    savedPositionFor(id, entity) {
+      return this.savedPositions[id][entity]
     }
   }
 })

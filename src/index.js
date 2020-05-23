@@ -341,7 +341,6 @@ const start = async () => {
   let dragLock = false
   let dragStart = false
   let dragStartPos = null
-  let dragStartObjectPos = new THREE.Vector3()
   let dragDelta = new THREE.Vector3()
   window.addEventListener('mousemove', (event) => {
     // Show mouse pointer
@@ -349,40 +348,37 @@ const start = async () => {
     
     // If mouse has moved a certain distance since clicking, then turn into a "drag"
     if (dragStart && !dragLock) {
-    console.log('dragStart && !dragLock getIntersects')
-      const isect = mousePointer.getIntersects(stage.ground)
-      if (isect.length > 0) {
-        const mousePos = isect[0].point
+      const intersection = mousePointer.getIntersection(stage.ground)
+      if (intersection) {
+        const mousePos = intersection.point
         if (mousePos.distanceTo(dragStartPos) > 10) {
           dragLock = true
-          // console.log('dragLock true', mousePos)
+          console.log('dragLock true', mousePos)
         }
       }
     }
     
     if (dragLock) {
-    console.log('dragLock getIntersects')
-      const isect = mousePointer.getIntersection(stage.ground)
-      if (isect.length > 0) {
-        dragDelta.copy(isect[0].point)
-        dragDelta.sub(dragStartPos)
-        // console.log('mouseDelta', dragDelta)
-        
-        if (selectedObject) {
-          selectedObject.disableFollowsTarget()
-          dragDelta.add(dragStartObjectPos)
+      const intersection = mousePointer.getIntersection(stage.ground)
+      if (intersection && stage.selection.hasSelected()) {
+        stage.selection.forEach((entity) => {
+          dragDelta.copy(intersection.point)
+          dragDelta.sub(dragStartPos)
+          dragDelta.add(stage.selection.savedPositionFor('drag', entity))
           
-          const gridsize = stage.gridSnap
-          if (gridsize) {
-            dragDelta.x = Math.floor(dragDelta.x / gridsize) * gridsize
-            dragDelta.z = Math.floor(dragDelta.z / gridsize) * gridsize
+          console.log('mouseDelta', entity.uuid, 'x', dragDelta.x.toFixed(2), 'z', dragDelta.z.toFixed(2))
+          if (stage.gridSnap) {
+            const size = stage.gridSnap
+            dragDelta.x = Math.floor(dragDelta.x / size) * size
+            dragDelta.z = Math.floor(dragDelta.z / size) * size
           }
           
-          selectedObject.object.position.copy(dragDelta)
-          selectedObject.state.position.now.copy(dragDelta)
-          selectedObject.state.position.target.copy(dragDelta)
-          network.setEntity(selectedObject)
-        }
+          entity.disableFollowsTarget()
+          entity.object.position.copy(dragDelta)
+          entity.state.position.now.copy(dragDelta)
+          entity.state.position.target.copy(dragDelta)
+          network.setEntity(entity)
+        })
       }
     }
   })
@@ -390,40 +386,14 @@ const start = async () => {
   window.addEventListener('mousedown', (event) => {
     if (event.target.id !== 'game' && event.target.id !== 'glcanvas') { return }
     
-    // Click to select things on the stage
-    recordCoords({ x: event.clientX, y: event.clientY }, (isNearPrevious) => {
-      /**
-       * Convert 'shift' and 'ctrl' clicks into set operations:
-       *   - shift+click: set addition
-       *   - ctrl+click: set subtraction
-       *   - click: replace set
-       */
-      const operation = event.shiftKey ? '+' : (event.ctrlKey ? '-' : '=')
-      // Select whatever the most recent 'mousemove' event got us closest to
-      let selected = mousePointer.intersects.map((isect) => isect.entity)
-      // Don't allow selecting locked objects
-      selected = selected.filter((entity) => !entity.isUiLocked())
-      
-      // When clicking near the same spot as last time without shift or ctrl keys,
-      // cycle through the various intersecting objects under the mouse pointer
-      if (operation === '=' && isNearPrevious) {
-        previousMousedownIndex++
-      } else {
-        previousMousedownIndex = 0
-      }
-      if (operation === '=' && selected.length > 0) {
-        selected = [selected[previousMousedownIndex % selected.length]]
-      }
-      
-      stage.selection.select(selected, operation)
-    })
     
     // This might be the beginning of a drag & drop sequence, so prep for that possibility
     const intersection = mousePointer.getIntersection(stage.ground)
     if (intersection && stage.selection.hasSelected()) {
-      // dragStart = true
-      // dragStartPos = isect2[0].point
-      // dragStartObjectPos.copy(selectedObject.object.position)
+      dragStart = true
+      dragStartPos = intersection.point
+      stage.selection.savePositions('drag')
+      console.log('drag start', stage.selection.selected)
     }
     
     // TODO: Why can't we detect a click on the player?
@@ -436,19 +406,51 @@ const start = async () => {
   })
   
   window.addEventListener('mouseup', (event) => {
-    // const entity = selectedObject
-    // if (entity) {
-    //   // If we disabled FollowsTarget during drag/drop, re-enable it
-    //   if (entity.enableFollowsTarget) {
-    //     entity.enableFollowsTarget()
-    //   }
-    //   // If we didn't drag/drop the entity, call its onClick
-    //   if (!dragLock && entity && entity.onClick) {
-    //     entity.onClick()
-    //   }
-    // }
-    // dragStart = false
-    // dragLock = false
+    if (dragLock) {
+      if (stage.selection.hasSelected()) {
+        // If we disabled FollowsTarget during drag/drop, re-enable it
+        stage.selection.forEach((entity) => {
+          entity.enableFollowsTarget()
+          
+          // If we didn't drag/drop the entity, call its onClick
+          if (!dragLock && entity.onClick) {
+            entity.onClick()
+          }
+        })
+      }
+      dragStart = false
+      dragLock = false
+    } else {
+      // Click to select things on the stage
+      recordCoords({ x: event.clientX, y: event.clientY }, (isNearPrevious) => {
+        /**
+         * Convert 'shift' and 'ctrl' clicks into set operations:
+         *   - shift+click: set addition
+         *   - ctrl+click: set subtraction
+         *   - click: replace set
+         */
+        const operation = event.shiftKey ? '+' : (event.ctrlKey ? '-' : '=')
+        // Select whatever the most recent 'mousemove' event got us closest to
+        let selected = mousePointer.intersects.map((isect) => isect.entity)
+        // Don't allow selecting locked objects
+        selected = selected.filter((entity) => !entity.isUiLocked())
+        
+        // When clicking near the same spot as last time without shift or ctrl keys,
+        // cycle through the various intersecting objects under the mouse pointer
+        if (operation === '=' && isNearPrevious) {
+          previousMousedownIndex++
+        } else {
+          previousMousedownIndex = 0
+        }
+        if (operation === '=' && selected.length > 0) {
+          selected = [selected[previousMousedownIndex % selected.length]]
+        }
+        
+        stage.selection.select(selected, operation)
+      })
+    }
+
+    
   })
 
 
