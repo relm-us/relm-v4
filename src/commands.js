@@ -147,13 +147,13 @@ const commands = {
   mode: (args) => {
     const mode = takeOne(args, `There are a couple of modes: 'normal' and 'editor'`)
     return (env) => {
+    console.log('env', env)
       switch (mode) {
         case 'editor':
-          env.stage.minFov = 20.0
-          env.stage.maxFov = 800.0
+          env.stage.enableEditorMode()
           break
         case 'normal':
-          env.stage.setDefaultFovRange()
+          env.stage.disableEditorMode()
           break
         default: new Error(`Is there a ${mode} mode? Try 'normal' or 'editor'`)
       }
@@ -211,8 +211,11 @@ const commands = {
         return true /* add to success count */
       })
       case 'locktoggle': return actionToEachObject((object, env) => {
+      console.log('locktoggle', object)
         if (object.uiLockToggle) {
+          console.log('toggled')
           object.uiLockToggle()
+          env.stage.selection.select([object], '-')
           network.setEntity(object)
           return true /* add to success count */
         }
@@ -220,6 +223,7 @@ const commands = {
       case 'lock': return actionToEachObject((object, env) => {
         if (object.uiLock) {
           object.uiLock()
+          env.stage.selection.select([object], '-')
           network.setEntity(object)
           return true /* add to success count */
         }
@@ -227,6 +231,7 @@ const commands = {
       case 'unlock': return actionToEachObject((object, env) => {
         if (object.uiUnlock) {
           object.uiUnlock()
+          env.stage.selection.select([object], '-')
           network.setEntity(object)
           return true /* add to success count */
         }

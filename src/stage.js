@@ -38,6 +38,12 @@ const Stage = stampit(
     height: null,
     
     continueRendering: true,
+    
+    /**
+     * Editor Mode allows the user to zoom out more so they can see the whole relm,
+     * as well as interact with locked objects.
+     */
+    editorMode: false,
   },
 
   init({ width, height }) {
@@ -159,6 +165,17 @@ const Stage = stampit(
     
     setGridSnap(size) {
       this.gridSnap = size
+    },
+    
+    enableEditorMode() {
+      this.editorMode = true
+      this.minFov = 20.0
+      this.maxFov = 800.0
+    },
+    
+    disableEditorMode() {
+      this.editorMode = false
+      this.setDefaultFovRange()
     },
     
     /**

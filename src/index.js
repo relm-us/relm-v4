@@ -394,7 +394,10 @@ const start = async () => {
         stage.selection.savePositions('drag')
       }
     } else if (!event.shiftKey && !event.ctrlKey) {
-        const intersections = mousePointer.intersects.filter((isect) => !isect.entity.isUiLocked())
+        let intersections = mousePointer.intersects
+        if (!stage.editorMode) {
+          intersections = intersections.filter((isect) => !isect.entity.isUiLocked())
+        }
         const groundIntersection = mousePointer.getIntersection(stage.ground)
         // Don't allow selecting locked objects
         if (intersections.length > 0 && groundIntersection) {
@@ -441,8 +444,10 @@ const start = async () => {
         const operation = event.shiftKey ? '+' : (event.ctrlKey ? '-' : '=')
         // Select whatever the most recent 'mousemove' event got us closest to
         let selected = mousePointer.intersects.map((isect) => isect.entity)
-        // Don't allow selecting locked objects
-        selected = selected.filter((entity) => !entity.isUiLocked())
+        if (!stage.editorMode) {
+          // Don't allow selecting locked objects
+          selected = selected.filter((entity) => !entity.isUiLocked())
+        }
         
         // When clicking near the same spot as last time without shift or ctrl keys,
         // cycle through the various intersecting objects under the mouse pointer
@@ -739,8 +744,7 @@ const start = async () => {
         e.preventDefault()
       }
       else if (e.keyCode === 220 && e.shiftKey) {
-        const objects = mousePointer.intersects.map((isect) => isect.entity)
-        runCommand("object locktoggle", objects)
+        runCommand("object locktoggle")
       }
       // Make it easier to type '/object` and all the other commands
       else if (e.keyCode === 191 /* Forward Slash */) {
