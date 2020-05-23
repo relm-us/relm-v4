@@ -915,6 +915,13 @@
     "@stamp/compose" "^1.0.2"
     events "^1.1.1"
 
+"@stamp/instanceof@^1.0.1":
+  version "1.0.1"
+  resolved "https://registry.yarnpkg.com/@stamp/instanceof/-/instanceof-1.0.1.tgz#58bdce6efe94de3c181122b81e3e80e64d17c75a"
+  integrity sha512-tPhsyVUtWpD/UKEA6d4r4Fw7aEEDiiJNAnHPmX2neNKnqn5MSDOikbVoz6266KDbZ77l2ZNqADipyAyrtHcbMQ==
+  dependencies:
+    "@stamp/compose" "^1.0.2"
+
 "@stamp/is@^1.0.0":
   version "1.0.0"
   resolved "https://registry.yarnpkg.com/@stamp/is/-/is-1.0.0.tgz#edf031a3b43ee1f07e7b74bfbd837c82980eb25a"

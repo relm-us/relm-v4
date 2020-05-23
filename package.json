@@ -5,6 +5,7 @@
   "license": "GPL-3.0-only",
   "scripts": {
     "start": "parcel src/index.html",
+    "sandbox": "parcel src/sandbox.html",
     "build": "parcel build --public-url / src/index.html",
     "format": "standard 'src/*.js' 'lib/*.js' --fix"
   },
@@ -12,6 +13,7 @@
     "@material-ui/core": "^4.9.5",
     "@stamp/collision": "^1.1.0",
     "@stamp/eventemittable": "^1.0.2",
+    "@stamp/instanceof": "^1.0.1",
     "@types/react": "^16.8.6",
     "anchorme": "^2.1.2",
     "base64-arraybuffer-es6": "^0.5.0",

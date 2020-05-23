@@ -7,6 +7,7 @@ import { HasScene } from './has_scene.js'
 import { SceneWithCamera } from './scene_with_camera.js'
 import { SceneWithRenderer } from './scene_with_renderer.js'
 import { SceneWithGround } from './scene_with_ground.js'
+import { Selection } from './selection.js'
 import { uuidv4 } from './util.js'
 
 const Stage = stampit(
@@ -41,12 +42,13 @@ const Stage = stampit(
 
   init({ width, height }) {
     this.entities = {}
-    this.formerEntitiesOnStage = []
     this.entitiesOnStage = []
+    this.selection = Selection({ stage: this })
     this.projScreenMatrix = new THREE.Matrix4()
     this.frustum = new THREE.Frustum()
     this.updateFns = new Map()
     this.postrenderFns = new Map()
+    this.gridSnap = null
     if (!width || !height) {
       throw new Error('State requires width and height')
     } else {
@@ -153,6 +155,10 @@ const Stage = stampit(
     
     stopRendering() {
       this.continueRendering = false
+    },
+    
+    setGridSnap(size) {
+      this.gridSnap = size
     },
     
     /**

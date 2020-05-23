@@ -66,6 +66,7 @@ const Teleports = stampit(Component, {
         this.object.remove(this.ring)
       }
       const radius = this.state.radius.now
+      console.log('createTeleportalRing', radius)
       const geometry = new RingGeometry(radius - 5.0, radius + 5.0, 64, 6)
       const material = this.material = new MeshStandardMaterial({
         // color: (this.active ? ACTIVE_COLOR : INACTIVE_COLOR),
@@ -77,6 +78,10 @@ const Teleports = stampit(Component, {
       this.ring.rotation.x = -Math.PI * 0.5
       
       this.object.add(this.ring)
+    },
+    
+    setRadius(r) {
+      this.state.radius.target = r
     },
     
     setActive() {
@@ -100,8 +105,8 @@ const Teleports = stampit(Component, {
 
     update(delta) {
       if (this.state.radius.now !== this.state.radius.target) {
-        this.createTeleportalRing()
         this.state.radius.now = this.state.radius.target
+        this.createTeleportalRing()
       }
       
       if (this.state.url.now !== this.state.url.target) {
@@ -114,7 +119,6 @@ const Teleports = stampit(Component, {
       if (distance < radius / 3) {
         if (this.active) {
           const url = this.state.url.now
-          console.log('distance', distance, url)
           if (url && url.indexOf('http') === 0) {
             if (!this.oneTimeTrigger) {
               this.target.disableFollowsTarget()

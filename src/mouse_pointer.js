@@ -111,6 +111,7 @@ const UpdatesPositionFromScreenCoords = stampit(Component, {
     this.screenVec = new THREE.Vector3()
     this.screenRaycaster = new THREE.Raycaster()
     this.intersects = []
+    this.intersectsOne = []
   },
 
   methods: {
@@ -127,7 +128,9 @@ const UpdatesPositionFromScreenCoords = stampit(Component, {
 
     getIntersects(object3d) {
       this.screenRaycaster.setFromCamera(this.getMouseCoords(), this.stage.camera)
-      return this.screenRaycaster.intersectObject(object3d, true)
+      this.intersectsOne.length = 0
+      this.screenRaycaster.intersectObject(object3d, true, this.intersectsOne)
+      return this.intersectsOne
     },
     
     getIntersectsOnStage() {
@@ -142,13 +145,11 @@ const UpdatesPositionFromScreenCoords = stampit(Component, {
         }
         return accum
       }, [])
-      objects.push(this.stage.ground)
       
       // Reduce length to zero rather than garbage collect (speed optimization)
       this.intersects.length = 0
       this.screenRaycaster.intersectObjects(objects, true, this.intersects)
 
-      // console.log('intersects', this.intersects)
       this.intersects.forEach((intersection) => {
         const entity = findEntityForObject(this.stage.entitiesOnStage, intersection.object)
         intersection.entity = entity
@@ -158,16 +159,25 @@ const UpdatesPositionFromScreenCoords = stampit(Component, {
     },
 
     update(delta) {
-      this.getIntersectsOnStage()
+      let intersects = this.getIntersectsOnStage()
 
-      if (this.intersects.length > 0) {
-        const ip = this.intersects[0].point
+      if (intersects.length > 0) {
+        const ip = intersects[0].point
         const mp = this.object.position
         // TODO: make this a configurable offset. For now, it puts the HasSphere
         //       object slightly "above" the ground, and above the mouse cursor
         mp.x = ip.x - 3
         mp.y = ip.y + 10
         mp.z = ip.z + 10
+      } else {
+        intersects = this.getIntersects(this.stage.ground)
+        if (intersects.length > 0) {
+          const ip = intersects[0].point
+          const mp = this.object.position
+          mp.x = ip.x - 3
+          mp.y = ip.y + 10
+          mp.z = ip.z + 10
+        }
       }
       
       if (this.state.position.target) {

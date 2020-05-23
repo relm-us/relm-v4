@@ -7,8 +7,9 @@ import { guestNameFromPlayerId, avatarOptionFromPlayerId, avatarOptionsOfGender 
 import { Security } from './security.js'
 import { initializeAVChat, muteAudio, unmuteAudio } from './avchat.js'
 import { normalizeWheel } from './lib/normalizeWheel.js'
-import { setWouldSelectObject, selectObject, selectedObject } from './selection.js'
+// import { setWouldSelectObject, selectObject, selectedObject } from './selection.js'
 import { showToast, showPrevioustToast } from './lib/Toast.js'
+import { showInfoAboutObject } from './show_info_about_object.js'
 
 import { Entity, stage, network } from './entity.js'
 import { HasObject } from './has_object.js'
@@ -33,64 +34,27 @@ import { uuidv4 } from './util.js'
 import config from './config.js'
 import { PadController } from './pad_controller.js'
 import { stateToObject } from './state_to_object.js'
+import { relmImport } from './lib/relmExport.js'
 
 import "toastify-js/src/toastify.css"
 import { HasUniqueColor } from './has_unique_color.js'
 import { Thing3D } from './thing3d.js'
 import { UpdatesLabelToUniqueColor } from './updates_label_to_unique_color.js'
-import { relmExport, relmImport } from './lib/relmExport.js'
+import { parseCommand } from './commands.js'
 
 const IMAGE_FILETYPE_RE = /\.(png|gif|jpg|jpeg|webp)$/
 const GLTF_FILETYPE_RE = /\.(gltf|glb)$/
 
 const cfg = config(window.location)
 const decorationLayerThickness = 0.01
+let previousMousedownCoords = {}
+let previousMousedownIndex = 0
 let decorationLayer = 0
 let mostRecentlyCreatedObjectId = null
-let gridsize = null
 
 // Don't look for 'dropzone' in HTML tags
 Dropzone.autoDiscover = false
 
-const showInfoAboutObject = (entity) => {
-  if (!entity) { return }
-  const p = entity.object.position
-  const infos = [
-    `type: ${entity.type}`,
-    `uuid: ${entity.uuid}`,
-    `position: {x: ${p.x.toFixed(1)}, y: ${p.y.toFixed(1)}, z: ${p.y.toFixed(1)}}`,
-  ]
-  
-  if (entity.state.url) {
-    // portals have url
-    const url = entity.state.url.now
-    infos.push(`url: <a href="${url}" style="color:white">${url}</a>`)
-  } else if (entity.state.asset) {
-    const url = entity.state.asset.now.url
-    infos.push(`url: <a href="${url}" style="color:white">${url}</a>`)
-  } else if (entity.state.link) {
-    const url = entity.state.link.now || '[not set]'
-    infos.push(`url: <a href="${url}" style="color:white">${url}</a>`)
-  }
-  
-  if (entity.getScale) {
-    const scale = entity.getScale()
-    infos.push(`scale: ${scale.toFixed(1)}`)
-  }
-  
-  if (entity.getRotation) {
-    const rotation = entity.getRotation() / -THREE.Math.DEG2RAD
-    infos.push(`rotation: ${rotation.toFixed(1)}`)
-  }
-  
-  const isLockable = !!entity.isUiLocked
-  if (isLockable) {
-    const locked = entity.isUiLocked() ? 'locked' : 'unlocked'
-    infos.push(`locked: ${locked}`)
-  }
-  
-  showToast(infos.join('<br>'))
-}
 
 const security = Security()
 
@@ -384,6 +348,7 @@ const start = async () => {
     
     // If mouse has moved a certain distance since clicking, then turn into a "drag"
     if (dragStart && !dragLock) {
+    console.log('dragStart && !dragLock getIntersects')
       const isect = mousePointer.getIntersects(stage.ground)
       if (isect.length > 0) {
         const mousePos = isect[0].point
@@ -395,6 +360,7 @@ const start = async () => {
     }
     
     if (dragLock) {
+    console.log('dragLock getIntersects')
       const isect = mousePointer.getIntersects(stage.ground)
       if (isect.length > 0) {
         dragDelta.copy(isect[0].point)
@@ -405,6 +371,7 @@ const start = async () => {
           selectedObject.disableFollowsTarget()
           dragDelta.add(dragStartObjectPos)
           
+          const gridsize = stage.gridSnap
           if (gridsize) {
             dragDelta.x = Math.floor(dragDelta.x / gridsize) * gridsize
             dragDelta.z = Math.floor(dragDelta.z / gridsize) * gridsize
@@ -419,21 +386,40 @@ const start = async () => {
     }
   })
   
+  const isNearPreviousMouseEventCoords = (event, coords) => {
+    const dx = event.clientX - coords.x
+    const dy = event.clientY - coords.y
+    return Math.sqrt(dx * dx + dy * dy) <= 5
+  }
   window.addEventListener('mousedown', (event) => {
     if (event.target.id !== 'game' && event.target.id !== 'glcanvas') { return }
     
-    // Selects whatever the most recent 'mousemove' event got us closest to
-    const isect = mousePointer.intersects
-    if (isect.length === 0) {
-      setWouldSelectObject(null)
+    // Select whatever the most recent 'mousemove' event got us closest to
+    /**
+     * Convert 'shift' and 'ctrl' clicks into set operations:
+     *   - shift+click: set addition
+     *   - ctrl+click: set subtraction
+     *   - click: replace set
+     */
+    const operation = event.shiftKey ? '+' : (event.ctrlKey ? '-' : '=')
+    let selected = mousePointer.intersects.map((isect) => isect.entity)
+    if (operation === '=' && isNearPreviousMouseEventCoords(event, previousMousedownCoords)) {
+      previousMousedownIndex++
     } else {
-      const entity = isect[0].entity
-      setWouldSelectObject(entity)
-      
+      previousMousedownIndex = 0
     }
-    selectObject()
+    if (operation === '=' && selected.length > 0) {
+      selected = [selected[previousMousedownIndex % selected.length]]
+    }
+    console.log('mousedown', selected, mousePointer.intersects)
+    stage.selection.select(selected, operation)
+    
+    // Record each click so we can know if previous click was 'near' this click
+    previousMousedownCoords.x = event.clientX
+    previousMousedownCoords.y = event.clientY
     
     // This might be the beginning of a drag & drop sequence, so prep for that possibility
+    /*
     const isect2 = mousePointer.getIntersects(stage.ground)
     if (isect2.length > 0 && selectedObject) {
       const isLocked = selectedObject.isUiLocked && selectedObject.isUiLocked()
@@ -443,6 +429,7 @@ const start = async () => {
         dragStartObjectPos.copy(selectedObject.object.position)
       }
     }
+    */
     
     // TODO: Why can't we detect a click on the player?
     //
@@ -454,19 +441,19 @@ const start = async () => {
   })
   
   window.addEventListener('mouseup', (event) => {
-    const entity = selectedObject
-    if (entity) {
-      // If we disabled FollowsTarget during drag/drop, re-enable it
-      if (entity.enableFollowsTarget) {
-        entity.enableFollowsTarget()
-      }
-      // If we didn't drag/drop the entity, call its onClick
-      if (!dragLock && entity && entity.onClick) {
-        entity.onClick()
-      }
-    }
-    dragStart = false
-    dragLock = false
+    // const entity = selectedObject
+    // if (entity) {
+    //   // If we disabled FollowsTarget during drag/drop, re-enable it
+    //   if (entity.enableFollowsTarget) {
+    //     entity.enableFollowsTarget()
+    //   }
+    //   // If we didn't drag/drop the entity, call its onClick
+    //   if (!dragLock && entity && entity.onClick) {
+    //     entity.onClick()
+    //   }
+    // }
+    // dragStart = false
+    // dragLock = false
   })
 
 
@@ -618,460 +605,7 @@ const start = async () => {
     })
   }
   
-  const doCommand = (command, args) => {
-    const importExport = document.getElementById('import-export')
-    const importExportTextarea = document.getElementById('import-export-data')
-    switch (command) {
-      case 'sign':
-        if (typeof args === 'undefined' || typeof args[0] === 'undefined') {
-          showToast('`/sign` requires a subcommand, e.g. "create"')
-        } else {
-          const subCommand = args[0]
-          switch (subCommand) {
-            case 'create':
-              // TODO: `link` should be renamed to something like `message`
-              let link
-              if (args.length > 1) {
-                link = args.slice(1).join(' ')
-              } else {
-                link = null
-              }
-              mostRecentlyCreatedObjectId = uuidv4()
-              const position = Object.assign({}, player.state.position.now)
-              const diamond = InteractionDiamond({
-                uuid: mostRecentlyCreatedObjectId,
-                type: 'diamond',
-                position,
-                link,
-              })
-              diamond.object.position.copy(position)
-              // Make it about chest-height by default
-              diamond.state.position.target.y += 100
-              network.setEntity(diamond)
-              break
-            
-            case 'label':
-              if (!selectedObject) {
-                showToast('Requires a selected object')
-                return
-              }
-              if (!selectedObject.setLabel) {
-                showToast(`Can't set label on selected object (${selectObject.type})`)
-                return
-              }
-              if (args.length < 2) {
-                showToast('`/sign label LABEL` requires LABEL')
-                return
-              }
-              const label = args.slice(1).join(' ')
-              selectedObject.setLabel(label)
-              network.setEntity(selectedObject)
-              showToast(`Sign label set to "${label}" (${selectedObject.uuid})`)
-              break
-            
-            case 'message':
-              if (!selectedObject) {
-                showToast('Requires a selected object')
-                return
-              }
-              if (!selectedObject.setThought) {
-                showToast(`Can't set message on selected object (${selectObject.type})`)
-                return
-              }
-              if (args.length < 2) {
-                showToast('`/link message MSG` requires MSG')
-                return
-              }
-              const message = args.slice(1).join(' ')
-              selectedObject.setMessage(message)
-              network.setEntity(selectedObject)
-              showToast(`Sign message set to "${message}" (${selectedObject.uuid})`)
-              break
-            
-            default:
-              showToast('`/sign` subcommands are "create", "label", or "message"')
-          }
-        }
-        break
-      
-      case 'home':
-        player.warpToPosition({x:0,y:0,z:0})
-        break
-        
-      case 'name':
-        player.setLabel(args.join(' '))
-        break
-        
-      case 'character':
-        const gender = args[0]
-        if (gender === 'f' || gender === 'm') {
-          const avatarOptions = avatarOptionsOfGender(gender)
-          const index = parseInt(args[1], 10)
-          if (index < avatarOptions.length) {
-            player.state.animationMeshName.target = avatarOptions[index].avatarId
-          } else {
-            showToast('Pick a number between 0 and 8 for your avatar')
-          }
-        } else {
-          showToast('Pick a gender of "f" or "m" for your avatar')
-        }
-        break
-      
-      case 'luke':
-        if (['x', 'y', 'z'].includes(args[0]) && args[1]) {
-          const axis = args[0]
-          const magnitude = parseFloat(args[1])
-          for (let entity of stage.entitiesOnStage) {
-            if (entity.receivesPointer) {
-              entity.state.position.target[axis] += magnitude
-              network.setEntity(entity)
-            }
-          }
-        }
-        break
-        
-      case 'yoda':
-        if (['x', 'y', 'z'].includes(args[0]) && args[1]) {
-          const axis = args[0]
-          const magnitude = parseFloat(args[1])
-          for (let uuid in stage.entities) {
-            const entity = stage.entities[uuid]
-            if (entity.receivesPointer) {
-              entity.state.position.target[axis] += magnitude
-              network.setEntity(entity)
-            }
-          }
-        }
-        break
-        
-      case 'collectallscaled':
-        let collectionCount = 0
-        for (let uuid in stage.entities) {
-          const entity = stage.entities[uuid]
-          if (entity.receivesPointer && entity.setTexture) {
-            if (entity.texture && (entity.state.imageScale.now <= 0.99 || entity.state.imageScale.now >= 1.01)) {
-              entity.state.position.target.x = 0
-              entity.state.position.target.y = 1
-              entity.state.position.target.z = 0
-              if (entity.uiUnlock) {
-                entity.uiUnlock()
-              }
-              network.setEntity(entity)
-              collectionCount++
-            }
-          }
-        }
-        showToast(`Collected ${collectionCount} objects to center of world`)
-        break
 
-      
-      case 'abracadabra':
-        for (let uuid in stage.entities) {
-          const entity = stage.entities[uuid]
-          if (entity.receivesPointer && entity.setTexture) {
-            if (entity.texture) {
-              const h = entity.texture.image.height
-              const s = entity.state.imageScale.now
-              entity.state.position.target.y += ((h * s) / 2 - (h / 2)) * s
-              network.setEntity(entity)
-            }
-          }
-        }
-        break
-      
-      case 'antiabracadabra':
-        for (let uuid in stage.entities) {
-          const entity = stage.entities[uuid]
-          if (entity.receivesPointer && entity.setTexture) {
-            if (entity.texture) {
-              const h = entity.texture.image.height
-              const s = entity.state.imageScale.now
-              entity.state.position.target.y -= ((h * s) / 2 - (h / 2)) * s
-              network.setEntity(entity)
-            }
-          }
-        }
-        break
-
-      case 'object':
-      case 'obj':
-        const object = selectedObject
-        const subCommand = args[0]
-        if (!selectedObject) {
-          showToast('Selected object not found')
-        } else {
-          console.log('Selected object', selectedObject)
-          if (subCommand === 'info') {
-            showInfoAboutObject(selectedObject)
-          } else if (subCommand === 'changelink') {
-            if (typeof args[1] === 'undefined') {
-              showToast('changelink expects URL')
-            } else if (!object.state.link) {
-              showToast("Object can't set link")
-            } else {
-              const newLink = args[1]
-              object.state.link.target = newLink
-              
-              const label = args[2] || null
-              object.setLabel(label)
-              
-              network.setEntity(object)
-              showToast(`Object link set to ${newLink}, label ${label}`)
-            }
-          } else if (subCommand === 'up') {
-            object.state.orientation.target = 0
-            network.setEntity(object)
-            showToast('Object is standing up (orientation 0)')
-          } else if (subCommand === 'down') {
-            object.state.orientation.target = 3
-            network.setEntity(object)
-            showToast('Object is lying down (orientation 3)')
-          } else if (subCommand === 'left') {
-            object.state.orientation.target = 1
-            network.setEntity(object)
-            showToast('Object is standing left (orientation 1)')
-          } else if (subCommand === 'right') {
-            object.state.orientation.target = 2
-            network.setEntity(object)
-            showToast('Object is standing right (orientation 2)')
-          } else if (subCommand === 'delete') {
-            network.removeEntity(object.uuid)
-            showToast(`Object ${object.uuid} deleted`)
-          } else if (subCommand === 'fetch') {
-            const destination = new THREE.Vector3()
-            const y = object.state.position.now.y
-            destination.copy(player.state.position.now)
-            destination.y = y
-            object.setPosition(destination)
-            network.setEntity(object)
-            showToast(`Object ${object.uuid} moved to x: ${parseInt(destination.x, 10)}, y: ${parseInt(destination.y, 10)}, z: ${parseInt(destionation.z, 10)}`)
-          } else if (subCommand === 'moveTo') {
-            if (typeof args[1] === 'undefined' ||
-                typeof args[2] === 'undefined' ||
-                typeof args[3] === 'undefined') {
-              showToast('moveTo requires x, y, z coordinates')
-            } else {
-              const x = parseFloat(args[1])
-              const y = parseFloat(args[2])
-              const z = parseFloat(args[3])
-              object.state.position.target.copy({x, y, z})
-              network.setEntity(object)
-              showToast(`Moved object to x: ${parseInt(x, 10)}, y: ${parseInt(y, 10)}, z: ${parseInt(z, 10)}`)
-            }
-          } else if (subCommand === 'x') {
-            if (typeof args[1] === 'undefined') {
-              showToast('x command requires a value to move X by')
-            } else {
-              object.state.position.target.x += parseFloat(args[1])
-              network.setEntity(object)
-              showToast(`Moved X to ${parseInt(object.state.position.target.x, 10)}`)
-            }
-          } else if (subCommand === 'y') {
-            if (typeof args[1] === 'undefined') {
-              showToast('y command requires a value to move Y by')
-            } else {
-              object.state.position.target.y += parseFloat(args[1])
-              network.setEntity(object)
-              showToast(`Moved Y to ${parseInt(object.state.position.target.y, 10)}`)
-            }
-          } else if (subCommand === 'z') {
-            if (typeof args[1] === 'undefined') {
-              showToast('z command requires a value to move Z by')
-            } else {
-              object.state.position.target.z += parseFloat(args[1])
-              network.setEntity(object)
-              showToast(`Moved Z to ${parseInt(object.state.position.target.z, 10)}`)
-            }
-          } else if (subCommand === 'scale') {
-            if (typeof args[1] === 'undefined') {
-              showToast('scale command requires a value to scale by')
-            } else {
-              const scale = parseFloat(args[1])
-              if (object.setScale) {
-                object.setScale(scale)
-                network.setEntity(object)
-                showToast(`Scaled object to ${scale}`)
-              } else {
-                showToast("Object doesn't support setScale")
-              }
-            }
-          } else if (subCommand === 'rotate') {
-            if (typeof args[1] === 'undefined') {
-              showToast('rotate command requires a value to rotate by')
-            } else {
-              const degrees = parseFloat(args[1])
-              const radians = degrees * -THREE.Math.DEG2RAD
-              if (object.setRotation) {
-                object.setRotation(radians)
-                // object.state.imageRotation.target = radians
-                network.setEntity(object)
-                showToast(`Object rotated to ${degrees} deg (${radians} rad)`)
-              } else {
-                showToast("Object doesn't support setRotation")
-              }
-            }
-          } else if (subCommand === 'clone') {
-            let count
-            if (typeof args[1] === 'undefined') {
-              count = 1
-            } else {
-              count = parseInt(args[1], 10)
-            }
-            const clonedState = stateToObject(object.type, object.state)
-            clonedState.position = Object.assign({}, clonedState.position)
-            for (let i = 0; i < count; i++) {
-              clonedState.position.x += 50
-              clonedState.position.z += 50
-              const newUuid = uuidv4()
-              network.setState(newUuid, clonedState)
-              showToast(`Cloned new object: ${newUuid}`)
-            }
-          } else if (subCommand === 'lock') {
-            if (object.uiLock) {
-              object.uiLock()
-              setWouldSelectObject(null)
-              selectObject()
-              network.setEntity(object)
-              showToast(`Object locked (${object.uuid})`)
-            } else {
-              showToast("Selected object can't be locked")
-            }
-          } else if (subCommand === 'unlock') {
-            if (object.uiUnlock) {
-              object.uiUnlock()
-              setWouldSelectObject(object)
-              selectObject()
-              network.setEntity(object)
-              showToast(`Object unlocked (${object.uuid})`)
-            } else {
-              showToast("Selected object can't be unlocked")
-            }
-          }
-        }
-        break
-
-      case 'mute':
-        muteAudio()
-        break
-      
-      case 'unmute':
-        unmuteAudio()
-        break
-      
-      case 'import':
-        importExportTextarea.value = ''
-        importExport.classList.remove('hide')
-        document.getElementById('import-button').classList.remove('hide')
-        importExportTextarea.focus()
-        break
-        
-      case 'export':
-        const data = relmExport(stage, network)
-        importExportTextarea.value = JSON.stringify(data, null, 2)
-        importExport.classList.remove('hide')
-        document.getElementById('import-button').classList.add('hide')
-        break
-        
-      case 'portal':
-        if (!args || args.length === 0) {
-          console.warn('URL is required')
-          break
-        }
-        const radius = parseInt(args[1] || '150')
-        const url = args[0]
-        const tp = Teleportal({
-          // FIXME: should add UUID here
-          type: 'teleportal',
-          target: player,
-          url: url,
-          active: false,
-          radius: radius,
-          position: player.state.position.now,
-          speed: 500,
-        })
-        tp.object.position.copy(player.state.position.now)
-        network.setEntity(tp)
-        stage.add(tp)
-        break
-      
-      case 'zoomrange':
-        if (args.length === 1) {
-          switch (args[0]) {
-            case 'max':
-              stage.minFov = 20.0
-              stage.maxFov = 800.0
-              break
-            default:
-              stage.setDefaultFovRange()
-              break
-          }
-          showToast(`zoomrange set to ${stage.minFov}, ${stage.maxFov}`)
-        } else {
-          showToast('zoomrange requires max or default')
-        }
-        break
-        
-      case 'stop':
-        stage.continueRendering = false
-        break
-
-      case 'reset':
-        stage.continueRendering = false
-        setTimeout(() => {
-          localStorage.clear()
-          window.location.reload()
-        }, 100)
-        break
-      
-      case 'whereami':
-        const pos = player.object.position
-        showToast(`You are at x: ${parseInt(pos.x, 10)}, y: ${parseInt(pos.y, 10)}, z: ${parseInt(pos.z, 10)}`)
-        break
-        
-      case 'snap':
-        if (args && args.length === 1) {
-          gridsize = parseFloat(args[0])
-          showToast(`Snap to grid set to ${gridsize}`)
-        } else {
-          gridsize = null
-          showToast('Snap to grid turned off')
-        }
-        break
-      
-      case 'lockall':
-        let lockCount = 0
-        let lockTotal = 0
-        for (let uuid in stage.entities) {
-          let entity = stage.entities[uuid]
-          if (entity.uiLock) {
-            entity.uiLock()
-            network.setEntity(entity)
-            lockCount++
-          }
-          lockTotal++
-        }
-        showToast(`Locked ${lockCount} of ${lockTotal} objects in this relm`)
-        break
-        
-      case 'unlockall':
-        let unlockCount = 0
-        let unlockTotal = 0
-        for (let uuid in stage.entities) {
-          let entity = stage.entities[uuid]
-          if (entity.uiUnlock) {
-            entity.uiUnlock()
-            network.setEntity(entity)
-            unlockCount++
-          }
-          unlockTotal++
-        }
-        showToast(`Unlocked ${unlockCount} of ${unlockTotal} objects in this relm`)
-        break
-        
-      default:
-        showToast(`As far as I know, this isn't a command: ${command}`)
-    }
-  }
   
   
   // Import/Export HTML Events
@@ -1129,14 +663,18 @@ const start = async () => {
       focusOnGame()
     } else if (e.keyCode === 13 /* ENTER */) {
       if (text.substring(0,1) === '/') {
-        const parts = text.substring(1).split(' ')
-        if (parts.length === 1 && parts[0] !== '') {
-          const command = parts[0]
-          doCommand(command)
-        } else if (parts.length > 1) {
-          const command = parts[0]
-          const args = parts.slice(1)
-          doCommand(command, args)
+        try {
+          const command = parseCommand(text.substring(1))
+          const objects = selectedObject ? [selectedObject] : []
+          const position = player.object.position
+          if (command) {
+            command({ network, stage, player, objects, position })
+          } else {
+            showToast('Should there be a command after the `/`?')
+          }
+        } catch (err) {
+          console.trace(err)
+          showToast(err.message)
         }
         e.target.value = ''
         focusOnGame()

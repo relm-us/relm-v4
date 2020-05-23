@@ -1,0 +1,22 @@
+Component Contract
+
+behaviors
+- eventemittable
+  - any 
+
+props:
+- children
+  - an array of entities that "belong" to this entity
+  - not necessarily part of the same object3d hierarchy
+  - (could this be used for multi-select and grouping features later?)
+- components
+  - an array of components that have been added to this entity
+
+- toJson()
+  - converts current state to json object
+  - we can have a default implementation that is similar to objectToState
+  - allows us to override weird cases like quaternion
+- setup()
+- update(delta)
+- postrender()
+- teardown()
