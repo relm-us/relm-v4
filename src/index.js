@@ -360,13 +360,13 @@ const start = async () => {
     
     if (dragLock) {
       const intersection = mousePointer.getIntersection(stage.ground)
-      if (intersection && stage.selection.hasSelected()) {
+      if (intersection && stage.selection.hasAtLeast(1)) {
         stage.selection.forEach((entity) => {
           dragDelta.copy(intersection.point)
           dragDelta.sub(dragStartPos)
-          dragDelta.add(stage.selection.savedPositionFor('drag', entity))
+          const pos = stage.selection.savedPositionFor('drag', entity)
+          dragDelta.add(pos)
           
-          console.log('mouseDelta', entity.uuid, 'x', dragDelta.x.toFixed(2), 'z', dragDelta.z.toFixed(2))
           if (stage.gridSnap) {
             const size = stage.gridSnap
             dragDelta.x = Math.floor(dragDelta.x / size) * size
@@ -386,14 +386,26 @@ const start = async () => {
   window.addEventListener('mousedown', (event) => {
     if (event.target.id !== 'game' && event.target.id !== 'glcanvas') { return }
     
-    
     // This might be the beginning of a drag & drop sequence, so prep for that possibility
-    const intersection = mousePointer.getIntersection(stage.ground)
-    if (intersection && stage.selection.hasSelected()) {
-      dragStart = true
-      dragStartPos = intersection.point
-      stage.selection.savePositions('drag')
-      console.log('drag start', stage.selection.selected)
+    if (stage.selection.hasAtLeast(2)) {
+      const intersection = mousePointer.getIntersection(stage.ground)
+      if (intersection) {
+        dragStart = true
+        dragStartPos = intersection.point
+        stage.selection.savePositions('drag')
+      }
+    } else if (!event.shiftKey && !event.ctrlKey) {
+        const intersections = mousePointer.intersects.filter((isect) => !isect.entity.isUiLocked())
+        const groundIntersection = mousePointer.getIntersection(stage.ground)
+        // Don't allow selecting locked objects
+        if (intersections.length > 0 && groundIntersection) {
+          const isect = intersections[0]
+          stage.selection.select([isect.entity], '=')
+        
+          dragStart = true
+          dragStartPos = groundIntersection.point
+          stage.selection.savePositions('drag')
+        }
     }
     
     // TODO: Why can't we detect a click on the player?
@@ -407,7 +419,7 @@ const start = async () => {
   
   window.addEventListener('mouseup', (event) => {
     if (dragLock) {
-      if (stage.selection.hasSelected()) {
+      if (stage.selection.hasAtLeast(1)) {
         // If we disabled FollowsTarget during drag/drop, re-enable it
         stage.selection.forEach((entity) => {
           entity.enableFollowsTarget()
@@ -418,8 +430,6 @@ const start = async () => {
           }
         })
       }
-      dragStart = false
-      dragLock = false
     } else {
       // Click to select things on the stage
       recordCoords({ x: event.clientX, y: event.clientY }, (isNearPrevious) => {
@@ -449,8 +459,8 @@ const start = async () => {
         stage.selection.select(selected, operation)
       })
     }
-
-    
+    dragStart = false
+    dragLock = false
   })
 
 
@@ -662,9 +672,11 @@ const start = async () => {
       if (text.substring(0,1) === '/') {
         try {
           const command = parseCommand(text.substring(1))
-          const objects = selectedObject ? [selectedObject] : []
+          const objects = stage.selection.getAllEntities()
+          console.log('objects', objects, command)
           const position = player.object.position
           if (command) {
+            console.log('calling command')
             command({ network, stage, player, objects, position })
           } else {
             showToast('Should there be a command after the `/`?')

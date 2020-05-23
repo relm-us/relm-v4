@@ -177,6 +177,7 @@ const commands = {
   },
   object: (args) => {
     const subCommand = takeOne(args, `Shouldn't there be a subcommand after '/sign'? e.g. 'create', 'label', 'message'`)
+    console.log('object subcommand', subCommand)
     switch (subCommand) {
       case 'clone': return actionToEachObject((object, env) => {
         let count
@@ -248,6 +249,7 @@ const commands = {
         return true /* add to success count */
       })
       case 'y': return actionToEachObject((object, env) => {
+        console.log('y', object, env)
         object.state.position.target.y += parseFloat(takeOne(args, `Shouldn't there be an [Y] value after '/object y'?`))
         env.network.setEntity(object)
         return true /* add to success count */

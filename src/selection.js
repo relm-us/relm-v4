@@ -43,8 +43,12 @@ const Selection = stampit({
   },
 
   methods: {
-    hasSelected() {
-      return this.selected.size > 0
+    getAllEntities() {
+      return Array.from(this.selected)
+    },
+
+    hasAtLeast(n) {
+      return this.selected.size >= n
     },
 
     addSelection(entitiesSet) {
@@ -100,16 +104,16 @@ const Selection = stampit({
     },
 
     savePositions(id) {
-      this.savedPositions[id] = new WeakMap()
+      this.savedPositions[id] = new Map()
       this.selected.forEach((entity) => {
         const position = new THREE.Vector3()
         position.copy(entity.object.position)
-        this.savedPositions[id][entity] = position
+        this.savedPositions[id][entity.uuid] = position
       })
     },
 
     savedPositionFor(id, entity) {
-      return this.savedPositions[id][entity]
+      return this.savedPositions[id][entity.uuid]
     }
   }
 })
