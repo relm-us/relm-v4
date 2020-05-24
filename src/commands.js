@@ -339,21 +339,20 @@ const commands = {
   },
   select: (args) => {
     const subCommand = takeOne(args, `Shouldn't there be a subcommand after '/select'? e.g. 'all'`)
+    const conditionallySelectAll = (setOperation, condition) => {
+      return (env) => {
+        env.stage.forEachEntity((entity) => {
+          if (entity.receivesPointer && condition(entity)) {
+            env.stage.selection.select([entity], setOperation)
+          }
+        })
+      }
+    }
     switch (subCommand) {
-      case 'all': return (env) => {
-        env.stage.forEachEntity((entity) => {
-          if (entity.receivesPointer && (env.stage.editorMode || !entity.isUiLocked())) {
-            env.stage.selection.select([entity], '+')
-          }
-        })
-      }
-      case 'none': return (env) => {
-        env.stage.forEachEntity((entity) => {
-          if (entity.receivesPointer && (env.stage.editorMode || !entity.isUiLocked())) {
-            env.stage.selection.select([entity], '-')
-          }
-        })
-      }
+      case 'all': return conditionallySelectAll('+', (entity) => !entity.isEffectivelyUiLocked())
+      case 'none': return conditionallySelectAll('-', (entity) => !entity.isEffectivelyUiLocked())
+      case 'locked': return conditionallySelectAll('+', (entity) => entity.isUiLocked())
+      case 'unlocked': return conditionallySelectAll('+', (entity) => !entity.isUiLocked())
       default: throw Error(`Is ${subCommand} a '/sign' subcommand?`)
     }
   },

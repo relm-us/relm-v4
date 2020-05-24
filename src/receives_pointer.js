@@ -40,6 +40,10 @@ const ReceivesPointer = stampit({
 
     isUiLocked() {
       return this.state.uiLocked.target
+    },
+
+    isEffectivelyUiLocked() {
+      return !this.stage.editorMode && this.state.uiLocked.target
     }
   }
 })
