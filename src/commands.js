@@ -1,6 +1,5 @@
 import { uuidv4 } from "./util"
 import { showToast } from './lib/Toast.js'
-import { take, takeOne, joinAll, parseCommandString, actionToEachObject } from './command_utils.js'
 import { showInfoAboutObject } from './show_info_about_object.js'
 
 import { InteractionDiamond } from './interaction_diamond.js'
@@ -8,6 +7,15 @@ import { Teleportal } from './teleportal.js'
 import { stateToObject } from './state_to_object.js'
 import { relmExport } from './lib/relmExport.js'
 import { muteAudio, unmuteAudio } from './avchat.js'
+
+import {
+  take,
+  takeOne,
+  joinAll,
+  parseCommandString,
+  actionToEachObject,
+  numberOfObjects,
+} from './command_utils.js'
 
 /**
  * @typedef CommandEnv
@@ -210,16 +218,33 @@ const commands = {
         showInfoAboutObject(object)
         return true /* add to success count */
       })
-      case 'locktoggle': return actionToEachObject((object, env) => {
-      console.log('locktoggle', object)
-        if (object.uiLockToggle) {
-          console.log('toggled')
-          object.uiLockToggle()
-          env.stage.selection.select([object], '-')
-          network.setEntity(object)
-          return true /* add to success count */
-        }
-      })
+      case 'locktoggle': 
+        let lockCount = 0
+        let unlockCount = 0
+        return actionToEachObject((object, env) => {
+          if (object.isUiLocked) {
+            if (object.isUiLocked()) {
+              object.uiUnlock()
+              unlockCount++
+              env.stage.selection.select([object], '-')
+              network.setEntity(object)
+            } else {
+              object.uiLock()
+              lockCount++
+              env.stage.selection.select([object], '-')
+              network.setEntity(object)
+            }
+            return true
+          }
+        }, () => {
+          if (lockCount > 0 && unlockCount > 0) {
+            showToast(`Locked ${numberOfObjects(lockCount)} and unlocked ${numberOfObjects(unlockCount)}`)
+          } else if (lockCount > 0) {
+            showToast(`Locked ${numberOfObjects(lockCount)}`)
+          } else if (unlockCount > 0) {
+            showToast(`Unlocked ${numberOfObjects(unlockCount)}`)
+          }
+        })
       case 'lock': return actionToEachObject((object, env) => {
         if (object.uiLock) {
           object.uiLock()
@@ -227,7 +252,7 @@ const commands = {
           network.setEntity(object)
           return true /* add to success count */
         }
-      })
+      }, (count) => { showToast(`Locked ${numberOfObjects(count)}`) })
       case 'unlock': return actionToEachObject((object, env) => {
         if (object.uiUnlock) {
           object.uiUnlock()
@@ -235,7 +260,7 @@ const commands = {
           network.setEntity(object)
           return true /* add to success count */
         }
-      })
+      }, (count) => { showToast(`Unlocked ${numberOfObjects(count)}`) })
       case 'r':
       case 'rotate': return actionToEachObject((object, env) => {
         if (object.setRotation) {

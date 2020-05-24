@@ -41,6 +41,10 @@ const requireObjects = (env) => {
   if (env.objects.length === 0) { throw Error('No objects selected') }
 }
 
+const numberOfObjects = (count) => {
+  return `${count} object${count === 1 ? '' : 's'}`
+}
+
 const actionToEachObject = (action, onSuccess) => {
   return (env) => {
     requireObjects(env)
@@ -75,4 +79,5 @@ export {
   parseCommandString,
   requireObjects,
   actionToEachObject,
+  numberOfObjects,
 }
