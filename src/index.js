@@ -724,8 +724,9 @@ const start = async () => {
   document.addEventListener('keydown', e => {
     
     if (e.target === stage.renderer.domElement) {
-      // Don't accidentally allow backspace to trigger browser back
-      if (e.keyCode === 8) {
+      if (e.keyCode === 8 || e.keyCode === 46) {
+        runCommand('object delete')
+        // Don't accidentally allow backspace to trigger browser back
         e.preventDefault()
       }
       // This makes it so that 'tab' is controlled by us, rather than
