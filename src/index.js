@@ -418,6 +418,8 @@ const start = async () => {
   })
   
   window.addEventListener('mouseup', (event) => {
+    if (event.target.id !== 'game' && event.target.id !== 'glcanvas') { return }
+    
     if (dragLock) {
       if (stage.selection.hasAtLeast(1)) {
         // If we disabled FollowsTarget during drag/drop, re-enable it
@@ -643,9 +645,11 @@ const start = async () => {
     importExport.classList.add('hide')
     showToast(`Imported ${objectCount} objects into this relm.`)
   })
-  importExportCloseButton.addEventListener('click', (event) => {
+  importExportCloseButton.addEventListener('mouseup', (event) => {
     importExport.classList.add('hide')
-  })
+    event.stopPropagation()
+    focusOnGame()
+  }, true)
   
 
   // Avatar Selection HTML Events

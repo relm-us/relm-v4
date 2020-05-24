@@ -129,24 +129,47 @@ const commands = {
   },
   export: (args) => {
     return (env) => {
-      const data = relmExport(env.stage, env.network)
       const importExport = document.getElementById('import-export')
       const importButton = document.getElementById('import-button')
+      const checkboxWrapper = document.getElementById('export-only-selected')
+      let checkbox = document.getElementById('export-only-selected-checkbox')
       const textarea = document.getElementById('import-export-data')
-      textarea.value = JSON.stringify(data, null, 2)
       importExport.classList.remove('hide')
       importButton.classList.add('hide')
+      checkboxWrapper.classList.remove('hide')
+      
+      const exportToTextarea = (selectedOnly) => {
+        const data = relmExport(env.stage, env.network, selectedOnly)
+        textarea.value = JSON.stringify(data, null, 2)
+      }
+      
+      // Ugly hack to remove all previous event listeners:
+      {
+        var newElement = checkbox.cloneNode(true);
+        checkbox.parentNode.replaceChild(newElement, checkbox);
+        checkbox = newElement
+      }
+
+      checkbox.addEventListener('change', (event) => {
+        exportToTextarea(checkbox.checked)
+      })
+      
+      checkbox.checked = false
+      exportToTextarea(false)
     }
   },
   import: (args) => {
     return (env) => {
       const importExport = document.getElementById('import-export')
       const importButton = document.getElementById('import-button')
+      const checkboxWrapper = document.getElementById('export-only-selected')
+      const checkbox = document.getElementById('export-only-selected-checkbox')
       const textarea = document.getElementById('import-export-data')
       textarea.value = ''
       importExport.classList.remove('hide')
       importButton.classList.remove('hide')
-      textarea.focus()
+      checkboxWrapper.classList.add('hide')
+      setTimeout(() => { textarea.focus() } , 100)
     }
   },
   home: (args) => {
@@ -408,8 +431,6 @@ const parseCommand = (commandString) => {
   const [command, args] = parseCommandString(commandString)
   if (!command) { return null }
   
-  const importExport = document.getElementById('import-export')
-  const importExportTextarea = document.getElementById('import-export-data')
   if (commands[command]) {
     return commands[command](args)
   } else {

@@ -30,6 +30,9 @@
         url(./icons/unmuted.png)
       ;
     }
+    .hide {
+      display: none !important;
+    }
     .translucent {
       opacity: 0.3;
     }
@@ -85,7 +88,6 @@
       transform: translate(0,-100%);
       z-index: 1;
     }
-    .thought-dot-1.hide { display: none; }
     .thought-dot-1 { /* smallest circle: closest to head */
       position: absolute;
       transform: translate(-50%,-50%);
@@ -99,7 +101,6 @@
       bottom: 20px;
       opacity: 0.9;
     }
-    .thought-dot-2.hide { display: none; }
     .thought-dot-2 { /* small circle: between smallest circle & thought bubble */
       position: absolute;
       transform: translate(-50%,-50%);
@@ -173,7 +174,6 @@
       );
     }
     /* close button */
-    .thought-bubble-close.hide { display: none; }
     .thought-bubble-close {
       opacity: 0.9;
     }
@@ -186,7 +186,6 @@
       top: -15px;
     }
     /* action button */
-    .thought-bubble-action.hide { display: none; }
     .thought-bubble-action:after {
       content: 'G';
       padding: 5px;
@@ -562,9 +561,6 @@
       left: 10%;
       z-index: 4;
     }
-    #import-export.hide, #import-export .button.hide {
-      display:none;
-    }
     #import-export > textarea {
       flex-grow: 1;
       padding: 15px;
@@ -576,6 +572,15 @@
     }
     #import-export .button {
       margin-left: 10px;
+    }
+    #import-export input[type=checkbox] {
+      width: 35px;
+      height: 35px;
+    }
+    #import-export #export-only-selected {
+      display: flex;
+      align-items: center;
+      margin-right: 30px;
     }
     
     #avatars {
@@ -591,9 +596,6 @@
       align-items: center;
       overflow-y: auto;
       z-index: 4;
-    }
-    #avatars.hide {
-      display: none;
     }
     #avatars .title {
       font-size: 22px;
@@ -732,6 +734,10 @@
   <div id="import-export" class="hide">
     <textarea id="import-export-data"></textarea>
     <div class="button-panel">
+      <div id="export-only-selected">
+        <input type="checkbox" id="export-only-selected-checkbox">
+        <label for="export-only-selected-checkbox">Export Selected Objects Only</label>
+      </div>
       <button id="import-button" class="button">Import into this relm</button>
       <button id="import-export-close-button" class="button">Close</button>
     </div>

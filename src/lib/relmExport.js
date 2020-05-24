@@ -1,8 +1,15 @@
 import { stateToObject } from "../state_to_object.js"
 
-const relmExport = (stage, network) => {
+const relmExport = (stage, network, selectedOnly) => {
   const allObjects = {}
-  Array.from(network.entityStates.keys()).forEach(uuid => {
+  let uuids
+  if (selectedOnly) {
+    uuids = stage.selection.getAllEntities().map((entity) => entity.uuid)
+  } else {
+    uuids = network.entityStates.keys()
+  }
+  
+  Array.from(uuids).forEach(uuid => {
     const entity = stage.entities[uuid]
     allObjects[uuid] = stateToObject(entity.type, entity.state)
   })
