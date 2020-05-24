@@ -582,7 +582,6 @@ const start = async () => {
       const objects = targetObjects || stage.selection.getAllEntities()
       const position = player.object.position
       if (command) {
-        console.log('calling command')
         command({ network, stage, player, objects, position })
       } else {
         showToast('Should there be a command after the `/`?')
@@ -719,10 +718,6 @@ const start = async () => {
   document.addEventListener('keydown', e => {
     
     if (e.target === stage.renderer.domElement) {
-      if (!e.repeat) {
-        kbController.keyPressed(e.keyCode, { shift: e.shiftKey, ctrl: e.ctrlKey, meta: e.metaKey })
-      }
-      
       // Don't accidentally allow backspace to trigger browser back
       if (e.keyCode === 8) {
         e.preventDefault()
@@ -732,14 +727,26 @@ const start = async () => {
       else if (e.keyCode === 9) {
         e.preventDefault()
       }
+      else if (e.keyCode === 27 && stage.selection.hasAtLeast(1)) {
+        runCommand('select none')
+      }
+      // Use `shift+\` as shortcut for toggling lock state of objects
       else if (e.keyCode === 220 && e.shiftKey) {
-        runCommand("object locktoggle")
+        runCommand('object locktoggle')
+      }
+      // Support `ctrl+A` and `cmd+A` for selecting all
+      else if (e.keyCode === 65 && (e.ctrlKey || e.metaKey)) {
+        runCommand('select all')
+        e.preventDefault()
       }
       // Make it easier to type '/object` and all the other commands
       else if (e.keyCode === 191 /* Forward Slash */) {
         e.preventDefault()
         focusOnInput()
         document.getElementById('input').value = '/' 
+      }
+      else if (!e.repeat) {
+        kbController.keyPressed(e.keyCode, { shift: e.shiftKey, ctrl: e.ctrlKey, meta: e.metaKey })
       }
     }
   })

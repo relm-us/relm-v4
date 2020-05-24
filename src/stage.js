@@ -85,6 +85,10 @@ const Stage = stampit(
       }
       delete this.entities[entity.uuid]
     },
+
+    forEachEntity(fn) {
+      Object.values(this.entities).forEach(fn)
+    },
     
     forEachEntityOfType(type, fn, sortFn) {
       const entities = Object.values(this.entities).filter(e => e.type === type)

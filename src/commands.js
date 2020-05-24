@@ -334,6 +334,26 @@ const commands = {
       }, 100)
     }
   },
+  select: (args) => {
+    const subCommand = takeOne(args, `Shouldn't there be a subcommand after '/select'? e.g. 'all'`)
+    switch (subCommand) {
+      case 'all': return (env) => {
+        env.stage.forEachEntity((entity) => {
+          if (entity.receivesPointer && (env.stage.editorMode || !entity.isUiLocked())) {
+            env.stage.selection.select([entity], '+')
+          }
+        })
+      }
+      case 'none': return (env) => {
+        env.stage.forEachEntity((entity) => {
+          if (entity.receivesPointer && (env.stage.editorMode || !entity.isUiLocked())) {
+            env.stage.selection.select([entity], '-')
+          }
+        })
+      }
+      default: throw Error(`Is ${subCommand} a '/sign' subcommand?`)
+    }
+  },
   sign: (args) => {
     const subCommand = takeOne(args, `Shouldn't there be a subcommand after '/sign'? e.g. 'create', 'label', 'message'`)
     switch (subCommand) {
@@ -385,7 +405,6 @@ commands.s = commands.sign
 const parseCommand = (commandString) => {
   const [command, args] = parseCommandString(commandString)
   if (!command) { return null }
-  console.log('command', command, 'args', args)
   
   const importExport = document.getElementById('import-export')
   const importExportTextarea = document.getElementById('import-export-data')
@@ -394,35 +413,6 @@ const parseCommand = (commandString) => {
   } else {
     throw Error(`Is '${command}' a command?`)
   }
-  
-  /*
-    case 'luke':
-      if (['x', 'y', 'z'].includes(args[0]) && args[1]) {
-        const axis = args[0]
-        const magnitude = parseFloat(args[1])
-        for (let entity of stage.entitiesOnStage) {
-          if (entity.receivesPointer) {
-            entity.state.position.target[axis] += magnitude
-            network.setEntity(entity)
-          }
-        }
-      }
-      break
-      
-    case 'yoda':
-      if (['x', 'y', 'z'].includes(args[0]) && args[1]) {
-        const axis = args[0]
-        const magnitude = parseFloat(args[1])
-        for (let uuid in stage.entities) {
-          const entity = stage.entities[uuid]
-          if (entity.receivesPointer) {
-            entity.state.position.target[axis] += magnitude
-            network.setEntity(entity)
-          }
-        }
-      }
-      break
-*/
 }
 
 export { parseCommand }
