@@ -126,8 +126,7 @@ const WithVideoBubble = stampit(EventEmittable, {
       const wrapper = this.domElement = document.createElement('div')
       wrapper.classList.add('video-wrapper')
       wrapper.addEventListener('mousedown', (event) => {
-        console.log('click wrapper')
-        if (withStartVideoButton) {
+        if (withStartVideoButton && event.target == this.video) {
           console.log("Removing local video tracks")
           boundFunctions.destroyLocalTracks()
         }
