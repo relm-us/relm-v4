@@ -257,16 +257,6 @@ async function initJitsiMeet(callbacks, playerId, room) {
   console.log('JitsiMeetJS.JitsiConnection()', options)
   connection = new JitsiMeetJS.JitsiConnection(null, null, options)
   
-  try {
-    console.log('JitsiMeetJS.createLocalTracks()')
-    localTracks = await JitsiMeetJS.createLocalTracks({
-      devices: [ 'audio', 'video' ],
-      constraints: {}
-    })
-  } catch (err) {
-    console.error('Connection error', err)
-  }
-  
   connection.addEventListener(JitsiMeetJS.events.connection.CONNECTION_ESTABLISHED, () => {
     onConnectionEstablished(callbacks, playerId, room)
   })
@@ -276,6 +266,16 @@ async function initJitsiMeet(callbacks, playerId, room) {
 
   console.log('JitsiMeetJS connection.connect()')
   await connection.connect()
+  
+  try {
+    console.log('JitsiMeetJS.createLocalTracks()')
+    localTracks = await JitsiMeetJS.createLocalTracks({
+      devices: [ 'audio', 'video' ],
+      constraints: {}
+    })
+  } catch (err) {
+    console.error(err.message)
+  }
   
   for (let track of localTracks) {
     const type = track.getType()

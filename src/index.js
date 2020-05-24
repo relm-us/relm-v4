@@ -294,6 +294,7 @@ const start = async () => {
   })
   stage.add(player)
   
+  player.videoBubble.object.createDomElement()
   player.videoBubble.object.on('mute', muteAudio)
   player.videoBubble.object.on('unmute', unmuteAudio)
   
@@ -474,7 +475,7 @@ const start = async () => {
     switch(state.type) {
       case 'player':
         entity.setOpacity(1.0)
-        entity.showVideoBubble()
+        // entity.showVideoBubble()
         entity.showOffscreenIndicator()
         break
       case 'mouse':
@@ -491,7 +492,7 @@ const start = async () => {
     switch(state.type) {
       case 'player':
         entity.setOpacity(0.2)
-        entity.hideVideoBubble()
+        // entity.hideVideoBubble()
         entity.setThought(null)
         if (entity.hideOffscreenIndicator) {
           entity.hideOffscreenIndicator()
@@ -527,6 +528,7 @@ const start = async () => {
           if (state.position) {
             otherPlayer.warpToPosition(state.position)
           }
+          otherPlayer.videoBubble.object.createDomElement()
           stage.add(otherPlayer)
         } catch (e) {
           console.error(e)
