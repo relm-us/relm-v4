@@ -179,6 +179,8 @@ function onConnectionEstablished(callbacks, playerId, room) {
 }
 
 function addLocalTracksToConference() {
+  if (!localTracks || !conference) return
+  
   console.log('addLocalTracksToConference', conference, localTracks)
   for (let track of localTracks) {
     if (track.addedLocalTrackToConference) { next }
@@ -273,6 +275,8 @@ async function initJitsiMeet(callbacks, playerId, room) {
       devices: [ 'audio', 'video' ],
       constraints: {}
     })
+    // Safe to call here, because tracks will only be added if they haven't already
+    addLocalTracksToConference()
   } catch (err) {
     console.error(err.message)
   }
@@ -314,7 +318,6 @@ function initializeAVChat(playerId, room, callbacks) {
       initJitsiMeet(callbacks, playerId, room)
       return
     }
-    // console.log("Waiting for JitsiMeetJS")
   }, 200)
 }
 
