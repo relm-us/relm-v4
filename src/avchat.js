@@ -4,6 +4,9 @@ let connection
 let remoteParticipants = {}
 let conference
 let localTracks
+let localTrackElements = []
+
+let boundFunctions = {}
 
 function initRemoteParticipant(participantId) {
   if (!remoteParticipants[participantId]) {
@@ -266,7 +269,16 @@ async function initJitsiMeet(callbacks, playerId, room) {
 
   console.log('JitsiMeetJS connection.connect()')
   await connection.connect()
-  
+  boundFunctions.createAndAttachLocalTracks = () => {
+    createAndAttachLocalTracks(callbacks, playerId)
+  }
+  boundFunctions.destroyLocalTracks = () => {
+    destroyLocalTracks()
+  }
+  await createAndAttachLocalTracks(callbacks, playerId)
+}
+
+async function createAndAttachLocalTracks(callbacks, playerId) {
   try {
     console.log('JitsiMeetJS.createLocalTracks()')
     localTracks = await JitsiMeetJS.createLocalTracks({
@@ -277,6 +289,7 @@ async function initJitsiMeet(callbacks, playerId, room) {
     console.error(err.message)
   }
   
+  localTrackElements.length = 0
   for (let track of localTracks) {
     const type = track.getType()
     const id = `${type}-local`
@@ -288,20 +301,30 @@ async function initJitsiMeet(callbacks, playerId, room) {
         // videoElement.autoplay = true
         videoElement.classList.add('local')
         track.attach(videoElement)
+        localTrackElements.push(videoElement)
         break
       case 'audio':
         const audioElement = document.createElement('audio')
         audioElement.id = id
         document.body.appendChild(audioElement)
         track.attach(audioElement)
+        localTrackElements.push(audioElement)
         break
       default:
         console.error("Don't know how to handle track of type", type)
         return
     }
-    
-    console.log('attached', type)
   }
+}
+
+function destroyLocalTracks() {
+  console.log("need to destroy tracks", localTracks)
+  localTracks.forEach((track) => {
+    track.dispose()
+  })
+  localTrackElements.forEach((element) => {
+    element.remove()
+  })
 }
 
 function initializeAVChat(playerId, room, callbacks) {
@@ -342,4 +365,9 @@ function unmuteAudio() {
   }
 }
 
-export { initializeAVChat, muteAudio, unmuteAudio }
+export {
+  initializeAVChat,
+  boundFunctions,
+  muteAudio,
+  unmuteAudio
+}
