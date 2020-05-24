@@ -83,7 +83,7 @@ const Selection = stampit({
      * @param {Array<Entity>} entities 
      * @param {string} setOperation One of '+', '-', or '='
      */
-    select(entities, setOperation = null) {
+    select(entities, setOperation = '=') {
       let selectedSet = new Set(entities)
       switch (setOperation) {
         case '=':

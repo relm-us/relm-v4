@@ -7,8 +7,7 @@ import { guestNameFromPlayerId, avatarOptionFromPlayerId, avatarOptionsOfGender 
 import { Security } from './security.js'
 import { initializeAVChat, muteAudio, unmuteAudio } from './avchat.js'
 import { normalizeWheel } from './lib/normalizeWheel.js'
-// import { setWouldSelectObject, selectObject, selectedObject } from './selection.js'
-import { showToast, showPrevioustToast } from './lib/Toast.js'
+import { showToast } from './lib/Toast.js'
 import { showInfoAboutObject } from './show_info_about_object.js'
 
 import { Entity, stage, network } from './entity.js'
@@ -231,8 +230,7 @@ const start = async () => {
         network.setEntity(thing3d)
         
         // Select the thing that was just uploaded
-        setWouldSelectObject(thing3d)
-        selectObject()
+        stage.selection.select([thing3d])
         
         showToast(`Uploaded with scale normalized to ${parseInt(thing3d.state.scale.target, 10)}`)
       }) 
@@ -352,7 +350,6 @@ const start = async () => {
         const mousePos = intersection.point
         if (mousePos.distanceTo(dragStartPos) > 10) {
           dragLock = true
-          console.log('dragLock true', mousePos)
         }
       }
     }
@@ -536,10 +533,6 @@ const start = async () => {
         const decoration = Decoration(Object.assign({
         }, state, { uuid }))
         stage.add(decoration)
-        if (mostRecentlyCreatedObjectId === uuid) {
-          setWouldSelectObject(decoration)
-          selectObject()
-        }
         break
       
       case 'thing3d':
@@ -552,10 +545,6 @@ const start = async () => {
         const diamond = InteractionDiamond(Object.assign({
         }, state, { uuid }))
         stage.add(diamond)
-        if (mostRecentlyCreatedObjectId === uuid) {
-          setWouldSelectObject(diamond)
-          selectObject()
-        }
         break
       
       case 'mouse':

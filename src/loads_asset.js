@@ -3,6 +3,7 @@ import EventEmittable from '@stamp/eventemittable'
 
 import { Component } from './component.js'
 
+
 const LoadingState = {
   UNSENT: 0,
   LOADING: 1,
@@ -42,7 +43,7 @@ const LoadsAsset = stampit(Component, EventEmittable, {
       switch(this.loadingState) {
         case LoadingState.UNSENT:
           const asset = this.state.asset.target
-          this.loader(this.resources, asset.id, asset.url).then((gltf) => {
+          this.loader(asset.url).then((gltf) => {
             this.loadedAsset = gltf
             this.loadingState = LoadingState.DONE
           }, (rejectReason) => {

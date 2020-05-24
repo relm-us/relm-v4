@@ -7,11 +7,16 @@ import { HasEmissiveMaterial } from './has_emissive_material.js'
 import { ReceivesPointer } from './receives_pointer.js'
 import { FollowsTarget } from './follows_target.js'
 import { NetworkSetsState } from './network_persistence.js'
-
-import { addDynamicGltfTo } from './manifest_loaders.js'
+import { regularGLTFLoader } from './manifest_loaders.js'
 import { LoadsAsset } from './loads_asset.js'
 
 const DEFAULT_SIZE = 100
+
+const loadGltf = (path) => {
+  return new Promise((resolve, reject) => {
+    regularGLTFLoader.load(path, resolve, null, reject)
+  })
+}
 
 /**
  * Returns a ratio that can be used to multiply by the object's current size so as to
@@ -88,7 +93,7 @@ const HasThing3D = stampit(Component, {
       this.fastforward.quaternion = true
     }
     
-    this.loader = addDynamicGltfTo
+    this.loader = loadGltf
     this.on('loaded', (gltf) => {
       if (gltf) {
         this.setGltf(gltf)
