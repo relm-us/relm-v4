@@ -294,7 +294,7 @@ const start = async () => {
   })
   stage.add(player)
   
-  player.videoBubble.object.createDomElement()
+  player.videoBubble.object.createDomElement(true)
   player.videoBubble.object.on('mute', muteAudio)
   player.videoBubble.object.on('unmute', unmuteAudio)
   
