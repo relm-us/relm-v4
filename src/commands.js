@@ -27,7 +27,12 @@ import {
  */
 
 function signCreate(message) {
-  return (network, stage, objects, position) => {
+  return (env) => {
+    const position = new THREE.Vector3()
+    position.copy(env.position)
+    // Make it about head-height by default
+    position.y += 130
+    
     const diamond = InteractionDiamond({
       uuid: uuidv4(),
       type: 'diamond',
@@ -36,9 +41,7 @@ function signCreate(message) {
       position,
     })
     diamond.object.position.copy(position)
-    // Make it about head-height by default
-    diamond.state.position.target.y += 130
-    network.setEntity(diamond)
+    env.network.setEntity(diamond)
   }
 }
 

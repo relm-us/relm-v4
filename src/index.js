@@ -422,14 +422,18 @@ const start = async () => {
         // If we disabled FollowsTarget during drag/drop, re-enable it
         stage.selection.forEach((entity) => {
           entity.enableFollowsTarget()
-          
-          // If we didn't drag/drop the entity, call its onClick
-          if (!dragLock && entity.onClick) {
-            entity.onClick()
-          }
         })
       }
     } else {
+    
+      // Did player click on something with an onClick callback?
+      let clickedEntities = mousePointer.intersects.map((isect) => isect.entity)
+      clickedEntities.forEach((entity) => {
+        if (entity.onClick) {
+          entity.onClick()
+        }
+      })
+      
       // Click to select things on the stage
       recordCoords({ x: event.clientX, y: event.clientY }, (isNearPrevious) => {
         /**
