@@ -69,7 +69,7 @@ const WithVideoBubble = stampit(EventEmittable, {
         }
         circle.style.width = `${this.diameter}px`
         circle.style.height = `${this.diameter}px`
-        circle.style.borderRadius = `${this.diameter/2}px`
+        // circle.style.borderRadius = `${this.diameter/2}px`
       }
     },
     
