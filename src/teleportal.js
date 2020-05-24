@@ -67,7 +67,7 @@ const Teleports = stampit(Component, {
       }
       const radius = this.state.radius.now
       console.log('createTeleportalRing', radius)
-      const geometry = new RingGeometry(radius - 5.0, radius + 5.0, 64, 6)
+      const geometry = new RingGeometry(0, radius + 5.0, 64, 6)
       const material = this.material = new MeshStandardMaterial({
         // color: (this.active ? ACTIVE_COLOR : INACTIVE_COLOR),
         color: INACTIVE_COLOR,
