@@ -294,7 +294,7 @@ const start = async () => {
   })
   stage.add(player)
   
-  player.videoBubble.object.createDomElement(true)
+  player.videoBubble.object.createDomElement()
   player.videoBubble.object.on('mute', muteAudio)
   player.videoBubble.object.on('unmute', unmuteAudio)
   
@@ -844,8 +844,7 @@ const start = async () => {
       const entity = stage.entities[entityId]
       if (entity) {
         if (entity.videoBubble) {
-          const showStartVideoButton = (entityId === player.uuid)
-          return entity.videoBubble.object.createDomElement(showStartVideoButton)
+          return entity.videoBubble.object.createDomElement()
         } else {
           console.warn("Can't create video element for entity that has no VideoBubble", entityId)
         }

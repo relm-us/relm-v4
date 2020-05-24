@@ -4,11 +4,6 @@ import EventEmittable from '@stamp/eventemittable'
 import { Component } from './component.js'
 import { CanProject } from './label.js'
 
-import startVideoButtonImage from './images/start-video-button.png'
-import startVideoButtonHoverImage from './images/start-video-button-hover.png'
-
-import { boundFunctions } from './avchat.js'
-
 const { Vector3 } = THREE
 
 const WithVideoBubble = stampit(EventEmittable, {
@@ -78,7 +73,7 @@ const WithVideoBubble = stampit(EventEmittable, {
       }
     },
     
-    createDomElement(withStartVideoButton = false) {
+    createDomElement() {
       if (this.domElement) {
         this.destroyDomElement()
       }
@@ -89,26 +84,9 @@ const WithVideoBubble = stampit(EventEmittable, {
         this.setVideoElementSize()
       })
       
-      let button
-      if (withStartVideoButton) {
-        button = this.button = document.createElement('div')
-        button.classList.add('video-button')
-        
-        const img = document.createElement('img')
-        img.src = startVideoButtonImage
-        img.addEventListener('mouseenter', (event) => { img.src = startVideoButtonHoverImage })
-        img.addEventListener('mouseleave', (event) => { img.src = startVideoButtonImage })
-        img.addEventListener('mousedown', (event) => {
-          boundFunctions.createAndAttachLocalTracks()
-        })
-        button.append(img)
-      }
-      
       const circle = this.circle = document.createElement('div')
       circle.classList.add('video-circle')
-      if (withStartVideoButton) { circle.append(button) }
       circle.append(video)
-      
       
       const muteButton = this.muteButton = document.createElement('div')
       muteButton.tabIndex = -1
@@ -126,11 +104,6 @@ const WithVideoBubble = stampit(EventEmittable, {
       const wrapper = this.domElement = document.createElement('div')
       wrapper.classList.add('video-wrapper')
       wrapper.addEventListener('mousedown', (event) => {
-        console.log('click wrapper')
-        if (withStartVideoButton) {
-          console.log("Removing local video tracks")
-          boundFunctions.destroyLocalTracks()
-        }
         event.preventDefault()
       })
       
