@@ -32,7 +32,7 @@ const NetworkSetsState = stampit(Component, {
 const NetworkGetsState = stampit(Component, {
   methods: {
     update(delta) {
-      if (this.updated && this.network.provider) {
+      if (this.updated) {
         this.updated = false
         const object = stateToObject(this.type, this.state)
         this.network.setState(this.uuid, object)

@@ -6420,6 +6420,13 @@ xtend@^4.0.0, xtend@^4.0.1, xtend@~4.0.1:
   resolved "https://registry.yarnpkg.com/xtend/-/xtend-4.0.2.tgz#bb72779f5fa465186b1f438f674fa347fdb5db54"
   integrity sha512-LKYU1iAXJXUgAXn9URjiu+MWhyUXHsvfp7mcuYm9dSUKK0/CjtrUwFAxD82/mCWbtLsGjFIad0wIsod4zrTAEQ==
 
+y-indexeddb@^9.0.3:
+  version "9.0.3"
+  resolved "https://registry.yarnpkg.com/y-indexeddb/-/y-indexeddb-9.0.3.tgz#f1736a6e0798df4fa3313fa9cc9e4580851565cb"
+  integrity sha512-nrQPR2oocEAdvAIvgJ06TMg/UTepEoYRqUmL/T03nG87Angvs7b3AAysd1ChMfAKoJujzVHWA3nKWkp0Eiu7/Q==
+  dependencies:
+    lib0 "^0.2.12"
+
 y-protocols@^0.2.3:
   version "0.2.3"
   resolved "https://registry.yarnpkg.com/y-protocols/-/y-protocols-0.2.3.tgz#7782ce4f077bf8bd71cf50bf7bdee5218f3182d3"

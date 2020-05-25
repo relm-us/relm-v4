@@ -20,28 +20,28 @@ wss.on('connection', (conn, req) => {
 
 server.on('request', app);
 
-server.on('upgrade', (request, socket, head) => {
-  const params = util.getUrlParams(request.url)
-  console.log('upgrade requested', params)
+// server.on('upgrade', (request, socket, head) => {
+//   const params = util.getUrlParams(request.url)
+//   console.log('upgrade requested', params)
   
-  let id = params.get('id')
-  let token = params.get('t')
-  let sig = params.get('s')
+//   let id = params.get('id')
+//   let token = params.get('t')
+//   let sig = params.get('s')
 
-  /**
-   * @type {XYDoc}
-   */
-  let xydoc = {
-    x: params.get('x'),
-    y: params.get('y')
-  }
+//   /**
+//    * @type {XYDoc}
+//    */
+//   let xydoc = {
+//     x: params.get('x'),
+//     y: params.get('y')
+//   }
   
-  if (authorize(db, id, sig, token, xydoc)) {
-    wss.handleUpgrade(request, socket, head, (ws) => {
-      wss.emit('connection', ws, request)
-    })
-  }
-})
+//   if (authorize(db, id, sig, token, xydoc)) {
+//     wss.handleUpgrade(request, socket, head, (ws) => {
+//       wss.emit('connection', ws, request)
+//     })
+//   }
+// })
 
 
 module.exports = server

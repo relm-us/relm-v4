@@ -55,9 +55,9 @@ const AwarenessGetsState = stampit(Component, {
   methods: {
     update(delta) {
       this.awarenessGetsStateCounter++
-      if (this.awarenessGetsStateCounter % this.awarenessUpdateFrequency === 0 && this.network.provider) {
+      if (this.awarenessGetsStateCounter % this.awarenessUpdateFrequency === 0 && this.network.isReady()) {
         const state = stateToObject(this.type, this.state)
-        this.network.provider.awareness.setLocalStateField(this.uuid, state)
+        this.network.wsProvider.awareness.setLocalStateField(this.uuid, state)
       }
     }
   }
