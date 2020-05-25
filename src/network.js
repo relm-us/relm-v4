@@ -3,155 +3,124 @@ import EventEmittable from '@stamp/eventemittable'
 
 import * as Y from 'yjs'
 import { WebsocketProvider } from 'y-websocket'
+import { IndexeddbPersistence } from 'y-indexeddb'
 
-import { stateToObject } from './state_to_object.js'
-import config from './config.js'
+import { GoalGroup } from './goals/goal_group.js'
+import { Typed } from './typed.js'
 import { uuidv4 } from './util.js'
+import { config } from './config.js'
 
+
+const Document = stampit({
+  init({ emitter }) {
+    this.emitter = emitter
+    this.doc = new Y.Doc()
+    this.objects = this.doc.getMap('objects')
+    
+    this.addedObjects = {}
+
+    this.objects.observe((event) => {
+      event.keysChanged.forEach(key => {
+        if (this.objects.has(key)) {
+          const added = this.objects.get(key)
+          this.addedObjects[key] = added
+          emitter.emit('add', added)
+        } else {
+          const added = this.addedObjects[key]
+          emitter.emit('remove', added)
+          delete this.addedObjects[key]
+        }
+      })
+    })
+  },
+ 
+  methods: {
+    create({ type, uuid = uuidv4(), goals = {} }) {
+      const Type = Typed.getType(type)
+      const ymap = new Y.Map()
+      this.doc.transact(() => {
+        this.objects.set(uuid, ymap)
+        GoalGroup.goalsDescToYMap({
+          type,
+          uuid,
+          ymap,
+          goalDefinitions: Type.goalDefinitions,
+          goalsDesc: goals
+        })
+      })
+      console.log('created', type, uuid, 'goals', goals, 'definitions', Type.goalDefinitions, 'ymap', ymap.toJSON())
+    },
+    
+    remove(uuid) {
+      this.objects.delete(uuid)
+    }
+  }
+})
+
+
+/**
+ * The Network object is an adapter between Yjs and the rest of Relm. It's responsible for setting values that
+ * will propagate to other peers / servers, and conversely, forwarding events that should trigger game state
+ * changes such as adding an object, or updating a property on an already existing object.
+ */
 const Network = stampit(EventEmittable, {
   props: {
-    ydoc: new Y.Doc(),
+    ydoc: null,
     entityStates: null,
     invitations: null,
-    provider: null,
+    wsProvider: null,
+    idbProvider: null,
     connected: false,
-    // authorized: false,
   },
 
   init() {
     window.network = this
     
-    this.clientIdsToEntityState = {}
-    this.clientIdsConnected = new Set()
-    this.clientIdsAdded = new Set()
+    // Transient document: holds things like player state and mouse pointer state
+    this.transients = Document({ emitter: this })
     
-    this.entityStates = this.ydoc.getMap('entities')
-    this.invitations = this.ydoc.getMap('invitations')
+    // Permanent Y document: holds game object state & everything that stays in each relm
+    this.permanents = Document({ emitter: this })
+    
+    // Store connections to local or remote servers
+    this.providers = []
   },
-
+  
   methods: {
-    /**
-     * Adds a stateful entity to the network, to be synced with all clients.
-     * 
-     * @param {Entity} entity 
-     */
-    setEntity(entity, debug = false) {
-      const state = stateToObject(entity.type, entity.state)
-      if (debug) {
-        console.log('setEntity', entity, state)
-      }
-      this.setState(entity.uuid, state)
-    },
-    
-    getState(uuid) {
-      return this.entityStates.get(uuid)
-    },
-    
-    setState(uuid, state) {
-      if (state) {
-        this.entityStates.set(uuid, state)
-      } else {
-        console.warn('attempted to add null state to network (not added)', state)
-      }
-    },
-
-    removeEntity(uuid) {
-      this.entityStates.delete(uuid)
-    },
-
-    connect(params = {}) {
+    async connect(params = {}) {
       const cfg = config(window.location)
-      console.log('trying to connect ws to', cfg.SERVER_YJS_URL, cfg.ROOM, params)
-
-      this.provider = new WebsocketProvider(cfg.SERVER_YJS_URL, cfg.ROOM, this.ydoc, { params })
-      this.provider.on('status', (status) => {
-        if (status.status === 'connected') {
-          this.connected = true
-        } else if (status.status === 'disconnected') {
-          this.connected = false
-        }
-      })
-      this.provider.awareness.on('change', ({ added, updated, removed}, _conn) => {
-        this.onAwarenessChanged(added)
-        this.onAwarenessChanged(updated)
-        this.onAwarenessRemoved(removed)
-      })
+      const serverUrl = cfg.SERVER_YJS_URL
       
-      this.observeEntityStates()
-    },
-
-    onAwarenessChanged(added) {
-      // Note: `clientId` is the yjs-assigned integer for each client.
-      for (let clientId of added) {
-        if (clientId === this.ydoc.clientID) { continue }
-        const keyedState = this.provider.awareness.getStates().get(clientId)
-        if (keyedState) {
-          this.clientIdsToEntityState[clientId] = keyedState
-          for (let uuid in keyedState) {
-            const state = keyedState[uuid]
-            if (!this.clientIdsAdded.has(uuid)) {
-              console.log('emit add', uuid, state)
-              this.emit('add', uuid, state)
-              this.clientIdsAdded.add(uuid)
-              this.clientIdsConnected.add(uuid)
-            } else if (!this.clientIdsConnected.has(uuid)) {
-              this.emit('connect', uuid, state)
-              this.clientIdsConnected.add(uuid)
-            } else {
-              this.emit('update', uuid, state)
-            }
-          }
-        } else {
-          console.warn('Unable to accept state change', clientId, state)
-        }
+      {
+        const ydoc = this.permanents.doc
+        const room = cfg.ROOM
+        // await this.connectToLocal(ydoc, room)
+        await this.connectToServer(ydoc, serverUrl, room, params)
       }
     },
-
-    onAwarenessRemoved(removed) {
-      // Note: `clientId` is the yjs-assigned integer for each client.
-      for (let clientId of removed) {
-        if (clientId === this.ydoc.clientID) { continue }
-        // FIXME: can't get state since it is removed by yjs;
-        // see https://discuss.yjs.dev/t/should-awareness-emit-change-before-removing-state
-        // const state = this.provider.awareness.getStates().get(clientId)
-        const keyedState = this.clientIdsToEntityState[clientId]
-        if (keyedState) {
-          for (let uuid in keyedState) {
-            const state = keyedState[uuid]
-            this.emit('disconnect', uuid, state)
-            this.clientIdsConnected.delete(uuid)
-          }
-        } else {
-          console.warn('Unable to accept disconnect', clientId, state)
-        }
+    
+    async connectToLocal(ydoc, room) {
+      console.log('Opening local database...', room)
+      try {
+        const provider = new IndexeddbPersistence(room, ydoc)
+        await provider.whenSynced
+        this.providers.push(provider)
+      } catch (err) {
+        console.warn("Unable to open indexeddb:", err)
       }
     },
-
-    observeEntityStates() {
-      this.entityStates.observeDeep((events, t) => {
-        for (let event of events) {
-          if (event.path.length === 0) {
-            event.changes.keys.forEach(({ action }, uuid) => {
-              const state = this.entityStates.get(uuid)
-              if (action === 'add') {
-                // console.log('entity added', uuid, state)
-                this.emit('add', uuid, state)
-              } else if (action === 'delete') {
-                // console.log('entity deleted', uuid)
-                this.emit('remove', uuid)
-              } else if (action === 'update') {
-                // console.log('entity updated', uuid)
-                this.emit(`update-${uuid}`, state)
-              } else {
-                console.warn('action not handled', action, uuid)
-              }
-            })
-          }
-        }
-      })
-    }
-
+    
+    async connectToServer(ydoc, server, room, params) {
+      console.log('Opening remote websocket...', server, room, params)
+      const provider = new WebsocketProvider(server, room, ydoc, { params })
+      this.providers.push(provider)
+    },
   }
 })
 
-export { Network }
+const network = window.network = Network()
+
+export {
+  Network,
+  network,
+}

@@ -355,7 +355,8 @@ const commands = {
     return (env) => {
       env.stage.continueRendering = false
       setTimeout(() => {
-        localStorage.clear()
+        window.localStorage.clear()
+        window.indexedDB.deleteDatabase('relm')
         window.location.reload()
       }, 100)
     }
@@ -395,6 +396,16 @@ const commands = {
         stage.setGridSnap(null)
       } else {
         stage.setGridSnap(parseFloat(size))
+      }
+    }
+  },
+  destroy: (args) => {
+    const iAmSure = takeOne(args, `Are you sure?`)
+    if (iAmSure === 'iamsure') {
+      return (env) => {
+        network.entitiesMap.forEach((_, uuid) => {
+          network.permanents.remove(uuid)
+        })
       }
     }
   },

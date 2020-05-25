@@ -1,15 +1,15 @@
 import stampit from 'stampit'
 
 import { Entity } from './entity.js'
-import { Component } from './component.js'
-import { HasObject } from './has_object.js'
+import { Component } from './components/component.js'
+import { HasObject } from './components/has_object.js'
 import { ReceivesPointer } from './receives_pointer.js'
-import { FollowsTarget } from './follows_target.js'
-import { NetworkSetsState } from './network_persistence.js'
+import { FollowsTarget } from './components/follows_target.js'
+// import { NetworkSetsState } from './network_persistence.js'
 import { GlowMaterial } from './glow_material.js'
-import { HasEmissiveMaterial } from './has_emissive_material.js'
-import { HasLabel } from './has_label.js'
-import { HasThoughtBubble } from './has_thought_bubble.js'
+import { HasEmissiveMaterial } from './components/has_emissive_material.js'
+import { HasLabel } from './components/has_label.js'
+import { HasThoughtBubble } from './components/has_thought_bubble.js'
 
 /*
 */
@@ -113,7 +113,7 @@ const InteractionDiamond = stampit(
   HasEmissiveMaterial,
   ReceivesPointer,
   FollowsTarget,
-  NetworkSetsState,
+  // NetworkSetsState,
   HasLabel,
   HasThoughtBubble,
   stampit({

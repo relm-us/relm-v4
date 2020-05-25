@@ -2,7 +2,7 @@ import stampit from 'stampit'
 import EventEmittable from '@stamp/eventemittable'
 
 import { Entity } from './entity.js'
-import { Component } from './component.js'
+import { Component } from './components/component.js'
 import {
   KEY_UP, KEY_DOWN, KEY_LEFT, KEY_RIGHT,
   KEY_W, KEY_A, KEY_S, KEY_D, KEY_Q, KEY_E,
@@ -45,8 +45,8 @@ const KeyboardKeyMap = stampit(Component, {
     if (!target) {
       throw new Error('KeyboardController requires a target to control')
     }
-    if (typeof target.setPosition !== 'function') {
-      throw new Error('KeyboardController requires target to have FollowsTarget')
+    if (typeof target.addPosition !== 'function') {
+      console.error('KeyboardController requires target to have FollowsTarget')
     }
     this.target = target
     this.keyMap = keyMap
@@ -121,7 +121,9 @@ const KeyboardKeyMap = stampit(Component, {
     },
 
     update() {
-      this.actions.forEach(action => this.target.addPosition(this.getVectorFromAction(action)))
+      if (this.target.addPosition) {
+        this.actions.forEach(action => this.target.addPosition(this.getVectorFromAction(action)))
+      }
     }
   }
 })
@@ -130,6 +132,6 @@ const KeyboardController = stampit(
   Entity,
   EventEmittable,
   KeyboardKeyMap
-)
+).setType('keycon')
 
 export { KeyboardController }

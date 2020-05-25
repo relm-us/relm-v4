@@ -1,4 +1,13 @@
 /**
+ * A simple way to mark some function parameters as required
+ * 
+ * @param {string} missing - the name of the potentially missing parameter
+ */
+function req(missing) {
+  throw new Error('Missing ' + missing)
+}
+
+/**
  * Generates a random UUID (version 4). This can be used as a decentralized way
  * to create an identifier that has such a low probability of collision that it
  * can essentially be treated as universally unique.
@@ -56,10 +65,29 @@ function checkOverflow(el)
   return isOverflowing
 }
 
+function mapToObject(map) {
+  if (map.toJSON) {
+    return map.toJSON()
+  } else {
+    const out = Object.create(null)
+    map.forEach((value, key) => {
+      if (value instanceof Map) {
+        out[key] = mapToObject(value)
+      }
+      else {
+        out[key] = value
+      }
+    })
+    return out
+  }
+}
+
 export {
   uuidv4,
   sumString,
   getRandomInt,
   coinToss,
-  checkOverflow
+  checkOverflow,
+  mapToObject,
+  req,
 }

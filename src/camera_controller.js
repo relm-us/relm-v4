@@ -1,6 +1,7 @@
 import stampit from 'stampit'
-import { Component } from './component.js'
+
 import { Entity } from './entity.js'
+import { Component } from './components/component.js'
 
 const { Vector3 } = THREE
 
@@ -46,6 +47,6 @@ const CameraController = stampit(Entity, Component, {
       }
     }
   }
-})
+}).setType('camcon')
 
 export { CameraController }

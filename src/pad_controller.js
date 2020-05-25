@@ -2,7 +2,7 @@ import stampit from 'stampit'
 // import EventEmittable from '@stamp/eventemittable'
 
 import { Entity } from './entity.js'
-import { Component } from './component.js'
+import { Component } from './components/component.js'
 
 const { Vector3 } = THREE
 
@@ -20,8 +20,8 @@ const PadDirection = stampit(Component, {
     if (!target) {
       throw new Error('PadController requires a target to control')
     }
-    if (typeof target.setPosition !== 'function') {
-      throw new Error('PadController requires target to have FollowsTarget')
+    if (typeof target.addPosition !== 'function') {
+      console.error('PadController requires target to have FollowsTarget')
     }
     this.target = target
     this.controlDirection = new Vector3()
@@ -38,7 +38,9 @@ const PadDirection = stampit(Component, {
       // this.controlDirection.add(this.padDirection)
       // this.controlDirection.add(this.target.getPosition())
       // console.log('pad update', this.padDirection, this.controlDirection)
-      this.target.addPosition(this.padDirection)
+      if (this.target.addPosition) {
+        this.target.addPosition(this.padDirection)
+      }
     }
   }
 })
@@ -46,6 +48,6 @@ const PadDirection = stampit(Component, {
 const PadController = stampit(
   Entity,
   PadDirection
-)
+).setType('padcon')
 
 export { PadController }

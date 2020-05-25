@@ -2,12 +2,17 @@ import stampit from 'stampit'
 // import EventEmittable from '@stamp/eventemittable'
 
 import { Component } from './component.js'
-import { Label } from './label.js'
+import { Label } from '../label.js'
+import { defineGoal } from '../goals/goal.js'
 
 const { Vector3, Color } = THREE
 
 const HasLabel = stampit(Component, {
-  name: 'HasLabel',
+  deepStatics: {
+    goalDefinitions: {
+      label: defineGoal('lbl', { text: null })
+    }
+  },
 
   props: {
     labelPosition: null,
@@ -15,17 +20,7 @@ const HasLabel = stampit(Component, {
     labelColor: null,
   },
 
-  deepProps: {
-    state: {
-      label: {
-        now: null,
-        target: null,
-      },
-    },
-  },
-
   init({
-    label = this.state.label.target,
     labelOffset = this.labelOffset,
     labelColor = this.labelColor,
     onLabelChanged
@@ -34,7 +29,7 @@ const HasLabel = stampit(Component, {
     this.labelOffset = labelOffset || new Vector3()
     this.labelColor = labelColor || new Color()
     this.labelObj = new Label({ onLabelChanged })
-    this.setLabel(label)
+    
     this.setLabelColor(labelColor)
   },
 
@@ -43,14 +38,14 @@ const HasLabel = stampit(Component, {
      * @returns {string}
      */
     getLabel() {
-      return this.state.label.target
+      return this.goals.label.get('text')
     },
 
     /**
      * @param {string} text
      */
     setLabel(text) {
-      this.state.label.target = text
+      this.goals.label.set('text', text)
     },
     
     setLabelColor(color) {
@@ -78,12 +73,11 @@ const HasLabel = stampit(Component, {
     },
 
     update() {
-      // No transition, just update the name
-      if (this.state.label.now !== this.state.label.target) {
-        this.state.label.now = this.state.label.target
-        this.labelObj.setText(this.state.label.now)
+      const labelGoal = this.goals.label
+      if (!labelGoal.achieved) {
+        this.labelObj.setText(labelGoal.get('text'))
+        labelGoal.markAchieved()
       }
-
     },
 
     teardown() {

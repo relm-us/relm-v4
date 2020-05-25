@@ -1,41 +1,29 @@
 import stampit from 'stampit'
-import InstanceOf from '@stamp/instanceof'
+import * as Y from 'yjs'
+import { Equality } from './goals/goal'
 
-
-
-const take = (args, n, errorMessage) => {
-  if (n < 1) {
-    throw Error(`'take' must be called with n >= 1 (n = ${n})`)
-  } else if (n > args.length) {
-    throw Error(`'take' must be called with n <= args.length (args.length = ${args.length})`)
-  } else if (args.length >= n) {
-    const popped = []
-    for (let i = 0; i < n; i++) {
-      popped.push(args.shift())
-    }
-    return popped
-  } else {
-    throw Error(errorMessage)
-  }
-}
-
-const args = [1, 2, 3, 4]
-console.log(take(args, 1))
-console.log(args)
-/*
-let Component = stampit({
-  props: {
-    componentName: 'joe'
+const A = stampit({
+  conf: {
+    stage: null,
+    resources: null,
   },
-  init() {
-    this.componentName = 'Joe'
+  init({}, { stamp }) {
+    this.stage = stamp.compose.configuration.stage
+    this.resources = stamp.compose.configuration.resources
+  },
+}).conf({ stage: 1, resources: 2 })
 
-  }
-})
+const B = stampit({
+  conf: {
+    network: null
+  },
+  init({}, { stamp }) {
+    this.network = stamp.compose.configuration.network
+  },
+}).conf({ network: 3 })
 
-Component = Component.compose(InstanceOf).props({ componentName: 'john' })
+const Together = stampit(A, B)
 
-const component = Component({ componentName: 'duane' })
+const t = Together()
 
-console.log(component, component instanceof Component === true)
-*/
+console.log(t.stage, t.resources, t.network)

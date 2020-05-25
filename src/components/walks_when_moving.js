@@ -5,6 +5,8 @@ import { Component } from './component.js'
 import { HasAnimationMixer } from './has_animation_mixer.js'
 import { FollowsTarget } from './follows_target.js'
 
+const DISTANCE_CLOSE_ENOUGH = 1.0
+
 const WalksWhenMoving = stampit(Component, {
   methods: {
     setup() {
@@ -12,7 +14,8 @@ const WalksWhenMoving = stampit(Component, {
     },
 
     update(delta) {
-      if (this.distanceToTarget > this.closeEnough) {
+      const dist = this.getDistanceToTarget()
+      if (dist > DISTANCE_CLOSE_ENOUGH) {
         this.walkingStopOnce = false
         if (!this.walkingStartOnce) {
           this.walkingStartOnce = true

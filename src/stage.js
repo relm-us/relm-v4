@@ -3,6 +3,7 @@ import EventEmittable from '@stamp/eventemittable'
 
 import { calculateAverageDelta } from './average_delta.js'
 
+import { Typed } from './typed.js'
 import { HasScene } from './has_scene.js'
 import { SceneWithCamera } from './scene_with_camera.js'
 import { SceneWithRenderer } from './scene_with_renderer.js'
@@ -45,6 +46,7 @@ const Stage = stampit(
      */
     editorMode: false,
   },
+  
 
   init({ width, height }) {
     this.entities = {}
@@ -55,6 +57,7 @@ const Stage = stampit(
     this.updateFns = new Map()
     this.postrenderFns = new Map()
     this.gridSnap = null
+
     if (!width || !height) {
       throw new Error('State requires width and height')
     } else {
@@ -65,22 +68,40 @@ const Stage = stampit(
   },
   
   methods: {
-    add(entity) {
+    has(entity) {
       if (!entity.uuid) {
         throw new Error('Entity must have uuid', entity)
       }
-      if (entity.uuid in this.entities) {
-        console.error(`Shouldn't need to add entity ${entity.uuid}, already exists on stage.` +
-          'Existing:', this.entities[entity.uuid], 'New:', entity)
+      return (entity.uuid in this.entities)
+    },
+
+    add(entity) {
+      if (!entity.uuid) {
+        entity.uuid = uuidv4()
       }
+      if (entity.uuid in this.entities) {
+        console.warn(`Entity already on stage, skipping 'add'`, entity)
+        return entity
+      }
+      console.log(`Adding entity '${entity.type}' to stage`, entity)
       this.entities[entity.uuid] = entity
       if (typeof entity.setup === 'function') {
         entity.setup()
       }
+      return entity
     },
-
+    
+    create(type, params = {}) {
+      const CreateEntity = Typed.registeredTypes[type]
+      if (CreateEntity) {
+        return this.add(CreateEntity(params))
+      } else {
+        console.error(`Can't create entity of type '${type}': type not registered`)
+      }
+    },
+    
     remove(entity) {
-      if (typeof entity.setup === 'function') {
+      if (typeof entity.teardown === 'function') {
         entity.teardown()
       }
       delete this.entities[entity.uuid]
@@ -153,6 +174,8 @@ const Stage = stampit(
         // Handle each entity's `update` function
         if (entity.update) {
           entity.update(delta)
+        } else {
+          console.log('entity has no update', uuid)
         }
       }
       // Additionally handle any special case `update` functions
