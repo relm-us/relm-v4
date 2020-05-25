@@ -4,19 +4,44 @@ behaviors
 - eventemittable
   - any 
 
+
+state:
+- each property is a "goal"--this is what the object is "trying to achieve"
+- each property is an object with keys/values
+- each property has a "how to achieve", e.g. FollowsTarget (?)
+- each property has a time horizon--if the goal is not achieved within the window, current state jumps to goal state
+- each property has a "modified" flag--if set, then the property has been modified by the network and is an active goal
+
+[js]
+/**
+ * @typedef Goal
+ * @property {object} goal - The desired end state (value) for this goal
+ * @property {number} due - The timestamp before which the goal must be carried out. If the goal can't be carried out befure `due`, then animation is skipped and current state jumps to goal state.
+ * @property {boolean} modified - Whether this goal has been modified by the network.
+ * @property {number} framerate - [READ-ONLY] How often the goal should be considered for animation (if the modified flag is set).
+ */
+[js]
+
+
 props:
+- goals
+  - an array of Goal objects
+  - 
 - children
   - an array of entities that "belong" to this entity
   - not necessarily part of the same object3d hierarchy
-  - (could this be used for multi-select and grouping features later?)
+  - (could this be used for grouping features later?)
 - components
   - an array of components that have been added to this entity
 
+methods:
 - toJson()
   - converts current state to json object
   - we can have a default implementation that is similar to objectToState
   - allows us to override weird cases like quaternion
 - setup()
 - update(delta)
+  -
 - postrender()
+  - can be used to immediately update HTML elements after render
 - teardown()
