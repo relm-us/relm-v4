@@ -42,6 +42,14 @@ import { UpdatesLabelToUniqueColor } from './updates_label_to_unique_color.js'
 import { parseCommand } from './commands.js'
 import { recordCoords } from './record_coords.js'
 
+import {
+  KEY_UP, KEY_DOWN, KEY_LEFT, KEY_RIGHT,
+  KEY_W, KEY_A, KEY_S, KEY_D, KEY_Q, KEY_E,
+  KEY_SPACE, KEY_TAB, KEY_RETURN, KEY_ESCAPE,
+  KEY_BACK_SLASH, KEY_SLASH,
+  KEY_BACK_SPACE, KEY_DELETE
+} from 'keycode-js'
+
 const IMAGE_FILETYPE_RE = /\.(png|gif|jpg|jpeg|webp)$/
 const GLTF_FILETYPE_RE = /\.(gltf|glb)$/
 
@@ -681,15 +689,15 @@ const start = async () => {
   const inputEl = document.getElementById('input')
   inputEl.addEventListener('keydown', e => {
     const text = e.target.value.trim()
-    if (e.keyCode === 9 /* TAB */) {
+    if (e.keyCode === KEY_TAB) {
       // Don't allow TAB to propagate up and cause focus to be switched us back to input
       e.preventDefault()
       e.stopPropagation()
       focusOnGame()
-    } else if (e.keyCode === 27 /* ESC */) {
+    } else if (e.keyCode === KEY_ESCAPE) {
       player.setThought(null)
       focusOnGame()
-    } else if (e.keyCode === 13 /* ENTER */) {
+    } else if (e.keyCode === KEY_RETURN) {
       if (text.substring(0,1) === '/') {
         runCommand(text.substring(1))
         e.target.value = ''
@@ -701,7 +709,10 @@ const start = async () => {
       } else {
         focusOnGame()
       }
-    } else if (e.keyCode >= 37 && e.keyCode <= 40 && text === "") {
+    } else if (
+      (e.keyCode === KEY_UP || e.keyCode === KEY_DOWN) ||
+      ((e.keyCode === KEY_LEFT || e.keyCode === KEY_RIGHT) && text === "")
+    ) {
       // If the player has typed nothing, but uses the arrow keys, go back to the game
       focusOnGame()
       kbController.keyPressed(e.keyCode)
@@ -728,30 +739,30 @@ const start = async () => {
   document.addEventListener('keydown', e => {
     
     if (e.target === stage.renderer.domElement) {
-      if (e.keyCode === 8 || e.keyCode === 46) {
+      if (e.keyCode === KEY_BACK_SPACE || e.keyCode === KEY_DELETE) {
         runCommand('object delete')
         // Don't accidentally allow backspace to trigger browser back
         e.preventDefault()
       }
       // This makes it so that 'tab' is controlled by us, rather than
       // the default HTML tabIndex system
-      else if (e.keyCode === 9) {
+      else if (e.keyCode === KEY_TAB) {
         e.preventDefault()
       }
-      else if (e.keyCode === 27 && stage.selection.hasAtLeast(1)) {
+      else if (e.keyCode === KEY_ESCAPE && stage.selection.hasAtLeast(1)) {
         runCommand('select none')
       }
       // Use `shift+\` as shortcut for toggling lock state of objects
-      else if (e.keyCode === 220 && e.shiftKey) {
+      else if (e.keyCode === KEY_BACK_SLASH && e.shiftKey) {
         runCommand('object locktoggle')
       }
       // Support `ctrl+A` and `cmd+A` for selecting all
-      else if (e.keyCode === 65 && (e.ctrlKey || e.metaKey)) {
+      else if (e.keyCode === KEY_A && (e.ctrlKey || e.metaKey)) {
         runCommand('select all')
         e.preventDefault()
       }
       // Make it easier to type '/object` and all the other commands
-      else if (e.keyCode === 191 /* Forward Slash */) {
+      else if (e.keyCode === KEY_SLASH /* Forward Slash */) {
         e.preventDefault()
         focusOnInput()
         document.getElementById('input').value = '/' 

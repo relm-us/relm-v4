@@ -3,6 +3,11 @@ import EventEmittable from '@stamp/eventemittable'
 
 import { Entity } from './entity.js'
 import { Component } from './component.js'
+import {
+  KEY_UP, KEY_DOWN, KEY_LEFT, KEY_RIGHT,
+  KEY_W, KEY_A, KEY_S, KEY_D, KEY_Q, KEY_E,
+  KEY_SPACE, KEY_TAB, KEY_RETURN, KEY_ESCAPE,
+} from 'keycode-js'
 
 const { Vector3 } = THREE
 
@@ -23,16 +28,16 @@ const KeyboardKeyMap = stampit(Component, {
      * Great place to look these up: https://keycode.info/
      */
     keyMap: {
-      up: [38 /* up */, 87 /* W */],
-      down: [40 /* down */, 83 /* S */],
-      left: [37 /* left */, 65 /* A */],
-      right: [39 /* right */, 68 /* D */],
-      auxleft: [81 /* Q */],
-      auxright: [69 /* E */],
-      act: [32], // spacebar
-      switch: [9], // TAB
-      done: [13], // ENTER
-      close: [27], // ESC
+      up: [KEY_UP, KEY_W],
+      down: [KEY_DOWN, KEY_S],
+      left: [KEY_LEFT, KEY_A],
+      right: [KEY_RIGHT, KEY_D],
+      auxleft: [KEY_Q],
+      auxright: [KEY_E],
+      act: [KEY_SPACE],
+      switch: [KEY_TAB],
+      done: [KEY_RETURN],
+      close: [KEY_ESCAPE],
     }
   },
 
