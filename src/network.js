@@ -80,6 +80,8 @@ const Network = stampit(EventEmittable, {
       this.idbProvider = new IndexeddbPersistence(cfg.ROOM, this.ydoc)
       await this.idbProvider.whenSynced
       
+      if (false) {
+
       console.log('Opening remote websocket...', cfg.SERVER_YJS_URL, cfg.ROOM, params)
       this.wsProvider = new WebsocketProvider(cfg.SERVER_YJS_URL, cfg.ROOM, this.ydoc, { params })
       
@@ -96,6 +98,7 @@ const Network = stampit(EventEmittable, {
         this.onAwarenessRemoved(removed)
       })
       
+      }
     },
 
     onAwarenessChanged(added) {

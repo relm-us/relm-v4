@@ -26,6 +26,7 @@ import { AwarenessGetsState, AwarenessSetsState } from './network_awareness.js'
 import { LocalstoreGetsState, localstoreRestoreState } from './localstore_gets_state.js'
 import { MousePointer, OtherMousePointer } from './mouse_pointer.js'
 import { Decoration } from './decoration.js'
+import { DecorationNew } from './decoration_new.js'
 import { Teleportal } from './teleportal.js'
 import { InteractionDiamond } from './interaction_diamond.js'
 import { Component } from './component.js'
@@ -62,6 +63,12 @@ let mostRecentlyCreatedObjectId = null
 
 // Don't look for 'dropzone' in HTML tags
 Dropzone.autoDiscover = false
+
+// Enable three.js cache for textures and meshes
+THREE.Cache.enabled = true
+
+DecorationNew()
+console.log('hi', DecorationNew)
 
 const security = Security()
 
