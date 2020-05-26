@@ -67,8 +67,7 @@ Dropzone.autoDiscover = false
 // Enable three.js cache for textures and meshes
 THREE.Cache.enabled = true
 
-DecorationNew()
-console.log('hi', DecorationNew)
+// DecorationNew()
 
 const security = Security()
 

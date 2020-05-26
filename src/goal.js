@@ -37,7 +37,8 @@ const Equal = {
  * 
  * @typedef GoalMetadata
  * @property {any} default - A default value
- * @property {Function} equal - The equality operator to use when comparing the value with another value
+ * @property {Function} equals - The equality operator to use when comparing the value with another value
+ * @property {boolean} achieved - Whether or not the value has been achieved (a part of the larger goal)
  */
 const Goal = stampit({
   init({ name, attrs = [] }) {
@@ -63,12 +64,12 @@ const Goal = stampit({
     this.meta = {}
     
     /**
-     * Keeps track of whether any of this goal's values have been modified. Values also individually hold
-     * `modified` state. If any value is modified, it indicates current state is out of sync and needs to
+     * Keeps track of whether any of this goal's values have been achieved. Values also individually hold
+     * `achieved` state. If any value is modified, it indicates current state is out of sync and needs to
      * be animated towards the goal state. This is an optimization that allows us to not process entities
      * that haven't changed since the last animation frame.
      */
-    this.modified = true
+    this.achieved = true
     
     const now = millis()
     attrs.forEach((attr) => {
@@ -76,7 +77,7 @@ const Goal = stampit({
       this.values[key] = new FlatQueue()
       const meta = this.meta[key] = {}
       meta.default = defaultValue
-      meta.equal = equalityOperator
+      meta.equals = equalityOperator
       Object.defineProperty(this, key, {
         get: () => this.get(key),
         set: (value) => this.set(key, value),
@@ -111,14 +112,16 @@ const Goal = stampit({
      *                       to have been given 'enough time' to animate
      */
     set(key, value, now = millis(), due = millis()) {
-      this.modified = true
+      this.achieved = false
+      this.meta[key].achieved = false
       this.values[key].push({ value, due }, now)
     },
     
-    equal(key, value) {
-      const equals = this.meta[key].equal
+    equals(key, value) {
+      const equals = this.meta[key].equals
       const peek = this.values[key].peek()
-      return equals(peek ? peek.value : null, value)
+      const retval = equals(peek ? peek.value : null, value)
+      return retval
     },
     
     /**
@@ -158,31 +161,25 @@ const Goal = stampit({
       }
     },
     
-    achieved(key = null) {
-      if (key === null) {
-        this.modified = false
-      } else {
-        this.checkModifiedState()
-      }
+    markAchieved(key) {
+      this.meta[key].achieved = true
+      this.markAchievedIfAllAchieved()
     },
-    
-    isUnachieved(key = null) {
-      if (key === null) {
-        return this.modified
-      } else {
-        return this.values[key].length > 1
-      }
+
+    markAchievedIfEqual(key, value) {
+      this.meta[key].achieved = (this.values[key].length <= 1 && this.equals(key, value))
+      this.markAchievedIfAllAchieved()
     },
     
     /**
-     * We consider the whole goal 'modified' if any one of its values is unachieved
+     * We consider the whole goal 'achieved' if all of its values are achieved
      */
-    checkModifiedState() {
-      let modified = false
+    markAchievedIfAllAchieved() {
+      let achieved = true
       Object.keys(this.meta).forEach((key) => {
-        if (this.isUnachieved(key)) { modified = true }
+        if (!this.meta[key].achieved) { achieved = false }
       })
-      this.modified = modified
+      this.achieved = achieved
     },
   }
 })

@@ -94,23 +94,18 @@ const Scales = stampit(Component, CanAddGoal, {
   methods: {
     update(_delta) {
       const scale = this.goals.scale;
-      // if (scale.modified) {
+      if (!scale.achieved) {
         ['x', 'y', 'z'].forEach((axis) => {
-          // if (scale.isUnachieved(axis)) {
-            scale.fastForward(axis)
-            if (scale.pastDue(axis)) {
-              const value = scale.get(axis)
-              this.object.scale[axis] = scale.get(axis)
-              // scale.achieved(axis)
-            } else {
-              this.object.scale[axis] = MathUtils.lerp(this.object.scale[axis], scale.get(axis), 0.1)
-              if (scale.equal(axis, this.object.scale[axis])) {
-                // scale.achieved(axis)
-              }
-            }
-          // }
+          scale.fastForward(axis)
+          if (scale.pastDue(axis)) {
+            const value = scale.get(axis)
+            this.object.scale[axis] = scale.get(axis)
+          } else {
+            this.object.scale[axis] = MathUtils.lerp(this.object.scale[axis], scale.get(axis), 0.1)
+          }
+          scale.markAchievedIfEqual(axis, this.object.scale[axis])
         })
-      // }
+      }
     }
   }
 })

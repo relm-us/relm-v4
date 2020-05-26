@@ -28,7 +28,6 @@ const getLoaderFromUrl = (url) => {
 const LoadsAsset = stampit(CanAddGoal, Component, EventEmittable, {
   init() {
     this.addGoal('asset',
-      ['id', null, Equal.Compare()],
       ['url', null, Equal.Compare()],
     )
     this.asset = null
@@ -37,6 +36,7 @@ const LoadsAsset = stampit(CanAddGoal, Component, EventEmittable, {
   methods: {
     loadAsset() {
       const url = this.goals.asset.url
+      // console.log('loadAsset', url)
       if (url) {
         const loader = getLoaderFromUrl(url)
         this.asset = loader.load(url, () => {
@@ -49,9 +49,9 @@ const LoadsAsset = stampit(CanAddGoal, Component, EventEmittable, {
     },
 
     update(_delta) {
-      if (this.goals.asset.modified) {
+      if (!this.goals.asset.achieved) {
         this.loadAsset()
-        this.goals.asset.achieved()
+        this.goals.asset.markAchieved('url')
       }
     }
   }
