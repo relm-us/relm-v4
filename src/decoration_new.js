@@ -93,18 +93,51 @@ const Scales = stampit(Component, CanAddGoal, {
 
   methods: {
     update(_delta) {
-      const scale = this.goals.scale;
-      if (!scale.achieved) {
+      const scaleGoal = this.goals.scale;
+      if (!scaleGoal.achieved) {
         ['x', 'y', 'z'].forEach((axis) => {
-          scale.fastForward(axis)
-          if (scale.pastDue(axis)) {
-            const value = scale.get(axis)
-            this.object.scale[axis] = scale.get(axis)
+          scaleGoal.fastForward(axis)
+          if (scaleGoal.pastDue(axis)) {
+            const value = scaleGoal.get(axis)
+            this.object.scale[axis] = scaleGoal.get(axis)
           } else {
-            this.object.scale[axis] = MathUtils.lerp(this.object.scale[axis], scale.get(axis), 0.1)
+            this.object.scale[axis] = MathUtils.lerp(this.object.scale[axis], scaleGoal.get(axis), 0.1)
           }
-          scale.markAchievedIfEqual(axis, this.object.scale[axis])
+          scaleGoal.markAchievedIfEqual(axis, this.object.scale[axis])
         })
+      }
+    }
+  }
+})
+
+const Rotates = stampit(Component, CanAddGoal, {
+  init() {
+    this.addGoal('qua',
+      ['x', 0.0, Equal.Delta(0.01)],
+      ['y', 0.0, Equal.Delta(0.01)],
+      ['z', 0.0, Equal.Delta(0.01)],
+      ['w', 1.0, Equal.Delta(0.01)],
+    )
+    
+    this._quaternion = new THREE.Quaternion()
+  },
+
+  methods: {
+    update(_delta) {
+      const quaGoal = this.goals.qua;
+      if (!quaGoal.achieved) {
+        quaGoal.fastForward()
+        if (quaGoal.allPastDue()) {
+          
+          this.object.rotation.copy(rotation)
+        } else {
+          const quaternion = this.object.rotation[axis].quaternion
+          this._rotation.copy(rotation)
+          this._quaternion.setFromEuler(this._rotation)
+          quaternion.slerp(this._quaternion, 0.1)
+        }
+        // if ()
+        // quaGoal.markAllAchieved()
       }
     }
   }
@@ -116,6 +149,7 @@ const DecorationNew = window.DecorationNew = stampit(
   LoadsAsset,
   HasImage,
   Scales,
+  Rotates,
   // HasEmissiveMaterial,
   // ReceivesPointer,
   // FollowsTarget,

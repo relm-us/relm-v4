@@ -131,15 +131,21 @@ const Goal = stampit({
      * @param {string} key - the value's key to fast forward through (e.g. 'x', 'y', 'z')
      * @param {number} now - the time in milliseconds to consider as "now" when discarding old values
      */
-    fastForward(key, now = millis()) {
-      const queue = this.values[key]
-      // console.log('queue peekValue', queue.peekValue(), now, queue.length)
-      while (queue.peekValue() < now && queue.length > 1) {
-        queue.pop()
+    fastForward(key = null, now = millis()) {
+      if (key === null) {
+        Object.keys(this.values).forEach((k) => {
+          this.fastForward(k, now)
+        })
+      } else {
+        const queue = this.values[key]
+        // console.log('queue peekValue', queue.peekValue(), now, queue.length)
+        while (queue.peekValue() < now && queue.length > 1) {
+          queue.pop()
+        }
+        return queue
       }
-      return queue
     },
-
+    
     /**
      * pastDue checks the time a value is `due` (as stored in the `values[key]` queue) and returns
      * true or false if it past due. This can be used to determine if an animation needs to be cut
@@ -161,6 +167,14 @@ const Goal = stampit({
       }
     },
     
+    allPastDue(now = millis()) {
+      let all = true
+      Object.keys(this.values).forEach((k) => {
+        if (!this.pastDue(k, now)) { all = false }
+      })
+      return all
+    },
+    
     markAchieved(key) {
       this.meta[key].achieved = true
       this.markAchievedIfAllAchieved()
@@ -169,6 +183,13 @@ const Goal = stampit({
     markAchievedIfEqual(key, value) {
       this.meta[key].achieved = (this.values[key].length <= 1 && this.equals(key, value))
       this.markAchievedIfAllAchieved()
+    },
+    
+    markAllAchieved() {
+      Object.keys(this.meta).forEach((key) => {
+        this.meta[key].achieved = true
+      })
+      this.achieved = true     
     },
     
     /**
