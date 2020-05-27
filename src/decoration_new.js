@@ -76,24 +76,25 @@ const HasImage = stampit({
   }
 })
 
-const GetsGoalUpdates = stampit({
 
-})
-
-const Scales = stampit(Component, CanAddGoal, {
+const HasScaleGoal = stampit(CanAddGoal, {
   init() {
-    this.addGoal('scale',
+    this.addGoal('s',
       ['x', 1.0, Equal.Delta(0.001)],
       ['y', 1.0, Equal.Delta(0.001)],
       ['z', 1.0, Equal.Delta(0.001)],
     )
-    
+  }
+})
+
+const AnimatesScaling = stampit(Component, HasScaleGoal, {
+  init() {
     this._scale = new THREE.Vector3()
   },
 
   methods: {
     update(_delta) {
-      const scaleGoal = this.goals.scale;
+      const scaleGoal = this.goals.s
       if (!scaleGoal.achieved) {
         ['x', 'y', 'z'].forEach((axis) => {
           scaleGoal.fastForward(axis)
@@ -110,34 +111,80 @@ const Scales = stampit(Component, CanAddGoal, {
   }
 })
 
-const Rotates = stampit(Component, CanAddGoal, {
+const HasRotateGoal = stampit(CanAddGoal, {
   init() {
-    this.addGoal('qua',
+    this.addGoal('r',
       ['x', 0.0, Equal.Delta(0.01)],
       ['y', 0.0, Equal.Delta(0.01)],
       ['z', 0.0, Equal.Delta(0.01)],
-      ['w', 1.0, Equal.Delta(0.01)],
     )
-    
+  }
+})
+
+const AnimatesRotation = stampit(Component, HasRotateGoal, {
+  init() {
+    this._rotation = new THREE.Euler()
     this._quaternion = new THREE.Quaternion()
   },
 
   methods: {
     update(_delta) {
-      const quaGoal = this.goals.qua;
-      if (!quaGoal.achieved) {
-        quaGoal.fastForward()
-        if (quaGoal.allPastDue()) {
-          
-          this.object.rotation.copy(rotation)
+      const rotationGoal = this.goals.r;
+      if (!rotationGoal.achieved) {
+        rotationGoal.fastForward()
+        if (rotationGoal.allPastDue()) {
+          this.object.rotation.x = rotationGoal.x
+          this.object.rotation.y = rotationGoal.y
+          this.object.rotation.z = rotationGoal.z
+          rotationGoal.markAllAchieved()
         } else {
-          const quaternion = this.object.rotation[axis].quaternion
-          this._rotation.copy(rotation)
+          this._rotation.x = rotationGoal.x
+          this._rotation.y = rotationGoal.y
+          this._rotation.z = rotationGoal.z
+          
           this._quaternion.setFromEuler(this._rotation)
-          quaternion.slerp(this._quaternion, 0.1)
+          this.object.quaternion.slerp(this._quaternion, 0.1)
+          const angleDelta = Math.abs(this.object.quaternion.angleTo(this._quaternion))
+          if (angleDelta < 0.01) {
+            rotationGoal.markAllAchieved()
+          }
         }
-        // if ()
-        // quaGoal.markAllAchieved()
+      }
+    }
+  }
+})
+
+const HasPositionGoal = stampit(CanAddGoal, {
+  init() {
+    this.addGoal('p',
+      ['x', 0.0, Equal.Delta(0.01)],
+      ['y', 0.0, Equal.Delta(0.01)],
+      ['z', 0.0, Equal.Delta(0.01)],
+    )
+  }
+})
+
+const AnimatesPosition = stampit(Component, HasPositionGoal, {
+  init() {
+    this._position = new THREE.Vector3()
+  },
+
+  methods: {
+    update(_delta) {
+      const positionGoal = this.goals.p
+      if (!positionGoal.achieved) {
+        positionGoal.fastForward()
+        if (positionGoal.allPastDue()) {
+          this.object.position.copy(this.goals.p)
+          positionGoal.markAllAchieved()
+        } else {
+          this._position.copy(this.goals.p)
+          this.object.position.lerp(this._position, 0.1)
+          const distance = this.object.position.distanceTo(this._position)
+          if (distance < 0.01) {
+            positionGoal.markAllAchieved()
+          }
+        }
       }
     }
   }
@@ -148,8 +195,9 @@ const DecorationNew = window.DecorationNew = stampit(
   HasObject,
   LoadsAsset,
   HasImage,
-  Scales,
-  Rotates,
+  AnimatesScaling,
+  AnimatesRotation,
+  AnimatesPosition,
   // HasEmissiveMaterial,
   // ReceivesPointer,
   // FollowsTarget,
