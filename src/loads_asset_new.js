@@ -33,7 +33,7 @@ const LoadsAsset = stampit(CanAddGoal, Component, EventEmittable, {
 
   methods: {
     loadAsset() {
-      const url = this.goals.asset.url
+      const url = this.goals.asset.get().url
       // console.log('loadAsset', url)
       if (url) {
         const loader = getLoaderFromUrl(url)

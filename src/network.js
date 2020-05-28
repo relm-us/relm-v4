@@ -31,7 +31,7 @@ const Network = stampit(EventEmittable, {
     this.invitations = this.ydoc.getMap('invitations')
     
     // For now, keep goalnet state separate
-    this.goalsMap = this.ydoc.getMap('goals')
+    this.entitiesMap = this.ydoc.getMap('goals')
   },
 
   methods: {
@@ -65,38 +65,36 @@ const Network = stampit(EventEmittable, {
       }
     },
 
-    addEntity(entity) {
+    setEntityWithGoals(entity, due = Date.now()) {
+      const uuid = entity.uuid
+      const type = entity.type
+      if (!type) {
+        console.error("Can't setEntityWithGoals: entity.type not set", entity)
+      }
       this.ydoc.transact((_transaction) => {
-        for (let [property, goal] of Object.entries(entity.goals)) {
-          goal.forEach((key, value, due) => {
-            this.setGoal(entity.uuid, property, key, value, due)
-          })
+        if (!this.entitiesMap.has(uuid)) {
+          this.entitiesMap.set(uuid, new Y.Map())
+        }
+        const entityMap = this.entitiesMap.get(uuid)
+        entityMap.set('@type', entity.type)
+        for (let [goalName, goal] of Object.entries(entity.goals)) {
+          this.setGoal(entityMap, goalName, goal.get(), due)
         }
       })
     },
     
-    setGoal(uuid, property, key, value, due = Date.now()) {
-      let entityMap
-      if (!this.goalsMap.has(uuid)) {
-        entityMap = new Y.Map()
-        this.goalsMap.set(uuid, entityMap)
+    setGoal(entityMap, goalName, state, due = Date.now()) {
+      let stateMap
+      if (!entityMap.has(goalName)) {
+        stateMap = new Y.Map()
+        entityMap.set(goalName, stateMap)
       } else {
-        entityMap = this.goalsMap.get(uuid)
+        stateMap = entityMap.get(goalName)
       }
-      
-      const combinedKey = `${property}.${key}`
-      entityMap.set(`${combinedKey}.val`, value)
-      entityMap.set(`${combinedKey}.due`, due)
-      // let propertyMap
-      // if (!entityMap.has(property)) {
-      //   propertyMap = new Y.Map()
-      //   entityMap.set(property, propertyMap)
-      // } else {
-      //   propertyMap = entityMap.get(property)
-      // }
-      
-      // propertyMap.set(key, value)
-      // propertyMap.set(`${key}.due`, due)
+      stateMap.set('@due', due)
+      for (let [key, value] of Object.entries(state)) {
+        stateMap.set(key, value)
+      }
     },
 
     removeEntity(uuid) {
@@ -204,11 +202,11 @@ const Network = stampit(EventEmittable, {
     },
 
     observeGoals() {
-      this.goalsMap.observeDeep((events, t) => {
+      this.entitiesMap.observeDeep((events, t) => {
         for (let event of events) {
           if (event.path.length === 0) {
             event.changes.keys.forEach(({ action }, uuid) => {
-              const state = this.goalsMap.get(uuid)
+              const state = this.entitiesMap.get(uuid)
               if (action === 'add') {
                 console.log('goal added', uuid, state)
                 this.emit('add-goal', uuid, state)

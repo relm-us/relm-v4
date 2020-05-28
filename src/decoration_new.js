@@ -197,6 +197,11 @@ const DecorationNew = window.DecorationNew = stampit(
   // HasEmissiveMaterial,
   // ReceivesPointer,
   // FollowsTarget,
+  {
+    props: {
+      type: 'decoration'
+    }
+  }
 )
 
 export { DecorationNew }
