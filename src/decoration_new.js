@@ -79,11 +79,9 @@ const UsesAssetAsImage = stampit({
 
 const HasScaleGoal = stampit(CanAddGoal, {
   init() {
-    this.addGoal('s',
-      ['x', 1.0, Equal.Delta(0.001)],
-      ['y', 1.0, Equal.Delta(0.001)],
-      ['z', 1.0, Equal.Delta(0.001)],
-    )
+    this.addGoal('s', { x: 1.0, y: 1.0, z: 1.0 }, {
+      equals: Equal.Distance(0.001)
+    })
   }
 })
 
@@ -96,16 +94,13 @@ const ScaleAnimatable = stampit(Component, HasScaleGoal, {
     update(_delta) {
       const scaleGoal = this.goals.s
       if (!scaleGoal.achieved) {
-        ['x', 'y', 'z'].forEach((axis) => {
-          scaleGoal.fastForward(axis)
-          if (scaleGoal.pastDue(axis)) {
-            const value = scaleGoal.get(axis)
-            this.object.scale[axis] = scaleGoal.get(axis)
-          } else {
-            this.object.scale[axis] = MathUtils.lerp(this.object.scale[axis], scaleGoal.get(axis), 0.1)
-          }
-          scaleGoal.markAchievedIfEqual(axis, this.object.scale[axis])
-        })
+        if (scaleGoal.isPastDue()) {
+          this.object.scale.copy(scaleGoal.get())
+        } else {
+          this._scale.copy(scaleGoal.get())
+          this.object.scale.lerp(this._scale, 0.1)
+        }
+        scaleGoal.markAchievedIfEqual(this.object.scale)
       }
     }
   }
@@ -113,11 +108,7 @@ const ScaleAnimatable = stampit(Component, HasScaleGoal, {
 
 const HasRotateGoal = stampit(CanAddGoal, {
   init() {
-    this.addGoal('r',
-      ['x', 0.0, Equal.Delta(0.01)],
-      ['y', 0.0, Equal.Delta(0.01)],
-      ['z', 0.0, Equal.Delta(0.01)],
-    )
+    this.addGoal('r', { x: 0.0, y: 0.0, z: 0.0 })
   }
 })
 
@@ -131,22 +122,18 @@ const RotationAnimatable = stampit(Component, HasRotateGoal, {
     update(_delta) {
       const rotationGoal = this.goals.r;
       if (!rotationGoal.achieved) {
-        rotationGoal.fastForward()
-        if (rotationGoal.allPastDue()) {
-          this.object.rotation.x = rotationGoal.x
-          this.object.rotation.y = rotationGoal.y
-          this.object.rotation.z = rotationGoal.z
-          rotationGoal.markAllAchieved()
+        if (rotationGoal.isPastDue()) {
+          const r = rotationGoal.get()
+          this.object.rotation.set(r.x, r.y, r.z)
+          rotationGoal.markAchieved()
         } else {
-          this._rotation.x = rotationGoal.x
-          this._rotation.y = rotationGoal.y
-          this._rotation.z = rotationGoal.z
-          
+          const r = rotationGoal.get()
+          this._rotation.set(r.x, r.y, r.z)
           this._quaternion.setFromEuler(this._rotation)
           this.object.quaternion.slerp(this._quaternion, 0.1)
           const angleDelta = Math.abs(this.object.quaternion.angleTo(this._quaternion))
           if (angleDelta < 0.01) {
-            rotationGoal.markAllAchieved()
+            rotationGoal.markAchieved()
           }
         }
       }
@@ -156,11 +143,9 @@ const RotationAnimatable = stampit(Component, HasRotateGoal, {
 
 const HasPositionGoal = stampit(CanAddGoal, {
   init() {
-    this.addGoal('p',
-      ['x', 0.0, Equal.Delta(0.01)],
-      ['y', 0.0, Equal.Delta(0.01)],
-      ['z', 0.0, Equal.Delta(0.01)],
-    )
+    this.addGoal('p', { x: 0.0, y: 0.0, z: 0.0 }, {
+      equals: Equal.Distance(0.01)
+    })
   }
 })
 
@@ -173,17 +158,13 @@ const PositionAnimatable = stampit(Component, HasPositionGoal, {
     update(_delta) {
       const positionGoal = this.goals.p
       if (!positionGoal.achieved) {
-        positionGoal.fastForward()
-        if (positionGoal.allPastDue()) {
-          this.object.position.copy(this.goals.p)
-          positionGoal.markAllAchieved()
+        if (positionGoal.isPastDue()) {
+          this.object.position.copy(positionGoal.get())
+          positionGoal.markAchieved()
         } else {
-          this._position.copy(this.goals.p)
+          this._position.copy(positionGoal.get())
           this.object.position.lerp(this._position, 0.1)
-          const distance = this.object.position.distanceTo(this._position)
-          if (distance < 0.01) {
-            positionGoal.markAllAchieved()
-          }
+          positionGoal.markAchievedIfEqual(this.object.position)
         }
       }
     }
@@ -191,7 +172,7 @@ const PositionAnimatable = stampit(Component, HasPositionGoal, {
 })
 
 
-const GoalsAreNetworkDefinable = stampit({
+const GoalsAreNetworkSettable = stampit({
   init() {
     this.on(`update-goal-${this.uuid}`, this._updateGoals)
 
@@ -204,7 +185,6 @@ const GoalsAreNetworkDefinable = stampit({
   }
 })
 
-
 const DecorationNew = window.DecorationNew = stampit(
   Entity,
   HasObject,
@@ -213,7 +193,7 @@ const DecorationNew = window.DecorationNew = stampit(
   ScaleAnimatable,
   RotationAnimatable,
   PositionAnimatable,
-  GoalsAreNetworkDefinable,
+  // GoalsAreNetworkSettable,
   // HasEmissiveMaterial,
   // ReceivesPointer,
   // FollowsTarget,

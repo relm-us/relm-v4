@@ -27,9 +27,7 @@ const getLoaderFromUrl = (url) => {
 
 const LoadsAsset = stampit(CanAddGoal, Component, EventEmittable, {
   init() {
-    this.addGoal('asset',
-      ['url', null, Equal.Compare()],
-    )
+    this.addGoal('asset', { url: null })
     this.asset = null
   },
 

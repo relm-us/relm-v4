@@ -64,8 +64,18 @@ const Network = stampit(EventEmittable, {
         console.warn('attempted to add null state to network (not added)', state)
       }
     },
+
+    addEntity(entity) {
+      this.ydoc.transact((_transaction) => {
+        for (let [property, goal] of Object.entries(entity.goals)) {
+          goal.forEach((key, value, due) => {
+            this.setGoal(entity.uuid, property, key, value, due)
+          })
+        }
+      })
+    },
     
-    setGoal(uuid, property, key, value) {
+    setGoal(uuid, property, key, value, due = Date.now()) {
       let entityMap
       if (!this.goalsMap.has(uuid)) {
         entityMap = new Y.Map()
@@ -74,15 +84,19 @@ const Network = stampit(EventEmittable, {
         entityMap = this.goalsMap.get(uuid)
       }
       
-      let propertyMap
-      if (!entityMap.has(property)) {
-        propertyMap = new Y.Map()
-        entityMap.set(property, propertyMap)
-      } else {
-        propertyMap = entityMap.get(property)
-      }
+      const combinedKey = `${property}.${key}`
+      entityMap.set(`${combinedKey}.val`, value)
+      entityMap.set(`${combinedKey}.due`, due)
+      // let propertyMap
+      // if (!entityMap.has(property)) {
+      //   propertyMap = new Y.Map()
+      //   entityMap.set(property, propertyMap)
+      // } else {
+      //   propertyMap = entityMap.get(property)
+      // }
       
-      propertyMap.set(key, value)
+      // propertyMap.set(key, value)
+      // propertyMap.set(`${key}.due`, due)
     },
 
     removeEntity(uuid) {
@@ -194,7 +208,7 @@ const Network = stampit(EventEmittable, {
         for (let event of events) {
           if (event.path.length === 0) {
             event.changes.keys.forEach(({ action }, uuid) => {
-              const state = this.entityStates.get(uuid)
+              const state = this.goalsMap.get(uuid)
               if (action === 'add') {
                 console.log('goal added', uuid, state)
                 this.emit('add-goal', uuid, state)
