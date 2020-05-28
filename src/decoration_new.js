@@ -14,7 +14,7 @@ const IMAGE_DEFAULT_ALPHA_TEST = 0.2
 
 const { MathUtils } = THREE
 
-const HasImage = stampit({
+const UsesAssetAsImage = stampit({
   init() {
     this.geometry = null
     this.material = null
@@ -87,7 +87,7 @@ const HasScaleGoal = stampit(CanAddGoal, {
   }
 })
 
-const AnimatesScaling = stampit(Component, HasScaleGoal, {
+const ScaleAnimatable = stampit(Component, HasScaleGoal, {
   init() {
     this._scale = new THREE.Vector3()
   },
@@ -121,7 +121,7 @@ const HasRotateGoal = stampit(CanAddGoal, {
   }
 })
 
-const AnimatesRotation = stampit(Component, HasRotateGoal, {
+const RotationAnimatable = stampit(Component, HasRotateGoal, {
   init() {
     this._rotation = new THREE.Euler()
     this._quaternion = new THREE.Quaternion()
@@ -164,7 +164,7 @@ const HasPositionGoal = stampit(CanAddGoal, {
   }
 })
 
-const AnimatesPosition = stampit(Component, HasPositionGoal, {
+const PositionAnimatable = stampit(Component, HasPositionGoal, {
   init() {
     this._position = new THREE.Vector3()
   },
@@ -190,14 +190,30 @@ const AnimatesPosition = stampit(Component, HasPositionGoal, {
   }
 })
 
+
+const GoalsAreNetworkDefinable = stampit({
+  init() {
+    this.on(`update-goal-${this.uuid}`, this._updateGoals)
+
+  },
+  
+  methods: {
+    _updateGoals: (state) => {
+      console.log('updateGoals', state)
+    }
+  }
+})
+
+
 const DecorationNew = window.DecorationNew = stampit(
   Entity,
   HasObject,
   LoadsAsset,
-  HasImage,
-  AnimatesScaling,
-  AnimatesRotation,
-  AnimatesPosition,
+  UsesAssetAsImage,
+  ScaleAnimatable,
+  RotationAnimatable,
+  PositionAnimatable,
+  GoalsAreNetworkDefinable,
   // HasEmissiveMaterial,
   // ReceivesPointer,
   // FollowsTarget,

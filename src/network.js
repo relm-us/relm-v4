@@ -31,7 +31,7 @@ const Network = stampit(EventEmittable, {
     this.invitations = this.ydoc.getMap('invitations')
     
     // For now, keep goalnet state separate
-    this.goals = this.ydoc.getMap('goals')
+    this.goalsMap = this.ydoc.getMap('goals')
   },
 
   methods: {
@@ -63,6 +63,26 @@ const Network = stampit(EventEmittable, {
       } else {
         console.warn('attempted to add null state to network (not added)', state)
       }
+    },
+    
+    setGoal(uuid, property, key, value) {
+      let entityMap
+      if (!this.goalsMap.has(uuid)) {
+        entityMap = new Y.Map()
+        this.goalsMap.set(uuid, entityMap)
+      } else {
+        entityMap = this.goalsMap.get(uuid)
+      }
+      
+      let propertyMap
+      if (!entityMap.has(property)) {
+        propertyMap = new Y.Map()
+        entityMap.set(property, propertyMap)
+      } else {
+        propertyMap = entityMap.get(property)
+      }
+      
+      propertyMap.set(key, value)
     },
 
     removeEntity(uuid) {
@@ -170,7 +190,7 @@ const Network = stampit(EventEmittable, {
     },
 
     observeGoals() {
-      this.goals.observeDeep((events, t) => {
+      this.goalsMap.observeDeep((events, t) => {
         for (let event of events) {
           if (event.path.length === 0) {
             event.changes.keys.forEach(({ action }, uuid) => {
