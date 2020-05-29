@@ -1,7 +1,7 @@
 import stampit from 'stampit'
 
 import { Component } from './component.js'
-import { Label } from './label.js'
+import { Label } from '../label.js'
 
 const HasOffscreenIndicator = stampit(Component, {
   init() {

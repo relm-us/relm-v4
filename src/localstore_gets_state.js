@@ -1,7 +1,7 @@
 
 import stampit from 'stampit'
 
-import { Component } from './component.js'
+import { Component } from './components/component.js'
 import { stateToObject } from './state_to_object.js'
 
 /**

@@ -1,7 +1,7 @@
 import stampit from 'stampit'
 
 import { Component } from './component.js'
-import { addDynamicImageTo } from './manifest_loaders.js'
+import { addDynamicImageTo } from '../manifest_loaders.js'
 
 const {
   PlaneGeometry,

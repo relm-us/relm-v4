@@ -1,14 +1,14 @@
 import stampit from 'stampit'
 
 import { Entity } from './entity.js'
-import { Component } from './component.js'
-import { HasObject } from './has_object.js'
-import { HasEmissiveMaterial } from './has_emissive_material.js'
+import { Component } from './components/component.js'
+import { HasObject } from './components/has_object.js'
+import { HasEmissiveMaterial } from './components/has_emissive_material.js'
 import { ReceivesPointer } from './receives_pointer.js'
-import { FollowsTarget } from './follows_target.js'
+import { FollowsTarget } from './components/follows_target.js'
 import { NetworkSetsState } from './network_persistence.js'
 import { regularGLTFLoader } from './manifest_loaders.js'
-import { LoadsAsset } from './loads_asset.js'
+import { LoadsAsset } from './components/loads_asset.js'
 
 const DEFAULT_SIZE = 100
 

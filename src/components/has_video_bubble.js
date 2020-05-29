@@ -2,7 +2,7 @@ import stampit from 'stampit'
 import EventEmittable from '@stamp/eventemittable'
 
 import { Component } from './component.js'
-import { CanProject } from './label.js'
+import { CanProject } from '../label.js'
 
 const { Vector3 } = THREE
 

@@ -1,12 +1,12 @@
 import stampit from 'stampit'
 
 import { Entity } from './entity.js'
-import { Component } from './component.js'
-import { HasObject } from './has_object.js'
-import { FollowsTarget } from './follows_target.js'
+import { Component } from './components/component.js'
+import { HasObject } from './components/has_object.js'
+import { FollowsTarget } from './components/follows_target.js'
+import { HasEmissiveMaterial } from './components/has_emissive_material.js'
 import { ReceivesPointer } from './receives_pointer.js'
 import { NetworkSetsState } from './network_persistence.js'
-import { HasEmissiveMaterial } from './has_emissive_material.js'
 
 const { RingGeometry, Mesh, MeshStandardMaterial, DoubleSide, Color } = THREE
 

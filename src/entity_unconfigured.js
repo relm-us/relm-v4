@@ -1,7 +1,7 @@
 import stampit from 'stampit'
 
 import { uuidv4 } from './util.js'
-import { Component } from './component.js'
+import { Component } from './components/component.js'
 
 /**
  * An Entity is the most basic thing in the game world. It has 

@@ -2,7 +2,7 @@ import stampit from 'stampit'
 // import EventEmittable from '@stamp/eventemittable'
 
 import { Entity } from './entity.js'
-import { Component } from './component.js'
+import { Component } from './components/component.js'
 
 const { Vector3 } = THREE
 

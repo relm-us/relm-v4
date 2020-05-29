@@ -2,7 +2,7 @@ import stampit from 'stampit'
 import EventEmittable from '@stamp/eventemittable'
 
 import { Entity } from './entity.js'
-import { Component } from './component.js'
+import { Component } from './components/component.js'
 import {
   KEY_UP, KEY_DOWN, KEY_LEFT, KEY_RIGHT,
   KEY_W, KEY_A, KEY_S, KEY_D, KEY_Q, KEY_E,

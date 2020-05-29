@@ -1,10 +1,10 @@
 import stampit from 'stampit'
 
 import { Entity } from './entity.js'
-import { Component } from './component.js'
-import { HasObject } from './has_object.js'
+import { Component } from './components/component.js'
+import { HasObject } from './components/has_object.js'
 import { AwarenessGetsState, AwarenessSetsState } from './network_awareness.js'
-import { HasUniqueColor, CopiesUniqueColor } from './has_unique_color.js'
+import { HasUniqueColor, CopiesUniqueColor } from './components/has_unique_color.js'
 
 /**
  * Look for the Entity that owns an object, given that the object might be

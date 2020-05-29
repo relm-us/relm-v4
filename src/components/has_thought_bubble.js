@@ -1,9 +1,9 @@
 import stampit from 'stampit'
 import EventEmittable from '@stamp/eventemittable'
 
-import { Entity } from './entity.js'
+import { Entity } from '../entity.js'
 import { Component } from './component.js'
-import { ThoughtBubble } from './thought_bubble.js'
+import { ThoughtBubble } from '../thought_bubble.js'
 
 const HasThoughtBubble = stampit(Entity, Component, EventEmittable, {
   props: {

@@ -2,9 +2,9 @@ import stampit from 'stampit'
 import EventEmittable from '@stamp/eventemittable'
 
 import { Component } from './component.js'
-import { CanAddGoal, Equal } from './goal.js'
+import { CanAddGoal, Equal } from '../goals/goal.js'
 
-import { GLTFLoader } from './lib/GLTFLoader.js'
+import { GLTFLoader } from '../lib/GLTFLoader.js'
 
 
 // Loader for regular GLTFs and GLBs

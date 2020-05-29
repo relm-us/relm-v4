@@ -1,26 +1,20 @@
 import stampit from 'stampit'
 
 import { Entity } from './entity.js'
-import { Component } from './component'
-import { HasObject } from './has_object_new.js'
-import { HasEmissiveMaterial } from './has_emissive_material.js'
+import { Component } from './components/component.js'
+import { HasObject } from './components/has_object_new.js'
+import { HasEmissiveMaterial } from './components/has_emissive_material.js'
 import { ReceivesPointer } from './receives_pointer.js'
 // import { FollowsTarget } from './follows_target.js'
-import { CanAddGoal, Equal } from './goal.js'
-import { LoadsAsset } from './loads_asset_new.js'
+import { CanAddGoal, Equal } from './goals/goal.js'
+import { LoadsAsset } from './components/loads_asset_new.js'
 import { Network } from './network.js'
+import { VisibleEdges } from './visible_edges.js'
+import { HasPivotGoal } from './goals/has_pivot_goal.js'
+import { AnimatesScale } from './components/animates_scale.js'
 
 const IMAGE_DEFAULT_COLOR = 0xFFFFFF
 const IMAGE_DEFAULT_ALPHA_TEST = 0.2
-
-const { MathUtils } = THREE
-
-const HasPivotGoal = stampit(CanAddGoal, {
-  init() {
-    this.addGoal('pivot', { x: 0.0, y: 0.0, z: 0.0 })
-  },
-
-})
 
 const UsesAssetAsImage = stampit(Component, HasPivotGoal, {
   init() {
@@ -150,83 +144,9 @@ const UsesAssetAsImage = stampit(Component, HasPivotGoal, {
   }
 })
 
-const VisibleEdges = stampit({
-  init({ object, enabled = false }) {
-    this.object = object
-    this.enabled = false
-
-    if (enabled) {
-      this.enable()
-    }
-  },
-
-  methods: {
-    enable() {
-      this.enabled = true
-      this._createEdges()
-    },
-
-    disable() {
-      this.enabled = false
-      this.object.remove(this.lines)
-    },
-
-    _findGeometry() {
-      let mesh
-      this.object.traverse(o => {
-        if (o.isMesh) { mesh = o }
-      })
-      if (mesh) return mesh.geometry
-    },
-
-    _createEdges() {
-      if (this.lines) { this.object.remove(this.lines) }
-      
-      const geometry = this._findGeometry()
-      if (geometry) {
-        const edges = new THREE.EdgesGeometry(geometry)
-        this.lines = new THREE.LineSegments(edges,
-          new THREE.LineBasicMaterial({ color: 0xffffff })
-        )
-        
-        this.object.add(this.lines)
-      } else {
-        console.warn("Can't show VisibleEdges of object, no geometry found", this.object)
-      }
-    }
-  }
-})
 
       
 
-const HasScaleGoal = stampit(CanAddGoal, {
-  init() {
-    this.addGoal('s', { x: 1.0, y: 1.0, z: 1.0 }, {
-      equals: Equal.Distance(0.001)
-    })
-  }
-})
-
-const AnimatesScale = stampit(Component, HasScaleGoal, {
-  init() {
-    this._scale = new THREE.Vector3()
-  },
-
-  methods: {
-    update(_delta) {
-      const scaleGoal = this.goals.s
-      if (!scaleGoal.achieved) {
-        if (scaleGoal.isPastDue()) {
-          this.object.scale.copy(scaleGoal.get())
-        } else {
-          this._scale.copy(scaleGoal.get())
-          this.object.scale.lerp(this._scale, 0.1)
-        }
-        scaleGoal.markAchievedIfEqual(this.object.scale)
-      }
-    }
-  }
-})
 
 const HasRotateGoal = stampit(CanAddGoal, {
   init() {

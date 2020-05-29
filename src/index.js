@@ -10,37 +10,24 @@ import { normalizeWheel } from './lib/normalizeWheel.js'
 import { showToast } from './lib/Toast.js'
 import { showInfoAboutObject } from './show_info_about_object.js'
 
-import { Entity, stage, network } from './entity.js'
 import { Network } from './network.js'
-import { HasObject } from './has_object.js'
-import { HasLabel } from './has_label.js'
-import { FollowsTarget } from './follows_target.js'
+import { stage, network } from './entity.js'
 import { KeyboardController } from './keyboard_controller.js'
 import { CameraController } from './camera_controller.js'
-import { HasAnimationMixer } from './has_animation_mixer.js'
-import { WalksWhenMoving } from './walks_when_moving.js'
-import { HasThoughtBubble } from './has_thought_bubble.js'
-import { HasVideoBubble } from './has_video_bubble.js'
-import { HasOpacity } from './has_opacity.js'
-import { HasOffscreenIndicator } from './has_offscreen_indicator.js'
-import { AwarenessGetsState, AwarenessSetsState } from './network_awareness.js'
-import { LocalstoreGetsState, localstoreRestoreState } from './localstore_gets_state.js'
+import { localstoreRestoreState } from './localstore_gets_state.js'
 import { MousePointer, OtherMousePointer } from './mouse_pointer.js'
 import { Decoration } from './decoration.js'
 import { DecorationNew } from './decoration_new.js'
 import { Teleportal } from './teleportal.js'
 import { InteractionDiamond } from './interaction_diamond.js'
-import { Component } from './component.js'
 import { uuidv4 } from './util.js'
 import config from './config.js'
 import { PadController } from './pad_controller.js'
-import { stateToObject } from './state_to_object.js'
 import { relmImport } from './lib/relmExport.js'
+import { Player, OtherPlayer } from './player.js'
 
 import "toastify-js/src/toastify.css"
-import { HasUniqueColor } from './has_unique_color.js'
 import { Thing3D } from './thing3d.js'
-import { UpdatesLabelToUniqueColor } from './updates_label_to_unique_color.js'
 import { parseCommand } from './commands.js'
 import { recordCoords } from './record_coords.js'
 
@@ -59,7 +46,6 @@ const GLTF_FILETYPE_RE = /\.(gltf|glb)$/
 
 const cfg = config(window.location)
 const decorationLayerThickness = 0.01
-let previousMousedownCoords = {}
 let previousMousedownIndex = 0
 let decorationLayer = 0
 let mostRecentlyCreatedObjectId = null
@@ -74,43 +60,6 @@ THREE.Cache.enabled = true
 
 const security = Security()
 
-const Player = stampit(
-  Entity,
-  HasObject,
-  HasOpacity,
-  HasLabel,
-  HasVideoBubble,
-  HasThoughtBubble,
-  FollowsTarget,
-  HasAnimationMixer,
-  WalksWhenMoving,
-  HasUniqueColor,
-  UpdatesLabelToUniqueColor,
-  // This is how the player sends updates
-  AwarenessGetsState,
-  LocalstoreGetsState,
-{
-  name: 'Player',
-})
-
-const OtherPlayer = stampit(
-  Entity,
-  HasObject,
-  HasOpacity,
-  HasLabel,
-  HasVideoBubble,
-  HasThoughtBubble,
-  FollowsTarget,
-  HasAnimationMixer,
-  WalksWhenMoving,
-  HasUniqueColor,
-  UpdatesLabelToUniqueColor,
-  HasOffscreenIndicator,
-  // This is how OtherPlayers get updates
-  AwarenessSetsState,
-{
-  name: 'OtherPlayer'
-})
 
 const start = async () => {
   // We first add all resources from the manifest so that the progress
