@@ -32,13 +32,22 @@ const Network = stampit(EventEmittable, {
     
     // For now, keep goalnet state separate
     this.entitiesMap = this.ydoc.getMap('goals')
+    
+    this.registeredTypes = {}
+  },
+  
+  statics: {
+    registeredTypes: {},
+    registerType(type, stamp) {
+      this.registeredTypes[type] = stamp
+    }
   },
 
   methods: {
     isReady() {
       return !!this.idbProvider && !!this.wsProvider
     },
-
+    
     /**
      * Adds a stateful entity to the network, to be synced with all clients.
      * 
@@ -65,6 +74,10 @@ const Network = stampit(EventEmittable, {
       }
     },
 
+    removeEntityWithGoals(uuid) {
+      this.entitiesMap.delete(uuid)
+    },
+    
     setEntityWithGoals(entity, due = Date.now()) {
       const uuid = entity.uuid
       const type = entity.type
@@ -208,7 +221,7 @@ const Network = stampit(EventEmittable, {
             event.changes.keys.forEach(({ action }, uuid) => {
               const state = this.entitiesMap.get(uuid)
               if (action === 'add') {
-                console.log('goal added', uuid, state)
+                console.log('goal added', uuid, state.toJSON())
                 this.emit('add-goal', uuid, state)
               } else if (action === 'delete') {
                 console.log('goal deleted', uuid)

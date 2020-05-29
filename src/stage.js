@@ -80,7 +80,7 @@ const Stage = stampit(
     },
 
     remove(entity) {
-      if (typeof entity.setup === 'function') {
+      if (typeof entity.teardown === 'function') {
         entity.teardown()
       }
       delete this.entities[entity.uuid]

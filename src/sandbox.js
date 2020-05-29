@@ -1,12 +1,24 @@
 import stampit from 'stampit'
-import FlatQueue from 'flatqueue'
-const millis = Date.now
 
-THREE.Cache.enabled = true
 
-const texture = new THREE.TextureLoader().load( "/marble-tile.jpg" ) //checkered.png" )
-// const texture = window.texture = THREE.DefaultLoadingManager.load('/marble-tile.jpg')
-window.texture = texture
-console.log(texture)
+const Typed = stampit({
+  statics: {
+    setType(type) {
+      this.type = type
+      return this
+    }
+  },
+  init(_, { stamp }) {
+    this.type = stamp.type
+  }
+})
 
+const Entity = window.Entity = stampit({
+  init() {
+    this.isEntity = true
+  }
+}).compose(Typed).setType('john')
+
+const e = Entity()
+console.log(Entity, e.type, Entity.type)
 

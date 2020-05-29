@@ -11,6 +11,7 @@ import { showToast } from './lib/Toast.js'
 import { showInfoAboutObject } from './show_info_about_object.js'
 
 import { Entity, stage, network } from './entity.js'
+import { Network } from './network.js'
 import { HasObject } from './has_object.js'
 import { HasLabel } from './has_label.js'
 import { FollowsTarget } from './follows_target.js'
@@ -50,6 +51,8 @@ import {
   KEY_BACK_SLASH, KEY_SLASH,
   KEY_BACK_SPACE, KEY_DELETE
 } from 'keycode-js'
+
+window.Network = Network
 
 const IMAGE_FILETYPE_RE = /\.(png|gif|jpg|jpeg|webp)$/
 const GLTF_FILETYPE_RE = /\.(gltf|glb)$/
@@ -520,6 +523,26 @@ const start = async () => {
         break
       default:
         console.warn('"disconnect" issued for unhandled type', uuid, state)
+    }
+  })
+  
+  network.on('add-goal', (uuid, state) => {
+    const type = state.get('@type')
+    if (type) {
+      console.log('add-goal in index.js', state.toJSON())
+      const CreateEntity = Network.registeredTypes[type]
+      const entity = CreateEntity({ uuid })
+      entity.updateGoals(state)
+      stage.add(entity)
+    } else {
+      const info = (state && state.toJSON) ? state.toJSON() : state
+      console.warn("Can't add entity to stage (entity has no type)", uuid, info)
+    }
+  })
+  network.on('remove-goal', (uuid) => {
+    const entity = stage.entities[uuid]
+    if (entity) {
+      stage.remove(entity)
     }
   })
   

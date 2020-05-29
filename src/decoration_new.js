@@ -3,18 +3,26 @@ import stampit from 'stampit'
 import { Entity } from './entity.js'
 import { Component } from './component'
 import { HasObject } from './has_object_new.js'
-// import { HasEmissiveMaterial } from './has_emissive_material.js'
-// import { ReceivesPointer } from './receives_pointer.js'
+import { HasEmissiveMaterial } from './has_emissive_material.js'
+import { ReceivesPointer } from './receives_pointer.js'
 // import { FollowsTarget } from './follows_target.js'
 import { CanAddGoal, Equal } from './goal.js'
 import { LoadsAsset } from './loads_asset_new.js'
+import { Network } from './network.js'
 
 const IMAGE_DEFAULT_COLOR = 0xFFFFFF
 const IMAGE_DEFAULT_ALPHA_TEST = 0.2
 
 const { MathUtils } = THREE
 
-const UsesAssetAsImage = stampit({
+const HasPivotGoal = stampit(CanAddGoal, {
+  init() {
+    this.addGoal('pivot', { x: 0.0, y: 0.0, z: 0.0 })
+  },
+
+})
+
+const UsesAssetAsImage = stampit(Component, HasPivotGoal, {
   init() {
     this.geometry = null
     this.material = null
@@ -52,19 +60,76 @@ const UsesAssetAsImage = stampit({
     _createImageMeshFromLoadedTexture(texture) {
       const w = texture.image.width
       const h = texture.image.height
+      const pivot = this.goals.pivot.get()
       
-      const geometry = new THREE.PlaneGeometry(w, h)
+      const geometry = this._createFoldingPlaneBufferGeometry(w, h, pivot.y)
+      const material = this._createMaterial(texture)
+      const mesh = new THREE.Mesh(geometry, material)
+    
+      this._setMesh(mesh)
+    },
+    
+    /**
+     * Creates a "FoldingPlaneBufferGeometry" which is basically an L-shaped PlaneBuffer. This is used
+     * to create the illusion that part of an image can be walked on ("below the fold") while part of
+     * the image is standing up ("above the fold").
+     * 
+     * @param {number} w - width of the image (texture)
+     * @param {number} h - height of the image (texture)
+     * @param {number} fold - a number from 0.0 to 1.0: the point at which the image should "fold".
+     *                        0.0 means there is no fold (the entire image is "up", above the fold),
+     *                        while 1.0 also means there is no fold (the entire image is "down", below
+     *                        the fold)
+     */
+    _createFoldingPlaneBufferGeometry(w, h, fold) {
+      const top = h * (1.0 - fold)
+      const bot = h * fold
       
-      const material = new THREE.MeshStandardMaterial({
+      const geometry = new THREE.BufferGeometry()
+      
+      const vertices = new Float32Array([
+        -w/2, 1.0, 0.0, // lower-left
+         w/2, 1.0, 0.0, // to lower-right
+         w/2, top, 0.0, // to upper-right
+        -w/2, top, 0.0, // to upper-left
+        -w/2, 1.0, bot, // protruding bottom left
+         w/2, 1.0, bot, // protruding bottom right
+      ])
+      
+      // Each triplet of the 4 triangles described by these indices is in counter-clockwise order
+      const indices = [
+        0, 1, 2,
+        2, 3, 0,
+        1, 0, 4,
+        4, 5, 1,
+      ]
+      
+      // Map the image to the folding plane
+      const uvs = new Float32Array([
+        0.0, fold,
+        1.0, fold,
+        1.0, 1.0,
+        0.0, 1.0,
+        0.0, 0.0,
+        1.0, 0.0,
+      ])
+      
+      geometry.setIndex(indices)
+      geometry.setAttribute('position', new THREE.BufferAttribute(vertices, 3))
+      geometry.setAttribute('uv', new THREE.BufferAttribute(uvs, 2))
+      geometry.computeVertexNormals()
+      
+      return geometry
+    },
+
+    _createMaterial(texture) {
+      return new THREE.MeshStandardMaterial({
         color: IMAGE_DEFAULT_COLOR,
         alphaTest: IMAGE_DEFAULT_ALPHA_TEST,
         transparent: true,
+        side: THREE.DoubleSide,
         map: texture,
       })
-      
-      const mesh = new THREE.Mesh(geometry, material)
-      mesh.receiveShadow = true
-      this._setMesh(mesh)
     },
 
     _setMesh(mesh) {
@@ -72,10 +137,67 @@ const UsesAssetAsImage = stampit({
       this.mesh = mesh
       this.object.add(this.mesh)
       this.emit('object-modified')
+    },
+
+    
+    update(_delta) {
+      const pivotGoal = this.goals.pivot
+      if (!pivotGoal.achieved && this.texture) {
+        this._createImageMeshFromLoadedTexture(this.texture)
+        pivotGoal.markAchieved()
+      }
     }
   }
 })
 
+const VisibleEdges = stampit({
+  init({ object, enabled = false }) {
+    this.object = object
+    this.enabled = false
+
+    if (enabled) {
+      this.enable()
+    }
+  },
+
+  methods: {
+    enable() {
+      this.enabled = true
+      this._createEdges()
+    },
+
+    disable() {
+      this.enabled = false
+      this.object.remove(this.lines)
+    },
+
+    _findGeometry() {
+      let mesh
+      this.object.traverse(o => {
+        if (o.isMesh) { mesh = o }
+      })
+      if (mesh) return mesh.geometry
+    },
+
+    _createEdges() {
+      if (this.lines) { this.object.remove(this.lines) }
+      
+      const geometry = this._findGeometry()
+      if (geometry) {
+        const edges = new THREE.EdgesGeometry(geometry)
+        this.lines = new THREE.LineSegments(edges,
+          new THREE.LineBasicMaterial({ color: 0xffffff })
+        )
+        
+        this.object.add(this.lines)
+      } else {
+        console.warn("Can't show VisibleEdges of object, no geometry found", this.object)
+      }
+    }
+  }
+})
+
+      
 
 const HasScaleGoal = stampit(CanAddGoal, {
   init() {
@@ -85,7 +207,7 @@ const HasScaleGoal = stampit(CanAddGoal, {
   }
 })
 
-const ScaleAnimatable = stampit(Component, HasScaleGoal, {
+const AnimatesScale = stampit(Component, HasScaleGoal, {
   init() {
     this._scale = new THREE.Vector3()
   },
@@ -112,7 +234,7 @@ const HasRotateGoal = stampit(CanAddGoal, {
   }
 })
 
-const RotationAnimatable = stampit(Component, HasRotateGoal, {
+const AnimatesRotation = stampit(Component, HasRotateGoal, {
   init() {
     this._rotation = new THREE.Euler()
     this._quaternion = new THREE.Quaternion()
@@ -149,7 +271,7 @@ const HasPositionGoal = stampit(CanAddGoal, {
   }
 })
 
-const PositionAnimatable = stampit(Component, HasPositionGoal, {
+const AnimatesPosition = stampit(Component, HasPositionGoal, {
   init() {
     this._position = new THREE.Vector3()
   },
@@ -174,34 +296,61 @@ const PositionAnimatable = stampit(Component, HasPositionGoal, {
 
 const GoalsAreNetworkSettable = stampit({
   init() {
-    this.on(`update-goal-${this.uuid}`, this._updateGoals)
-
+    this.on(`update-goal-${this.uuid}`, this.updateGoals)
   },
   
   methods: {
-    _updateGoals: (state) => {
-      console.log('updateGoals', state)
+    updateGoals(state) {
+      state.forEach((stateMap, goalName) => {
+        if (goalName === '@type') return
+        const goal = this.goals[goalName]
+        if (goal) {
+          const state = stateMap.toJSON()
+          const due = stateMap.get('@due')
+          delete state['@due']
+          goal.set(state, due)
+        }
+      })
     }
+  }
+})
+
+const Typed = stampit({
+  statics: {
+    setType(type) {
+      this.type = type
+      Network.registerType(type, this)
+      return this
+    }
+  },
+  init(_, { stamp }) {
+    this.type = stamp.type
   }
 })
 
 const DecorationNew = window.DecorationNew = stampit(
   Entity,
+  Typed,
   HasObject,
   LoadsAsset,
   UsesAssetAsImage,
-  ScaleAnimatable,
-  RotationAnimatable,
-  PositionAnimatable,
-  // GoalsAreNetworkSettable,
-  // HasEmissiveMaterial,
-  // ReceivesPointer,
+  AnimatesScale,
+  AnimatesRotation,
+  AnimatesPosition,
+  GoalsAreNetworkSettable,
+  HasEmissiveMaterial,
+  ReceivesPointer,
   // FollowsTarget,
   {
-    props: {
-      type: 'decoration'
+    init() {
+      this.edges = VisibleEdges({
+        object: this.object,
+      })
+      this.on('object-modified', () => {
+        this.edges.enable()
+      })
     }
   }
-)
+).setType('decoration')
 
 export { DecorationNew }

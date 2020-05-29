@@ -169,7 +169,7 @@ const Goal = stampit({
     },
     
     forEach(fn, now = Date.now()) {
-      Object.keys(this.values).forEach((key) => {
+      Object.keys(this.states).forEach((key) => {
         fn(key, this.get(key, now))
       })
     },
