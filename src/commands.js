@@ -398,6 +398,16 @@ const commands = {
       }
     }
   },
+  destroy: (args) => {
+    const iAmSure = takeOne(args, `Are you sure?`)
+    if (iAmSure === 'iamsure') {
+      return (env) => {
+        network.entitiesMap.forEach((_, uuid) => {
+          network.removeEntityWithGoals(uuid)
+        })
+      }
+    }
+  },
   stop: (args) => {
     return (env) => {
       env.stage.continueRendering = false
