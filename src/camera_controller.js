@@ -47,6 +47,6 @@ const CameraController = stampit(Entity, Component, {
       }
     }
   }
-})
+}).setType('camcon')
 
 export { CameraController }

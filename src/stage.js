@@ -65,6 +65,13 @@ const Stage = stampit(
   },
   
   methods: {
+    has(entity) {
+      if (!entity.uuid) {
+        throw new Error('Entity must have uuid', entity)
+      }
+      return (entity.uuid in this.entities)
+    },
+
     add(entity) {
       if (!entity.uuid) {
         throw new Error('Entity must have uuid', entity)
@@ -153,6 +160,8 @@ const Stage = stampit(
         // Handle each entity's `update` function
         if (entity.update) {
           entity.update(delta)
+        } else {
+          console.log('entity has no update', uuid)
         }
       }
       // Additionally handle any special case `update` functions

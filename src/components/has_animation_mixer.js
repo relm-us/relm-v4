@@ -2,6 +2,7 @@ import stampit from 'stampit'
 
 import { SkeletonUtils } from '../lib/SkeletonUtils.js'
 import { Component } from './component.js'
+import { CanAddGoal } from '../goals/goal.js'
 
 const { AnimationMixer } = THREE
 
@@ -32,45 +33,19 @@ function findAnimationClip(objectOrClipArray, condition) {
 }
 
 const HasAnimationMixer = stampit(Component, {
-  props: {
-    animationResourceId: null,
-    animationActions: ['walking', 'falling'],
-    animationMixer: null,
-    animatedObject: null,
-    clips: null,
-  },
-  
-  deepProps: {
-    state: {
-      animationSpeed: {
-        now: 1.0,
-        target: 1.0,
-      },
-      animationMeshName: {
-        now: null,
-        target: null
-      },
-    }
-  },
-
-  init({
-    animationResourceId,
-    animationMeshName,
-    animationSpeed = this.state.animationSpeed.now,
-    animationActions = this.animationActions
-  }) {
+  init() {
     this.clips = {}
-    this.animationSpeed = animationSpeed
-    this.animationResourceId = animationResourceId
-    this.animationActions = animationActions
-    this.state.animationMeshName.target = animationMeshName
+    this.animationMixer = null
+    this.animationResourceId = 'people'
+    this.animatedObject = null
+    this.animationActions = ['walking', 'falling']
+    
+    // Two independent goals because they can each be achieved separately
+    this.addGoal('animMesh', { v: null })
+    this.addGoal('animSpd', { v: 1.0 })
   },
 
   methods: {
-    setAnimationSpeed(speed) {
-      this.state.animationSpeed.target = speed
-    },
-
     getClonedObjectWithSkeleton(meshName) {
       let object3d
       this.resources.get(this.animationResourceId).scene.traverse(o1 => {
@@ -147,16 +122,23 @@ const HasAnimationMixer = stampit(Component, {
     },
 
     update(delta) {
-      if (this.state.animationMeshName.now !== this.state.animationMeshName.target) {
-        this.state.animationMeshName.now = this.state.animationMeshName.target
-        this.changeAnimationMesh(this.state.animationMeshName.now)
-      }
-      if (this.mixer) {
-        if (this.state.animationSpeed.now !== this.state.animationSpeed.target) {
-          // TODO: transition to faster/slower speed?
-          this.state.animationSpeed.now = this.state.animationSpeed.target
+      const animMeshGoal = this.goals.animMesh
+      if (!animMeshGoal.achieved) {
+        const meshName = animMeshGoal.get().v
+        if (meshName !== null) {
+          this.changeAnimationMesh(meshName)
+          animMeshGoal.markAchieved()
         }
-        this.mixer.update(delta * this.state.animationSpeed.now)
+      }
+      
+      const animSpeedGoal = this.goals.animSpd
+      if (!animSpeedGoal.achieved) {
+        const speed = animSpeedGoal.get().v
+        if (this.mixer) {
+          // TODO: transition to new speed
+          this.mixer.update(delta * speed)
+          animSpeedGoal.markAchieved()
+        }
       }
     },
 

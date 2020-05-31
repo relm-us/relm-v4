@@ -355,7 +355,8 @@ const commands = {
     return (env) => {
       env.stage.continueRendering = false
       setTimeout(() => {
-        localStorage.clear()
+        window.localStorage.clear()
+        window.indexedDB.deleteDatabase('relm')
         window.location.reload()
       }, 100)
     }

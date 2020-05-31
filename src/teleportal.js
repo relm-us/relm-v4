@@ -6,7 +6,7 @@ import { HasObject } from './components/has_object.js'
 import { FollowsTarget } from './components/follows_target.js'
 import { HasEmissiveMaterial } from './components/has_emissive_material.js'
 import { ReceivesPointer } from './receives_pointer.js'
-import { NetworkSetsState } from './network_persistence.js'
+// import { NetworkSetsState } from './network_persistence.js'
 
 const { RingGeometry, Mesh, MeshStandardMaterial, DoubleSide, Color } = THREE
 
@@ -150,7 +150,7 @@ const Teleportal = stampit(
   HasObject,
   FollowsTarget,
   ReceivesPointer,
-  NetworkSetsState,
+  // NetworkSetsState,
   Teleports,
   HasEmissiveMaterial
 )

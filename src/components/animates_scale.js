@@ -2,10 +2,14 @@ import stampit from 'stampit'
 
 import { Component } from './component.js'
 
-import { HasScaleGoal } from '../goals/has_scale_goal.js'
+import { GoalOriented } from '../goals/goal.js'
 
-const AnimatesScale = stampit(Component, HasScaleGoal, {
+const AnimatesScale = stampit(Component, GoalOriented, {
   init() {
+    this.addGoal('s', { x: 1.0, y: 1.0, z: 1.0 }, {
+      equals: Equal.Distance(0.001)
+    })
+    
     this._scale = new THREE.Vector3()
   },
 

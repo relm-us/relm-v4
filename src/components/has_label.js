@@ -3,10 +3,11 @@ import stampit from 'stampit'
 
 import { Component } from './component.js'
 import { Label } from '../label.js'
+import { CanAddGoal, CanSetGoal } from '../goals/goal.js'
 
 const { Vector3, Color } = THREE
 
-const HasLabel = stampit(Component, {
+const HasLabel = stampit(Component, CanAddGoal, CanSetGoal, {
   name: 'HasLabel',
 
   props: {
@@ -15,26 +16,18 @@ const HasLabel = stampit(Component, {
     labelColor: null,
   },
 
-  deepProps: {
-    state: {
-      label: {
-        now: null,
-        target: null,
-      },
-    },
-  },
-
   init({
-    label = this.state.label.target,
     labelOffset = this.labelOffset,
     labelColor = this.labelColor,
     onLabelChanged
   }) {
+    this.addGoal('label', { text: null })
+    
     this.labelPosition = new Vector3()
     this.labelOffset = labelOffset || new Vector3()
     this.labelColor = labelColor || new Color()
     this.labelObj = new Label({ onLabelChanged })
-    this.setLabel(label)
+    
     this.setLabelColor(labelColor)
   },
 
@@ -43,14 +36,14 @@ const HasLabel = stampit(Component, {
      * @returns {string}
      */
     getLabel() {
-      return this.state.label.target
+      return this.goals.label.get().text
     },
 
     /**
      * @param {string} text
      */
     setLabel(text) {
-      this.state.label.target = text
+      this.setGoal('label', { text })
     },
     
     setLabelColor(color) {
@@ -78,12 +71,11 @@ const HasLabel = stampit(Component, {
     },
 
     update() {
-      // No transition, just update the name
-      if (this.state.label.now !== this.state.label.target) {
-        this.state.label.now = this.state.label.target
-        this.labelObj.setText(this.state.label.now)
+      const labelGoal = this.goals.label
+      if (!labelGoal.achieved) {
+        this.labelObj.setText(labelGoal.get().text)
+        labelGoal.markAchieved()
       }
-
     },
 
     teardown() {

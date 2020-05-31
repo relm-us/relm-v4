@@ -1,7 +1,9 @@
 import stampit from 'stampit'
 
 import { uuidv4 } from './util.js'
+
 import { Component } from './components/component.js'
+import { Typed } from './typed.js'
 
 /**
  * An Entity is the most basic thing in the game world. It has 
@@ -12,7 +14,7 @@ import { Component } from './components/component.js'
  *   const ConfiguredEntity = Entity.conf({ stage: theStage })
  *   let monster = ConfiguredEntity() // do more with monster
  */
-const EntityUnconfigured = stampit(Component, {
+const EntityUnconfigured = stampit(Typed, Component, {
   name: 'Entity',
 
   // Static configuration. See https://stampit.js.org/api/configuration.
@@ -40,11 +42,6 @@ const EntityUnconfigured = stampit(Component, {
     uuid: null,
 
     /**
-     * @type {string}
-     */
-    type: null,
-    
-    /**
      * @type {Stage}
      */
     stage: null,
@@ -58,7 +55,6 @@ const EntityUnconfigured = stampit(Component, {
     network
   }, { stamp }) {
     this.uuid = uuid || uuidv4()
-    this.type = type
     this.stage = stage || stamp.compose.configuration.stage
     this.resources = resources || stamp.compose.configuration.resources
     this.network = network || stamp.compose.configuration.network

@@ -15,16 +15,15 @@ import { stage, network } from './entity.js'
 import { KeyboardController } from './keyboard_controller.js'
 import { CameraController } from './camera_controller.js'
 import { localstoreRestoreState } from './localstore_gets_state.js'
-import { MousePointer, OtherMousePointer } from './mouse_pointer.js'
+import { MousePointer } from './mouse_pointer.js'
 import { Decoration } from './decoration.js'
-import { DecorationNew } from './decoration_new.js'
 import { Teleportal } from './teleportal.js'
 import { InteractionDiamond } from './interaction_diamond.js'
 import { uuidv4 } from './util.js'
 import config from './config.js'
 import { PadController } from './pad_controller.js'
 import { relmImport } from './lib/relmExport.js'
-import { Player, OtherPlayer } from './player.js'
+import { Player } from './player.js'
 
 import "toastify-js/src/toastify.css"
 import { Thing3D } from './thing3d.js'
@@ -62,6 +61,68 @@ const security = Security()
 
 
 const start = async () => {
+  const playerId = await security.getOrCreateId()
+  
+  // Initialize network first so that entities can send their initial state
+  // even before we've connected to server (or eventually, peers)
+  network.on('add', (uuid, state) => {
+    const type = state['@type']
+    if (type) {
+      if (type) {
+        let entity
+        if (uuid in stage.entities) {
+          entity = stage.entities[uuid]
+        } else {
+          const CreateEntity = Network.registeredTypes[type]
+          entity = CreateEntity({ uuid })
+          console.log(`Adding entity '${entity.type}' to stage`, entity)
+          stage.add(entity)
+        }
+        entity.goals.fromJSON(state)
+      } else {
+        const info = (state && state.toJSON) ? state.toJSON() : state
+        console.warn("Can't add entity to stage (entity has no type)", uuid, info)
+      }
+    } else {
+      console.warn("Can't get @type from new entity", uuid, state)
+    }
+  })
+  
+  network.on('remove', (uuid) => {
+    const entity = stage.entities[uuid]
+    if (entity) {
+      stage.remove(entity)
+    }
+  })
+  
+  const params = { id: playerId }
+  const url = new URL(window.location.href)
+  const token = url.searchParams.get("t")
+  if (window.crypto.subtle) {
+    const pubkey = await security.exportPublicKey()
+    const signature = await security.sign(playerId)
+    params.s = signature
+    if (token) {
+      Object.assign(params, {
+        t: token,
+        /**
+         * The `x` and `y` parameters are public parts of the ECDSA algorithm.
+         * The server registers these and can later verify anything this client
+         * cryptographically signs.
+         */
+        x: pubkey.x,
+        y: pubkey.y
+      })
+    }
+    await security.verify(playerId, signature)
+  } else {
+    console.log("Not using crypto.subtle")
+  }
+  
+  network.connect(params)
+  
+  
+
   // We first add all resources from the manifest so that the progress
   // bar can add up all the resource's sizes. The actual loading doesn't
   // happen until we `enqueue` and `load`.
@@ -81,6 +142,62 @@ const start = async () => {
   let playersCentroid = new THREE.Vector3()
   let occasionalUpdate = 0
   const sortByZ = (a, b) => (a.object.position.z - b.object.position.z)
+  
+  // The player!
+  const player = window.player = Player({ uuid: playerId })
+  player.setGoal('label', { text: guestNameFromPlayerId(playerId) })
+
+  // const player = window.player = Player({
+  //   uuid: playerId,
+  //   type: 'player',
+  //   label: guestNameFromPlayerId(playerId),
+  //   animationMeshName: avatarOptionFromPlayerId(playerId).avatarId,
+  //   speed: 250,
+  //   followTurning: true,
+  //   animationSpeed: 1.5,
+  //   labelOffset: { x: 0, y: 0, z: 60 },
+  //   videoBubbleOffset: {x: 0, y: 190, z: 0 },
+  //   thoughtBubbleOffset: {x: 50, y: 100},
+  //   animationResourceId: 'people',
+  //   lsKey: 'player',
+  //   onLabelChanged: (newName) => {
+  //     player.setLabel(newName)
+  //   }
+  // })
+  if (!localstoreRestoreState('player', player)) {
+    // First-time users can choose their character
+    document.getElementById('avatars').classList.remove('hide')
+  }
+  if (cfg.LANDING_COORDS) {
+    player.state.position.target.copy(cfg.LANDING_COORDS)
+  }
+  // Warp the player to their 'saved' location, if any
+  // player.warpToPosition(player.state.position.target)
+  // player.goals.p.set()
+  // Restore to fully opaque, in case we were saved in a translucent state
+  // player.state.opacity.target = 1.0
+  player.on('thoughtBubbleAction', (thought) => {
+    mostRecentlyCreatedObjectId = uuidv4()
+    const position = Object.assign({}, player.state.position.now)
+    const diamond = InteractionDiamond({
+      uuid: mostRecentlyCreatedObjectId,
+      type: 'diamond',
+      link: thought,
+      position,
+    })
+    diamond.object.position.copy(position)
+    // Make it about chest-height by default
+    diamond.state.position.target.y += 100
+    diamond.state.position.target.x += 100
+    network.setEntity(diamond)
+    
+    player.setThought(null)
+  })
+  stage.add(player)
+  
+  player.videoBubble.object.createDomElement()
+  player.videoBubble.object.on('mute', muteAudio)
+  player.videoBubble.object.on('unmute', unmuteAudio)
   
   // Perform several calculations once per game loop:
   // 1. (occasionally) Refresh videoBubble diameter
@@ -211,59 +328,6 @@ const start = async () => {
     dropzone.removeAllFiles()
   })
 
-  // The player!
-  const playerId = await security.getOrCreateId()
-  const player = window.player = Player({
-    uuid: playerId,
-    type: 'player',
-    label: guestNameFromPlayerId(playerId),
-    animationMeshName: avatarOptionFromPlayerId(playerId).avatarId,
-    speed: 250,
-    followTurning: true,
-    animationSpeed: 1.5,
-    labelOffset: { x: 0, y: 0, z: 60 },
-    videoBubbleOffset: {x: 0, y: 190, z: 0 },
-    thoughtBubbleOffset: {x: 50, y: 100},
-    animationResourceId: 'people',
-    lsKey: 'player',
-    onLabelChanged: (newName) => {
-      player.setLabel(newName)
-    }
-  })
-  if (!localstoreRestoreState('player', player)) {
-    // First-time users can choose their character
-    document.getElementById('avatars').classList.remove('hide')
-  }
-  if (cfg.LANDING_COORDS) {
-    player.state.position.target.copy(cfg.LANDING_COORDS)
-  }
-  // Warp the player to their 'saved' location, if any
-  player.warpToPosition(player.state.position.target)
-  // Restore to fully opaque, in case we were saved in a translucent state
-  player.state.opacity.target = 1.0
-  player.on('thoughtBubbleAction', (thought) => {
-    mostRecentlyCreatedObjectId = uuidv4()
-    const position = Object.assign({}, player.state.position.now)
-    const diamond = InteractionDiamond({
-      uuid: mostRecentlyCreatedObjectId,
-      type: 'diamond',
-      link: thought,
-      position,
-    })
-    diamond.object.position.copy(position)
-    // Make it about chest-height by default
-    diamond.state.position.target.y += 100
-    diamond.state.position.target.x += 100
-    network.setEntity(diamond)
-    
-    player.setThought(null)
-  })
-  stage.add(player)
-  
-  player.videoBubble.object.createDomElement()
-  player.videoBubble.object.on('mute', muteAudio)
-  player.videoBubble.object.on('unmute', unmuteAudio)
-  
   const padController = PadController({ type: 'pad', target: player })
   const controlPadEl = document.getElementById('control-pad')
   // controlPadEl.addEventListener('mousemove', (event) => {
@@ -296,10 +360,11 @@ const start = async () => {
   stage.add(padController)
   
   const mousePointer = window.mousePointer = MousePointer({
-    type: 'mouse',
-    awarenessUpdateFrequency: 2,
-    colorSource: player
+    // type: 'mouse',
+    // awarenessUpdateFrequency: 2,
+    // colorSource: player
   })
+  console.log("Created MousePointer", mousePointer.uuid, mousePointer)
   stage.add(mousePointer)
   
   let dragLock = false
@@ -438,136 +503,116 @@ const start = async () => {
   })
 
 
-  network.on('connect', (uuid, state) => {
-    const entity = stage.entities[uuid]
-    switch(state.type) {
-      case 'player':
-        entity.setOpacity(1.0)
-        // entity.showVideoBubble()
-        entity.showOffscreenIndicator()
-        break
-      case 'mouse':
-        entity.showSphere()
-        entity.showRing()
-        break
-      default:
-        console.warn('"connect" issued for unhandled type', uuid, state)
-    }
-  })
+  // network.on('connect', (uuid, state) => {
+  //   const entity = stage.entities[uuid]
+  //   switch(state.type) {
+  //     case 'player':
+  //       entity.setOpacity(1.0)
+  //       // entity.showVideoBubble()
+  //       entity.showOffscreenIndicator()
+  //       break
+  //     case 'mouse':
+  //       entity.showSphere()
+  //       entity.showRing()
+  //       break
+  //     default:
+  //       console.warn('"connect" issued for unhandled type', uuid, state)
+  //   }
+  // })
   
-  network.on('disconnect', (uuid, state) => {
-    const entity = stage.entities[uuid]
-    switch(state.type) {
-      case 'player':
-        entity.setOpacity(0.2)
-        // entity.hideVideoBubble()
-        entity.setThought(null)
-        if (entity.hideOffscreenIndicator) {
-          entity.hideOffscreenIndicator()
-        }
-        break
-      case 'mouse':
-        entity.hideSphere()
-        entity.hideRing()
-        break
-      default:
-        console.warn('"disconnect" issued for unhandled type', uuid, state)
-    }
-  })
+  // network.on('disconnect', (uuid, state) => {
+  //   const entity = stage.entities[uuid]
+  //   switch(state.type) {
+  //     case 'player':
+  //       entity.setOpacity(0.2)
+  //       // entity.hideVideoBubble()
+  //       entity.setThought(null)
+  //       if (entity.hideOffscreenIndicator) {
+  //         entity.hideOffscreenIndicator()
+  //       }
+  //       break
+  //     case 'mouse':
+  //       entity.hideSphere()
+  //       entity.hideRing()
+  //       break
+  //     default:
+  //       console.warn('"disconnect" issued for unhandled type', uuid, state)
+  //   }
+  // })
   
-  network.on('add-goal', (uuid, state) => {
-    const type = state.get('@type')
-    if (type) {
-      console.log('add-goal in index.js', state.toJSON())
-      const CreateEntity = Network.registeredTypes[type]
-      const entity = CreateEntity({ uuid })
-      entity.updateGoals(state)
-      stage.add(entity)
-    } else {
-      const info = (state && state.toJSON) ? state.toJSON() : state
-      console.warn("Can't add entity to stage (entity has no type)", uuid, info)
-    }
-  })
-  network.on('remove-goal', (uuid) => {
-    const entity = stage.entities[uuid]
-    if (entity) {
-      stage.remove(entity)
-    }
-  })
-  
-  network.on('add', (uuid, state) => {
-    if (Object.keys(stage.entities).includes(uuid)) {
-      console.warn(`Stage already has entity with UUID ${uuid}, not adding`)
-      return
-    }
-    switch(state.type) {
-      case 'player':
-        console.log('create other player', uuid, state)
-        try {
-          const otherPlayer = OtherPlayer(Object.assign({
-            speed: 250,
-            followTurning: true,
-            animationSpeed: 1.5,
-            labelOffset: { x: 0, y: 0, z: 60 },
-            videoBubbleOffset: {x: 0, y: 190, z: 0 },
-            thoughtBubbleOffset: {x: 50, y: 100},
-            animationResourceId: 'people',
-          }, state, { uuid }))
-          if (state.position) {
-            otherPlayer.warpToPosition(state.position)
-          }
-          otherPlayer.videoBubble.object.createDomElement()
-          stage.add(otherPlayer)
-        } catch (e) {
-          console.error(e)
-        }
-        break
+  // network.on('add', (uuid, state) => {
+  //   if (Object.keys(stage.entities).includes(uuid)) {
+  //     console.warn(`Stage already has entity with UUID ${uuid}, not adding`)
+  //     return
+  //   }
+  //   switch(state.type) {
+  //     case 'player':
+  //       console.log('create other player', uuid, state)
+  //       try {
+  //         const otherPlayer = OtherPlayer(Object.assign({
+  //           speed: 250,
+  //           followTurning: true,
+  //           animationSpeed: 1.5,
+  //           labelOffset: { x: 0, y: 0, z: 60 },
+  //           videoBubbleOffset: {x: 0, y: 190, z: 0 },
+  //           thoughtBubbleOffset: {x: 50, y: 100},
+  //           animationResourceId: 'people',
+  //         }, state, { uuid }))
+  //         if (state.position) {
+  //           otherPlayer.warpToPosition(state.position)
+  //         }
+  //         otherPlayer.videoBubble.object.createDomElement()
+  //         stage.add(otherPlayer)
+  //       } catch (e) {
+  //         console.error(e)
+  //       }
+  //       break
       
-      case 'decoration':
-        const decoration = Decoration(Object.assign({
-        }, state, { uuid }))
-        stage.add(decoration)
-        break
+  //     case 'decoration':
+  //       const decoration = Decoration(Object.assign({
+  //       }, state, { uuid }))
+  //       stage.add(decoration)
+  //       break
       
-      case 'thing3d':
-        const thing3d = Thing3D(Object.assign({
-        }, state, { uuid }))
-        stage.add(thing3d)
-        break
+  //     case 'thing3d':
+  //       const thing3d = Thing3D(Object.assign({
+  //       }, state, { uuid }))
+  //       stage.add(thing3d)
+  //       break
         
-      case 'diamond':
-        const diamond = InteractionDiamond(Object.assign({
-        }, state, { uuid }))
-        stage.add(diamond)
-        break
+  //     case 'diamond':
+  //       const diamond = InteractionDiamond(Object.assign({
+  //       }, state, { uuid }))
+  //       stage.add(diamond)
+  //       break
       
-      case 'mouse':
-        const mousePointer = OtherMousePointer(Object.assign({}, state, { uuid }))
-        stage.add(mousePointer)
-        break
+  //     case 'mouse':
+  //       const mousePointer = OtherMousePointer(Object.assign({}, state, { uuid }))
+  //       stage.add(mousePointer)
+  //       break
       
-      case 'teleportal':
-        const teleportal = Teleportal(Object.assign({
-          target: player,
-          active: false,
-        }, state, { uuid }))
-        console.log('Added teleportal', state, teleportal)
-        stage.add(teleportal)
-        break
+  //     case 'teleportal':
+  //       const teleportal = Teleportal(Object.assign({
+  //         target: player,
+  //         active: false,
+  //       }, state, { uuid }))
+  //       console.log('Added teleportal', state, teleportal)
+  //       stage.add(teleportal)
+  //       break
       
-      default:
-        console.warn('"add" issued for unhandled type', uuid, state)
-    }
-  })
+  //     default:
+  //       console.warn('"add" issued for unhandled type', uuid, state)
+  //   }
+  // })
   
-  network.on('remove', (uuid) => {
-    const entity = stage.entities[uuid]
-    if (entity) {
-      stage.remove(entity)
-    } else {
-      console.warn("Can't remove entity (not found)", uuid)
-    }
-  })
+  // network.on('remove', (uuid) => {
+  //   const entity = stage.entities[uuid]
+  //   if (entity) {
+  //     stage.remove(entity)
+  //   } else {
+  //     console.warn("Can't remove entity (not found)", uuid)
+  //   }
+  // })
   
   
   const runCommand = (text, targetObjects = null) => {
@@ -648,7 +693,10 @@ const start = async () => {
       const gender = button.dataset.gender
       const index = parseInt(button.dataset.index, 10)
       const avatarOptions = avatarOptionsOfGender(gender)
-      player.state.animationMeshName.target = avatarOptions[index].avatarId
+      console.log('player set mesh', avatarOptions[index].avatarId)
+      player.setGoal('animMesh', { v: avatarOptions[index].avatarId })
+      console.log('player goals', player.goals.toJSON())
+      // network.setGoalForEntity(player, 'animMesh', {v: avatarOptions[index].avatarId})
       avatarSelection.classList.add('hide')
       focusOnGame()
     })
@@ -777,12 +825,14 @@ const start = async () => {
   })
   kbController.on('doublePressed', (action) => {
     player.setSpeed(500)
-    player.setAnimationSpeed(3)
+    // player.setAnimationSpeed(3)
+    player.setGoal('animSpd', { v: 3.0 })
     // network.setEntity(player)
   })
   kbController.on('released', (action) => {
     player.setSpeed(250)
-    player.setAnimationSpeed(1.5)
+    // player.setAnimationSpeed(1.5)
+    player.setGoal('animSpd', { v: 1.5 })
     // network.setEntity(player)
   })
   stage.add(kbController)
@@ -793,33 +843,8 @@ const start = async () => {
   })
   stage.add(camController)
   
-  const params = { id: playerId }
-  const url = new URL(window.location.href)
-  const token = url.searchParams.get("t")
-  if (window.crypto.subtle) {
-    const pubkey = await security.exportPublicKey()
-    const signature = await security.sign(playerId)
-    params.s = signature
-    if (token) {
-      Object.assign(params, {
-        t: token,
-        /**
-         * The `x` and `y` parameters are public parts of the ECDSA algorithm.
-         * The server registers these and can later verify anything this client
-         * cryptographically signs.
-         */
-        x: pubkey.x,
-        y: pubkey.y
-      })
-    }
-    await security.verify(playerId, signature)
-  } else {
-    console.log("Not using crypto.subtle")
-  }
   
-  // Call network.connect now, after all the network callbacks are ready,
-  // so that we don't miss any inital 'add' events
-  network.connect(params)
+
 
   initializeAVChat(player.uuid, 'relm-' + cfg.ROOM, {
     onMuteChanged: (track, playerId) => {

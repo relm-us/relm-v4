@@ -3,36 +3,12 @@ import stampit from 'stampit'
 import { Entity } from './entity.js'
 import { Component } from './components/component.js'
 import { HasObject } from './components/has_object.js'
-import { AwarenessGetsState, AwarenessSetsState } from './network_awareness.js'
-import { HasUniqueColor, CopiesUniqueColor } from './components/has_unique_color.js'
+// import { HasUniqueColor, CopiesUniqueColor } from './components/has_unique_color.js'
+import { FindIntersectionsFromScreenCoords } from './find_intersections_from_screen_coords.js'
+import { AnimatesPosition } from './components/animates_position.js'
+import { Permanence } from './goals/goal.js'
 
-/**
- * Look for the Entity that owns an object, given that the object might be
- * a leaf in the scene graph.
- * 
- * @param {Array<Entity>} entities 
- * @param {Object3D} object 
- */
-function findEntityForObject(entities, object) {
-  if (!object.parent) {
-    return null
-  }
-  
-  let o = object
-  // Entities that `HasObject` always have a 'dummy' object that contains
-  // the real object, so we check for grandparent being null rather than parent
-  while (o.parent.parent) {
-    o = o.parent
-  }
-  
-  for (let entity of entities) {
-    if (entity.object == o) {
-      return entity
-    }
-  }
-  
-  return null
-}
+
 
 const HasSphere = stampit(Component, {
   methods: {
@@ -60,14 +36,6 @@ const HasSphere = stampit(Component, {
 })
 
 const HasRing = stampit(Component, {
-  props: {
-    ringColor: null
-  },
-  
-  init({ ringColor }) {
-    this.ringColor = ringColor || 0x000000
-  },
-
   methods: {
     hideRing() {
       this.object.remove(this.ringMesh)
@@ -87,7 +55,7 @@ const HasRing = stampit(Component, {
         6
       )
       const material = this.material = new THREE.MeshStandardMaterial({
-        color: new THREE.Color(this.ringColor),
+        color: new THREE.Color(0xFFFFFF),
         side: THREE.DoubleSide,
       })
       this.ringMesh = new THREE.Mesh(geometry, material)
@@ -95,106 +63,11 @@ const HasRing = stampit(Component, {
       
       this.showRing()
     },
-
-    update(delta) {
-      if (this.ringColor !== this.getUniqueColor()) {
-        this.ringColor = this.getUniqueColor()
-        this.material.color = new THREE.Color(this.ringColor)
-      }
-    }
-  }
-})
-
-const UpdatesPositionFromScreenCoords = stampit(Component, {
-  init() {
-    this.screenCoords = {x: 0, y: 0}
-    this.screenVec = new THREE.Vector3()
-    this.screenRaycaster = new THREE.Raycaster()
-    this.intersects = []
-    this.intersectsOne = []
-  },
-
-  methods: {
-    setScreenCoords(x, y) {
-      this.screenCoords = {x, y}
-    },
     
-    getMouseCoords() {
-      return {
-        x: (this.screenCoords.x / window.innerWidth) * 2 - 1,
-        y: -(this.screenCoords.y / window.innerHeight) * 2 + 1
-      }
+    setRingColor(color) {
+      this.material.color = color
     },
 
-    getIntersection(object3d) {
-      this.screenRaycaster.setFromCamera(this.getMouseCoords(), this.stage.camera)
-      this.intersectsOne.length = 0
-      this.screenRaycaster.intersectObject(object3d, true, this.intersectsOne)
-      return this.intersectsOne.length === 0 ? null : this.intersectsOne[0]
-    },
-    
-    getAllIntersectionsOnStage() {
-      this.screenRaycaster.setFromCamera(this.getMouseCoords(), this.stage.camera)
-      // Using a list of entites that are currently on stage, filter for those 
-      // that can receive mouse pointer, and return their Object3D.
-      //
-      // This `reduce` is equivalent to a `.map` and a `.filter`, combined for speed
-      const objects = this.stage.entitiesOnStage.reduce((accum, entity) => {
-        if (entity.receivesPointer) {
-          accum.push(entity.object)
-        }
-        return accum
-      }, [])
-      
-      // Reduce length to zero rather than garbage collect (speed optimization)
-      this.intersects.length = 0
-      this.screenRaycaster.intersectObjects(objects, true, this.intersects)
-
-      this.intersects.forEach((intersection) => {
-        const entity = findEntityForObject(this.stage.entitiesOnStage, intersection.object)
-        intersection.entity = entity
-      })
-      
-      return this.intersects
-    },
-
-    update(delta) {
-      let intersects = this.getAllIntersectionsOnStage()
-
-      if (intersects.length > 0) {
-        const ip = intersects[0].point
-        const mp = this.object.position
-        // TODO: make this a configurable offset. For now, it puts the HasSphere
-        //       object slightly "above" the ground, and above the mouse cursor
-        mp.x = ip.x - 3
-        mp.y = ip.y + 10
-        mp.z = ip.z + 10
-      } else {
-        intersects = this.getIntersection(this.stage.ground)
-        if (intersects) {
-          const ip = intersects.point
-          const mp = this.object.position
-          mp.x = ip.x - 3
-          mp.y = ip.y + 10
-          mp.z = ip.z + 10
-        }
-      }
-      
-      if (this.state.position.target) {
-        this.state.position.target.copy(this.object.position)
-      }
-    }
-  }
-})
-
-const MousePointerUpdate = stampit(Component, {
-  methods: {
-    update(delta) {
-      if (!this.state.position.now.equals(this.state.position.target)) {
-        this.state.position.now.copy(this.state.position.target)
-        this.object.position.copy(this.state.position.now)
-      }
-    }
   }
 })
 
@@ -203,23 +76,57 @@ const MousePointer = stampit(
   HasObject,
   HasSphere,
   HasRing,
-  HasUniqueColor,
-  CopiesUniqueColor,
-  UpdatesPositionFromScreenCoords,
-  AwarenessGetsState
-)
+  // HasUniqueColor,
+  AnimatesPosition,
+  stampit(Component, {
+    props: {
+      permanence: Permanence.TRANSIENT
+    },
 
-const OtherMousePointer = stampit(
-  Entity,
-  HasObject,
-  HasSphere,
-  HasRing,
-  HasUniqueColor,
-  AwarenessSetsState,
-  MousePointerUpdate
-)
+    init() {
+      this.addGoal('uniqcolor', { r: 1.0, g: 1.0, b: 1.0 })
+      
+      this._finder = 
+        FindIntersectionsFromScreenCoords({ stage: this.stage })
+    },
+
+    methods: {
+      setScreenCoords(x, y) {
+        const point = this._finder.getFirstIntersectionPoint(x, y)
+        // console.log('mouse move to point', point)
+        // debugger
+        this.setGoal('p', {
+          x: point.x,
+          y: point.y,
+          z: point.z,
+        })
+        // console.log('position set achieved?', this.goals.p.achieved)
+        // this.goals.p
+      },
+      update(delta) {
+        const uniqueColorGoal = this.goals.uniqcolor
+        if (!uniqueColorGoal.achieved) {
+          const color = uniqueColorGoal.get()
+          this.setRingColor(new THREE.Color(color.r, color.g, color.b))
+          uniqueColorGoal.markAchieved()
+        }
+      }
+    }
+  })
+).setType('mouse')
+
+// const MousePointer = stampit(
+//   MousePointerBase,
+//   CopiesUniqueColor,
+//   UpdatesPositionFromScreenCoords,
+// )
+
+// const OtherMousePointer = stampit(
+//   MousePointerBase,
+//   MousePointerUpdate
+// )
 
 export {
   MousePointer,
-  OtherMousePointer
+  // OtherMousePointer
 }
