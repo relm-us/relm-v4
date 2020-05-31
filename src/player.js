@@ -86,7 +86,8 @@ const FollowsTarget2 = stampit(Component, {
   }
 })
 
-const PlayerBase = stampit(
+
+const Player = stampit(
   Entity,
   HasObject,
   HasOpacity,
@@ -101,28 +102,6 @@ const PlayerBase = stampit(
   // HasUniqueColor,
   // UpdatesLabelToUniqueColor,
   HasMaxSpeed,
-)
-
-// const Player = stampit(
-//   PlayerBase,
-//   CanSetGoal,
-//   FollowsTarget2,
-//   // LocalstoreGetsState,
-//   {
-//     props: {
-//       permanence: Permanence.TRANSIENT
-//     }
-//   }
-// )
-
-// const OtherPlayer = stampit(
-//   PlayerBase,
-//   HasOffscreenIndicator,
-// )
-
-const Player = stampit(
-  PlayerBase, 
-  CanSetGoal,
   // FollowsTarget2,
   HasOffscreenIndicator,
   {

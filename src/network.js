@@ -53,7 +53,9 @@ const Network = stampit(EventEmittable, {
       
       // Start observing before opening connections so that we get a replay of the world state
       // this.observeEntityStates()
-      this.observeGoals()
+      this.entitiesMap.observeDeep((events, t) => {
+        this.onGoalsChanged(events)
+      })
       
       console.log('Opening local database...', cfg.ROOM, params)
       try {
@@ -80,31 +82,6 @@ const Network = stampit(EventEmittable, {
       })
     },
     
-    /**
-     * Adds a stateful entity to the network, to be synced with all clients.
-     * 
-     * @param {Entity} entity 
-     */
-    // setEntity(entity, debug = false) {
-    //   const state = stateToObject(entity.type, entity.state)
-    //   if (debug) {
-    //     console.log('setEntity', entity, state)
-    //   }
-    //   this.setState(entity.uuid, state)
-    // },
-    
-    // getState(uuid) {
-    //   return this.entityStates.get(uuid)
-    // },
-    
-    // setState(uuid, state) {
-    //   if (state) {
-    //     console.log('setting state', uuid, state)
-    //     this.entityStates.set(uuid, state)
-    //   } else {
-    //     console.warn('attempted to add null state to network (not added)', state)
-    //   }
-    // },
 
     remove(uuid) {
       this.entitiesMap.delete(uuid)
@@ -136,7 +113,7 @@ const Network = stampit(EventEmittable, {
         throw Error('stop')
       }
       // debugger
-      const goalsState = entity.goals.toJSON()
+      const goalsState = entity.goalsToJSON()
       // console.log('setTransient', uuid, goalsState)
       this.wsProvider.awareness.setLocalStateField(entity.uuid, goalsState)
     },
@@ -155,20 +132,6 @@ const Network = stampit(EventEmittable, {
         stateMap.set(key, value)
       }
     },
-
-    // setGoalForEntity(entity, goalName, goalState, due = Date.now()) {
-    //   const uuid = entity.uuid
-    //   if (!this.entitiesMap.has(uuid)) {
-    //     this.entitiesMap.set(uuid, new Y.Map())
-    //   }
-    //   const entityMap = this.entitiesMap.get(uuid)
-    //   this.setGoal(entityMap, goalName, goalState, due)
-    // },
-
-    // removeEntity(uuid) {
-    //   this.entityStates.delete(uuid)
-    // },
-
 
     onAwarenessChanged(added) {
       // Note: `clientId` is the yjs-assigned integer for each client.
@@ -214,54 +177,27 @@ const Network = stampit(EventEmittable, {
       }
     },
 
-    // observeEntityStates() {
-    //   this.entityStates.observeDeep((events, t) => {
-    //     for (let event of events) {
-    //       if (event.path.length === 0) {
-    //         event.changes.keys.forEach(({ action }, uuid) => {
-    //           const state = this.entityStates.get(uuid)
-    //           if (action === 'add') {
-    //             console.log('entity added', uuid, state)
-    //             this.emit('add', uuid, state)
-    //           } else if (action === 'delete') {
-    //             console.log('entity deleted', uuid)
-    //             this.emit('remove', uuid)
-    //           } else if (action === 'update') {
-    //             console.log('entity updated', uuid)
-    //             this.emit(`update-${uuid}`, state)
-    //           } else {
-    //             console.warn('action not handled', action, uuid)
-    //           }
-    //         })
-    //       }
-    //     }
-    //   })
-    // },
-
-    observeGoals() {
-      this.entitiesMap.observeDeep((events, t) => {
-        for (let event of events) {
-          if (event.path.length === 0) {
-            event.changes.keys.forEach(({ action }, uuid) => {
-              // console.log(this.entitiesMap, uuid)
-              const goalState = this.entitiesMap.get(uuid).toJSON()
-              if (action === 'add') {
-                console.log('goal added', uuid, goalState)
-                this.emit('add', uuid, goalState)
-              } else if (action === 'delete') {
-                console.log('goal deleted', uuid)
-                this.emit('remove', uuid)
-              } else if (action === 'update') {
-                console.log('goal updated', uuid)
-                this.emit(`update-${uuid}`, state)
-              } else {
-                console.warn('action not handled', action, uuid)
-              }
-            })
-          }
+    onGoalsChanged(events) {
+      for (let event of events) {
+        if (event.path.length === 0) {
+          event.changes.keys.forEach(({ action }, uuid) => {
+            // console.log(this.entitiesMap, uuid)
+            const goalState = this.entitiesMap.get(uuid).toJSON()
+            if (action === 'add') {
+              console.log('goal added', uuid, goalState)
+              this.emit('add', uuid, goalState)
+            } else if (action === 'delete') {
+              console.log('goal deleted', uuid)
+              this.emit('remove', uuid)
+            } else if (action === 'update') {
+              console.log('goal updated', uuid)
+              this.emit(`update-${uuid}`, state)
+            } else {
+              console.warn('action not handled', action, uuid)
+            }
+          })
         }
-      })
-      
+      }
     }
 
   }

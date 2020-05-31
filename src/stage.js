@@ -77,8 +77,8 @@ const Stage = stampit(
         throw new Error('Entity must have uuid', entity)
       }
       if (entity.uuid in this.entities) {
-        console.error(`Shouldn't need to add entity ${entity.uuid}, already exists on stage.` +
-          'Existing:', this.entities[entity.uuid], 'New:', entity)
+        console.error(`Entity already on stage, skipping 'add'`, entity)
+        return
       }
       this.entities[entity.uuid] = entity
       if (typeof entity.setup === 'function') {

@@ -193,37 +193,6 @@ const Goal = stampit({
 })
 
 
-const GoalsMap = (type) => {
-  if (!type || typeof type !== 'string') {
-    console.error('GoalsMap must have type', type)
-  }
-  const proto = {
-    toJSON: function() {
-      const obj = { '@type': type }
-      for (let [goalName, goal] of Object.entries(this)) {
-        obj[goalName] = goal.toJSON()
-      }
-      return obj
-    },
-
-    fromJSON: function(obj) {
-      if (obj['@type'] === type) {
-        delete obj['@type']
-        for (let [goalName, goalState] of Object.entries(obj)) {
-          const goal = this[goalName]
-          if (goal) {
-            goal.fromJSON(goalState)
-          }
-        }
-      } else {
-        console.warn("Won't update goals, type differs:", obj['@type'], type)
-      }
-    }
-  }
-  return Object.create(proto)
-}
-
-
 const GoalOriented = stampit(Component, {
   props: {
     permanence: Permanence.PERMANENT
@@ -236,7 +205,7 @@ const GoalOriented = stampit(Component, {
   methods: {
     addGoal(name, defaults, { equals = null, to = null, from = null } = {}) {
       if (!this.goals) {
-        this.goals = GoalsMap(this.type)
+        this.goals = {}
       }
       if (name in this.goals) {
         console.error('Goal previously added to entity', name, this)
@@ -268,20 +237,32 @@ const GoalOriented = stampit(Component, {
         console.warn("Can't setGoal, goal not found", goalName, this.goals)
       }
     },
+    
+    goalsToJSON() {
+      const obj = { '@type': this.type }
+      for (let [goalName, goal] of Object.entries(this.goals)) {
+        obj[goalName] = goal.toJSON()
+      }
+      return obj
+    },
+    
+    goalsFromJSON(obj) {
+      if (obj['@type'] === this.type) {
+        for (let [goalName, goalState] of Object.entries(obj)) {
+          if (goalName === '@type') continue
+          const goal = this.goals[goalName]
+          if (goal) {
+            goal.fromJSON(goalState)
+          }
+        }
+      } else {
+        console.trace("Won't update goals, type differs:", obj['@type'], type)
+      }
+    },
 
     _updateGoals(state) {
       // console.log('_updateGoals', state['@type'], state, this)
-      this.goals.fromJSON(state)
-      // state.forEach((stateMap, goalName) => {
-      //   if (goalName === '@type') return
-      //   const goal = this.goals[goalName]
-      //   if (goal) {
-      //     const state = stateMap.toJSON()
-      //     const due = stateMap.get('@due')
-      //     delete state['@due']
-      //     goal.set(state, due)
-      //   }
-      // })
+      this.goalsFromJSON(state)
     },
   }
 })

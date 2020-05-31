@@ -78,7 +78,7 @@ const start = async () => {
           console.log(`Adding entity '${entity.type}' to stage`, entity)
           stage.add(entity)
         }
-        entity.goals.fromJSON(state)
+        entity.goalsFromJSON(state)
       } else {
         const info = (state && state.toJSON) ? state.toJSON() : state
         console.warn("Can't add entity to stage (entity has no type)", uuid, info)
@@ -193,7 +193,11 @@ const start = async () => {
     
     player.setThought(null)
   })
-  stage.add(player)
+  if (player.uuid in stage.entities) {
+    console.log('not adding player to stage, already there')
+  } else {
+    stage.add(player)
+  }
   
   player.videoBubble.object.createDomElement()
   player.videoBubble.object.on('mute', muteAudio)
@@ -695,7 +699,7 @@ const start = async () => {
       const avatarOptions = avatarOptionsOfGender(gender)
       console.log('player set mesh', avatarOptions[index].avatarId)
       player.setGoal('animMesh', { v: avatarOptions[index].avatarId })
-      console.log('player goals', player.goals.toJSON())
+      console.log('player goals', player.goalsToJSON())
       // network.setGoalForEntity(player, 'animMesh', {v: avatarOptions[index].avatarId})
       avatarSelection.classList.add('hide')
       focusOnGame()
