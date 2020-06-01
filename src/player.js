@@ -14,11 +14,11 @@ import { HasVideoBubble } from './components/has_video_bubble.js'
 import { HasOpacity } from './components/has_opacity.js'
 import { HasOffscreenIndicator } from './components/has_offscreen_indicator.js'
 import { LocalstoreGetsState } from './localstore_gets_state.js'
-import { CanAddGoal, CanSetGoal, Permanence } from './goals/goal.js'
+import { GoalOriented, Permanence } from './goals/goal.js'
 import { AnimatesPosition } from './components/animates_position.js'
 import { AnimatesRotation } from './components/animates_rotation.js'
 
-const HasMaxSpeed = stampit(Component, CanAddGoal, {
+const HasMaxSpeed = stampit(Component, GoalOriented, {
   init() {
     this.addGoal('speed', { max: 250 })
   },
@@ -49,6 +49,7 @@ const FollowsTarget2 = stampit(Component, {
     addPosition(vector) {
       this.followAdd.add(vector)
       // console.log('addPosition', this.uuid, vector, this.followAdd)
+      // console.log('FT2.addPosition', this)
     },
 
     update(delta) {
@@ -81,7 +82,10 @@ const FollowsTarget2 = stampit(Component, {
       }
       // console.log('before reset followAdd', this.followAdd)
       this.followAdd.set(0, 0, 0)
+      // this.followAdd.blah = true
+      // console.log('FT2.update', this)
       // console.log('after reset followAdd', this.uuid, this.followAdd)
+      // if (Math.random() > 0.9) throw Error('rand')
     }
   }
 })
@@ -102,20 +106,19 @@ const Player = stampit(
   // HasUniqueColor,
   // UpdatesLabelToUniqueColor,
   HasMaxSpeed,
-  // FollowsTarget2,
+  FollowsTarget2,
   HasOffscreenIndicator,
   {
     props: {
       permanence: Permanence.TRANSIENT
     },
 
-    init() {
-      this.videoBubble.offset = new THREE.Vector3(0, 190, 0)
-    }
+    // init() {
+    //   this.videoBubble.offset = new THREE.Vector3(0, 190, 0)
+    // }
   }
 ).setType('player')
 
 export {
   Player,
-  // OtherPlayer
 }

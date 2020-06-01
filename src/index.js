@@ -69,15 +69,7 @@ const start = async () => {
     const type = state['@type']
     if (type) {
       if (type) {
-        let entity
-        if (uuid in stage.entities) {
-          entity = stage.entities[uuid]
-        } else {
-          const CreateEntity = Network.registeredTypes[type]
-          entity = CreateEntity({ uuid })
-          console.log(`Adding entity '${entity.type}' to stage`, entity)
-          stage.add(entity)
-        }
+        const entity = stage.findOrCreateEntity(type, uuid)
         entity.goalsFromJSON(state)
       } else {
         const info = (state && state.toJSON) ? state.toJSON() : state
@@ -144,7 +136,7 @@ const start = async () => {
   const sortByZ = (a, b) => (a.object.position.z - b.object.position.z)
   
   // The player!
-  const player = window.player = Player({ uuid: playerId })
+  const player = window.player = stage.findOrCreateEntity('player', playerId)
   player.setGoal('label', { text: guestNameFromPlayerId(playerId) })
 
   // const player = window.player = Player({

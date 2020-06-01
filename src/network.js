@@ -32,17 +32,8 @@ const Network = stampit(EventEmittable, {
     
     // For now, keep goalnet state separate
     this.entitiesMap = this.ydoc.getMap('goals')
-    
-    this.registeredTypes = {}
   },
   
-  statics: {
-    registeredTypes: {},
-    registerType(type, stamp) {
-      this.registeredTypes[type] = stamp
-    }
-  },
-
   methods: {
     isReady() {
       return !!this.idbProvider && !!this.wsProvider

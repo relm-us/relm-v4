@@ -45,6 +45,14 @@ const Stage = stampit(
      */
     editorMode: false,
   },
+  
+  statics: {
+    registeredTypes: {},
+    registerType(type, stamp) {
+      this.registeredTypes[type] = stamp
+    }
+  },
+
 
   init({ width, height }) {
     this.entities = {}
@@ -83,6 +91,27 @@ const Stage = stampit(
       this.entities[entity.uuid] = entity
       if (typeof entity.setup === 'function') {
         entity.setup()
+      }
+    },
+    
+    findOrCreateEntity(type, uuid) {
+      let entity = this.entities[uuid]
+      if (entity) {
+        if (entity.type === type) {
+          return entity
+        } else {
+          console.error("Entity found, but does not match type", uuid, type, entity.type)
+        }
+      } else {
+        const CreateEntity = Stage.registeredTypes[type]
+        if (CreateEntity) {
+          entity = CreateEntity({ uuid })
+          console.log(`Adding entity '${entity.type}' to stage`, entity)
+          this.add(entity)
+          return entity
+        } else {
+          console.error(`Can't create entity of type '${type}': type not registered`)
+        }
       }
     },
 

@@ -1,12 +1,12 @@
 import stampit from 'stampit'
 
-import { Network } from './network.js'
+import { Stage } from './stage.js'
 
 const Typed = stampit({
   statics: {
     setType(type) {
       const newStamp = this.conf({ type })
-      Network.registerType(type, newStamp)
+      Stage.registerType(type, newStamp)
       return newStamp
     }
   },

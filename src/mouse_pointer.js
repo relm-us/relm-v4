@@ -6,8 +6,7 @@ import { HasObject } from './components/has_object.js'
 // import { HasUniqueColor, CopiesUniqueColor } from './components/has_unique_color.js'
 import { FindIntersectionsFromScreenCoords } from './find_intersections_from_screen_coords.js'
 import { AnimatesPosition } from './components/animates_position.js'
-import { Permanence } from './goals/goal.js'
-
+import { GoalOriented, Permanence } from './goals/goal.js'
 
 
 const HasSphere = stampit(Component, {
@@ -34,6 +33,7 @@ const HasSphere = stampit(Component, {
     },
   }
 })
+
 
 const HasRing = stampit(Component, {
   methods: {
@@ -71,13 +71,14 @@ const HasRing = stampit(Component, {
   }
 })
 
+
 const MousePointer = stampit(
   Entity,
   HasObject,
   HasSphere,
   HasRing,
   // HasUniqueColor,
-  AnimatesPosition,
+  GoalOriented,
   stampit(Component, {
     props: {
       permanence: Permanence.TRANSIENT
@@ -85,6 +86,7 @@ const MousePointer = stampit(
 
     init() {
       this.addGoal('uniqcolor', { r: 1.0, g: 1.0, b: 1.0 })
+      this.addGoal('p', {x: 0.0, y: 0.0, z: 0.0 })
       
       this._finder = 
         FindIntersectionsFromScreenCoords({ stage: this.stage })
@@ -96,13 +98,14 @@ const MousePointer = stampit(
         // console.log('mouse move to point', point)
         // debugger
         this.setGoal('p', {
-          x: point.x,
-          y: point.y,
-          z: point.z,
+          x: point.x - 3,
+          y: point.y + 10,
+          z: point.z + 10,
         })
         // console.log('position set achieved?', this.goals.p.achieved)
         // this.goals.p
       },
+      
       update(delta) {
         const uniqueColorGoal = this.goals.uniqcolor
         if (!uniqueColorGoal.achieved) {
@@ -110,23 +113,17 @@ const MousePointer = stampit(
           this.setRingColor(new THREE.Color(color.r, color.g, color.b))
           uniqueColorGoal.markAchieved()
         }
+        
+        const positionGoal = this.goals.p
+        if (!positionGoal.achieved) {
+          this.object.position.copy(positionGoal.get())
+          positionGoal.markAchieved()
+        }
       }
     }
   })
 ).setType('mouse')
 
-// const MousePointer = stampit(
-//   MousePointerBase,
-//   CopiesUniqueColor,
-//   UpdatesPositionFromScreenCoords,
-// )
-
-// const OtherMousePointer = stampit(
-//   MousePointerBase,
-//   MousePointerUpdate
-// )
-
 export {
   MousePointer,
-  // OtherMousePointer
 }
