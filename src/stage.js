@@ -63,6 +63,7 @@ const Stage = stampit(
     this.updateFns = new Map()
     this.postrenderFns = new Map()
     this.gridSnap = null
+
     if (!width || !height) {
       throw new Error('State requires width and height')
     } else {

@@ -74,7 +74,7 @@ const Goal = stampit({
     /**
      * The goal's states. Each state is a priority queue, allowing us to grab the "next" value quickly.
      *
-     * @type {Map<string, FlatQueue>}
+     * @type {FlatQueue}
      */
     this.states = new FlatQueue()
     
@@ -186,8 +186,9 @@ const Goal = stampit({
 
     fromJSON(obj, now = Date.now()) {
       const due = obj['@due']
-      delete obj['@due']
-      this.set(obj, due, now)
+      const object = Object.assign({}, obj)
+      delete object['@due']
+      this.set(object, due, now)
     }
   }
 })

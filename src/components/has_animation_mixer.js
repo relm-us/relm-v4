@@ -132,13 +132,21 @@ const HasAnimationMixer = stampit(Component, {
       }
       
       const animSpeedGoal = this.goals.animSpd
-      if (!animSpeedGoal.achieved) {
+      // if (!animSpeedGoal.achieved) {
+      //   const speed = animSpeedGoal.get().v
+      //   if (this.mixer) {
+      //     // TODO: transition to new speed
+      //     console.log('set animSppedGoal', speed)
+      //     this.mixer.update(delta * speed)
+      //     animSpeedGoal.markAchieved()
+      //   }
+      // }
+      
+      if (this.mixer) {
         const speed = animSpeedGoal.get().v
-        if (this.mixer) {
-          // TODO: transition to new speed
-          this.mixer.update(delta * speed)
-          animSpeedGoal.markAchieved()
-        }
+        // TODO: transition to new speed
+        // console.log('mixer update', delta * speed)
+        this.mixer.update(delta * speed)
       }
     },
 

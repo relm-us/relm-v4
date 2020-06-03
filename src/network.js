@@ -103,10 +103,12 @@ const Network = stampit(EventEmittable, {
         console.error("Can't set entity goals on network: entity.type not set", entity)
         throw Error('stop')
       }
-      // debugger
       const goalsState = entity.goalsToJSON()
-      // console.log('setTransient', uuid, goalsState)
-      this.wsProvider.awareness.setLocalStateField(entity.uuid, goalsState)
+      this.setTransientState(entity.uuid, goalsState)
+    },
+    
+    setTransientState(uuid, goalsState) {
+      this.wsProvider.awareness.setLocalStateField(uuid, goalsState)
     },
     
     setGoalPermanent(entityMap, goalName, state, due = Date.now()) {

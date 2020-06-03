@@ -14,7 +14,7 @@ import { Network } from './network.js'
 import { stage, network } from './entity.js'
 import { KeyboardController } from './keyboard_controller.js'
 import { CameraController } from './camera_controller.js'
-import { localstoreRestoreState } from './localstore_gets_state.js'
+import { localstoreRestore } from './localstore_gets_state.js'
 import { MousePointer } from './mouse_pointer.js'
 import { Decoration } from './decoration.js'
 import { Teleportal } from './teleportal.js'
@@ -55,28 +55,77 @@ Dropzone.autoDiscover = false
 // Enable three.js cache for textures and meshes
 THREE.Cache.enabled = true
 
-// DecorationNew()
-
 const security = Security()
 
+let player
+let mouse
+
+const initializePlayer = (entity) => {
+  player = entity
+}
+
+const playerExists = async () => {
+  return new Promise((resolve) => {
+    setInterval(() => {
+      if (player) {
+        resolve()
+      }
+    }, 10)
+  })
+}
+
+const defaultPlayerState = (uuid) => {
+  return {
+    "@type": "player",
+    "label": {
+      "text": guestNameFromPlayerId(uuid),
+      "@due":1591157877357
+    },
+    "p": {
+      "x":0,
+      "y":0,
+      "z":0,
+      "@due":1591157877353
+    },
+    "r": {
+      "x":0,
+      "y":0,
+      "z":0,
+      "@due":1591157877353
+    },
+    "animMesh":{
+      "v": "fem-D-armature",
+      "@due":1591157877353
+    },
+    "animSpd":{
+      "v":1,
+      "@due":1591157877353
+    },
+    "speed":{
+      "max":250,
+      "@due":1591157877353
+    }
+  }
+}
 
 const start = async () => {
   const playerId = await security.getOrCreateId()
   
   // Initialize network first so that entities can send their initial state
   // even before we've connected to server (or eventually, peers)
-  network.on('add', (uuid, state) => {
+  network.on('add', async (uuid, state) => {
     const type = state['@type']
     if (type) {
-      if (type) {
-        const entity = stage.findOrCreateEntity(type, uuid)
-        entity.goalsFromJSON(state)
-      } else {
-        const info = (state && state.toJSON) ? state.toJSON() : state
-        console.warn("Can't add entity to stage (entity has no type)", uuid, info)
+      const entity = stage.findOrCreateEntity(type, uuid)
+      console.log('entity', entity)
+      entity.goalsFromJSON(state)
+      // Special case: player gets bootstrapped
+      if (uuid === playerId) {
+        initializePlayer(entity)
       }
     } else {
-      console.warn("Can't get @type from new entity", uuid, state)
+      const info = (state && state.toJSON) ? state.toJSON() : state
+      console.warn("Can't add entity to stage (entity has no type)", uuid, info)
     }
   })
   
@@ -136,8 +185,8 @@ const start = async () => {
   const sortByZ = (a, b) => (a.object.position.z - b.object.position.z)
   
   // The player!
-  const player = window.player = stage.findOrCreateEntity('player', playerId)
-  player.setGoal('label', { text: guestNameFromPlayerId(playerId) })
+  // const player = window.player = await stage.findOrCreateEntity('player', playerId)
+  // player.setGoal('label', { text: guestNameFromPlayerId(playerId) })
 
   // const player = window.player = Player({
   //   uuid: playerId,
@@ -156,44 +205,43 @@ const start = async () => {
   //     player.setLabel(newName)
   //   }
   // })
-  if (!localstoreRestoreState('player', player)) {
+  // if (!player.localstoreRestore()) {
     // First-time users can choose their character
-    document.getElementById('avatars').classList.remove('hide')
-  }
-  if (cfg.LANDING_COORDS) {
-    player.state.position.target.copy(cfg.LANDING_COORDS)
-  }
+    // document.getElementById('avatars').classList.remove('hide')
+  // }
+  // if (cfg.LANDING_COORDS) {
+    // player.state.position.target.copy(cfg.LANDING_COORDS)
+  // }
   // Warp the player to their 'saved' location, if any
   // player.warpToPosition(player.state.position.target)
   // player.goals.p.set()
   // Restore to fully opaque, in case we were saved in a translucent state
   // player.state.opacity.target = 1.0
-  player.on('thoughtBubbleAction', (thought) => {
-    mostRecentlyCreatedObjectId = uuidv4()
-    const position = Object.assign({}, player.state.position.now)
-    const diamond = InteractionDiamond({
-      uuid: mostRecentlyCreatedObjectId,
-      type: 'diamond',
-      link: thought,
-      position,
-    })
-    diamond.object.position.copy(position)
-    // Make it about chest-height by default
-    diamond.state.position.target.y += 100
-    diamond.state.position.target.x += 100
-    network.setEntity(diamond)
+  // player.on('thoughtBubbleAction', (thought) => {
+  //   mostRecentlyCreatedObjectId = uuidv4()
+  //   const position = Object.assign({}, player.state.position.now)
+  //   const diamond = InteractionDiamond({
+  //     uuid: mostRecentlyCreatedObjectId,
+  //     type: 'diamond',
+  //     link: thought,
+  //     position,
+  //   })
+  //   diamond.object.position.copy(position)
+  //   // Make it about chest-height by default
+  //   diamond.state.position.target.y += 100
+  //   diamond.state.position.target.x += 100
+  //   network.setEntity(diamond)
     
-    player.setThought(null)
-  })
-  if (player.uuid in stage.entities) {
-    console.log('not adding player to stage, already there')
-  } else {
-    stage.add(player)
-  }
+  //   player.setThought(null)
+  // })
+  // await stage.findOrCreateEntity('player', playerId)
   
-  player.videoBubble.object.createDomElement()
-  player.videoBubble.object.on('mute', muteAudio)
-  player.videoBubble.object.on('unmute', unmuteAudio)
+  // player.videoBubble.object.createDomElement()
+  // player.videoBubble.object.on('mute', muteAudio)
+  // player.videoBubble.object.on('unmute', unmuteAudio)
+  
+  network.setTransientState(playerId, localstoreRestore(playerId) || defaultPlayerState(playerId))
+  await playerExists()
   
   // Perform several calculations once per game loop:
   // 1. (occasionally) Refresh videoBubble diameter
@@ -355,13 +403,8 @@ const start = async () => {
   })
   stage.add(padController)
   
-  const mousePointer = window.mousePointer = MousePointer({
-    // type: 'mouse',
-    // awarenessUpdateFrequency: 2,
-    // colorSource: player
-  })
+  const mousePointer = window.mousePointer = await stage.findOrCreateEntity('mouse')
   console.log("Created MousePointer", mousePointer.uuid, mousePointer)
-  stage.add(mousePointer)
   
   let dragLock = false
   let dragStart = false

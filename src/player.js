@@ -36,56 +36,65 @@ const HasMaxSpeed = stampit(Component, GoalOriented, {
   }
 })
 
-const FollowsTarget2 = stampit(Component, {
+const FOLLOW_TARGET_DISTANCE_AHEAD = 100.0
+const FOLLOW_TARGET_SUFFICIENT_TIME = 2000.0
+
+const FollowsTarget2 = stampit(Component, GoalOriented, {
   init() {
-    this.distanceToTarget = 0.0
+    // this.addGoal('p', { x: 0.0, y: 0.0, z: 0.0 })
+
     this.closeEnough = 1.0
     this._source = new THREE.Object3D()
     this._target = new THREE.Object3D()
-    this.followAdd = new THREE.Vector3()
+    this._goalPos = new THREE.Object3D()
   },
 
   methods: {
     addPosition(vector) {
-      this.followAdd.add(vector)
-      // console.log('addPosition', this.uuid, vector, this.followAdd)
-      // console.log('FT2.addPosition', this)
+      this._target.position.add(vector)
+    },
+    
+    getDistanceToTarget() {
+      this._goalPos.position.copy(this.goals.p.get())
+      const distance = this.object.position.distanceTo(this._goalPos.position)
+      return distance
     },
 
     update(delta) {
-      const pos = this.goals.p.get()
-      this._target.position.set(pos.x, pos.y, pos.z)
-      this.distanceToTarget = this.object.position.distanceTo(this._target.position)
-      // console.log('FollowsTarget2.update', this.followAdd)
+      this._goalPos.position.copy(this.goals.p.get())
       
-      if (this.distanceToTarget > this.closeEnough) {
-        this._source.position.copy(this.object.position)
-        this._source.rotation.copy(this.object.rotation)
-        this._source.lookAt(this._target.position)
+      this._source.position.copy(this.object.position)
+      this._source.rotation.copy(this.object.rotation)
+      
+      this._target.position.normalize()
+      this._target.position.multiplyScalar(FOLLOW_TARGET_DISTANCE_AHEAD)
+      this._target.position.add(this._source.position)
+      
+      const dueAt = Date.now() + FOLLOW_TARGET_SUFFICIENT_TIME
+      const goalToTargetDist = this._goalPos.position.distanceTo(this._target.position)
+      if (goalToTargetDist > FOLLOW_TARGET_DISTANCE_AHEAD/2) {
+        this.setGoal('p', {
+          x: this._target.position.x,
+          y: this._target.position.y,
+          z: this._target.position.z,
+        }, dueAt)
+        
       }
       
-      this.followAdd.normalize()
-      this.followAdd.multiplyScalar(100.0)
-      this.followAdd.add(this.object.position)
-      const dueAt = Date.now() + 1000
-      this.setGoal('p', {
-        x: this.followAdd.x,
-        y: this.followAdd.y,
-        z: this.followAdd.z,
-      }, dueAt)
-      if (this.distanceToTarget > this.closeEnough) {
+      this._source.lookAt(this._target.position)
+      // const r = this.goals.r.get()
+      // this._goalPos.rotation.set(r.x, r.y, r.z)
+      const angleDelta = Math.abs(this._source.quaternion.angleTo(this._target.quaternion))
+      // console.log('angleDelta', angleDelta)
+      if(angleDelta > Math.PI/32) {
         this.setGoal('r', {
           x: this._source.rotation.x,
           y: this._source.rotation.y,
           z: this._source.rotation.z,
         }, dueAt)
       }
-      // console.log('before reset followAdd', this.followAdd)
-      this.followAdd.set(0, 0, 0)
-      // this.followAdd.blah = true
-      // console.log('FT2.update', this)
-      // console.log('after reset followAdd', this.uuid, this.followAdd)
-      // if (Math.random() > 0.9) throw Error('rand')
+      
+      this._target.position.set(0, 0, 0)
     }
   }
 })
@@ -98,7 +107,6 @@ const Player = stampit(
   HasLabel,
   HasVideoBubble,
   HasThoughtBubble,
-  // FollowsTarget,
   AnimatesPosition,
   AnimatesRotation,
   HasAnimationMixer,
@@ -107,15 +115,16 @@ const Player = stampit(
   // UpdatesLabelToUniqueColor,
   HasMaxSpeed,
   FollowsTarget2,
-  HasOffscreenIndicator,
+  // HasOffscreenIndicator,
+  LocalstoreGetsState,
   {
     props: {
       permanence: Permanence.TRANSIENT
     },
 
-    // init() {
-    //   this.videoBubble.offset = new THREE.Vector3(0, 190, 0)
-    // }
+    init() {
+      this.videoBubble.offset = new THREE.Vector3(0, 190, 0)
+    }
   }
 ).setType('player')
 

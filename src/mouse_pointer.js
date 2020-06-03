@@ -95,15 +95,15 @@ const MousePointer = stampit(
     methods: {
       setScreenCoords(x, y) {
         const point = this._finder.getFirstIntersectionPoint(x, y)
-        // console.log('mouse move to point', point)
-        // debugger
-        this.setGoal('p', {
-          x: point.x - 3,
-          y: point.y + 10,
-          z: point.z + 10,
-        })
-        // console.log('position set achieved?', this.goals.p.achieved)
-        // this.goals.p
+        if (point) {
+          // As long as mouse intersected with something (even the ground), set the new goal
+          // console.log('setting p', this.uuid)
+          this.setGoal('p', {
+            x: point.x - 3,
+            y: point.y + 10,
+            z: point.z + 10,
+          })
+        }
       },
       
       update(delta) {

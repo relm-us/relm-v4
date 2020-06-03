@@ -16,12 +16,11 @@ const AnimatesRotation = stampit(Component, GoalOriented, {
     update(_delta) {
       const rotationGoal = this.goals.r;
       if (!rotationGoal.achieved) {
+        const r = rotationGoal.get()
         if (rotationGoal.isPastDue()) {
-          const r = rotationGoal.get()
           this.object.rotation.set(r.x, r.y, r.z)
           rotationGoal.markAchieved()
         } else {
-          const r = rotationGoal.get()
           this._rotation.set(r.x, r.y, r.z)
           this._quaternion.setFromEuler(this._rotation)
           this.object.quaternion.slerp(this._quaternion, 0.1)
