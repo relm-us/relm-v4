@@ -10,6 +10,9 @@ export default function config(location) {
   if (location.origin === 'https://relm.us') {
     SERVER_YJS_URL = 'wss://y.relm.us'
     SERVER_UPLOAD_URL = 'https://y.relm.us/asset'
+  } else if (location.origin === 'https://staging.relm.us') {
+    SERVER_YJS_URL = 'wss://y-staging.relm.us'
+    SERVER_UPLOAD_URL = 'https://y-staging.relm.us/asset'
   } else {
     SERVER_YJS_URL = `ws://${location.hostname}:1235`
     SERVER_UPLOAD_URL = `http://${location.hostname}:1235/asset`
