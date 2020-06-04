@@ -61,7 +61,7 @@ let player
 let mouse
 
 const initializePlayer = (entity) => {
-  player = entity
+  player = window.player = entity
 }
 
 const playerExists = async () => {

@@ -56,10 +56,19 @@ function checkOverflow(el)
   return isOverflowing
 }
 
+// Compares two js objects and returns true if all keys and values are equal
+function shallowCompare(obj1, obj2) {
+  return Object.keys(obj1).length === Object.keys(obj2).length &&
+    Object.keys(obj1).every(key => 
+      obj2.hasOwnProperty(key) && obj1[key] === obj2[key]
+    )
+}
+
 export {
   uuidv4,
   sumString,
   getRandomInt,
   coinToss,
-  checkOverflow
+  checkOverflow,
+  shallowCompare,
 }

@@ -144,8 +144,6 @@ const HasAnimationMixer = stampit(Component, {
       
       if (this.mixer) {
         const speed = animSpeedGoal.get().v
-        // TODO: transition to new speed
-        // console.log('mixer update', delta * speed)
         this.mixer.update(delta * speed)
       }
     },

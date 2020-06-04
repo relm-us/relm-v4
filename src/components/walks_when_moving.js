@@ -14,12 +14,12 @@ const WalksWhenMoving = stampit(Component, {
     },
 
     update(delta) {
-      if (this.getDistanceToTarget() > DISTANCE_CLOSE_ENOUGH) {
+      const dist = this.getDistanceToTarget()
+      if (dist > DISTANCE_CLOSE_ENOUGH) {
         this.walkingStopOnce = false
         if (!this.walkingStartOnce) {
           this.walkingStartOnce = true
           if (!this.clips.walking.isRunning()) {
-          console.log('play walking clip')
             this.clips.walking.play()
           }
           this.clips.walking.paused = false

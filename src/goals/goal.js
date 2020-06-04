@@ -3,6 +3,7 @@ import stampit from 'stampit'
 
 import FlatQueue from 'flatqueue'
 import { Component } from '../components/component.js'
+import { shallowCompare } from '../util.js'
 
 
 const Equal = {
@@ -28,9 +29,7 @@ const Equal = {
   },
   
   Compare: () => {
-    return (a, b) => {
-      return a == b
-    }
+    return shallowCompare
   }
 }
 
@@ -95,11 +94,11 @@ const Goal = stampit({
     /**
      * A function that tests if a this goal is "equal" to another value or set of values. For instance,
      * if this goal is a position with components x, y, z, then the equalityTest would be a distance
-     * calculation with a < threshold.
+     * calculation with a < threshold. Defaults to a shallow comparison of two objects.
      * 
      * @type {Function}
      */
-    this.equalityTest = equalityTest
+    this.equalityTest = equalityTest || Equal.Compare()
     
     /**
      * Keeps track of whether any of this goal's values have been achieved. Values also individually hold
@@ -148,8 +147,12 @@ const Goal = stampit({
      */
     set(state, due = Date.now(), now = Date.now()) {
       this.setDue(due)
-      this.achieved = false
-      this.states.push(state, now)
+      // We only set the value if it differs from the 'current' value. Otherwise, we'll
+      // churn on unachieved goals.
+      if (!this.equals(state)) {
+        this.achieved = false
+        this.states.push(state, now)
+      }
     },
     
     equals(otherValue, now = Date.now()) {
