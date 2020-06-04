@@ -82,11 +82,6 @@ const FollowsTarget2 = stampit(Component, GoalOriented, {
       }
       
       this._source.lookAt(this._target.position)
-      // const r = this.goals.r.get()
-      // this._goalPos.rotation.set(r.x, r.y, r.z)
-      // const angleDelta = Math.abs(this._source.quaternion.angleTo(this._target.quaternion))
-      // console.log('angleDelta', angleDelta)
-      // if(angleDelta > Math.PI/32) {
       const dist = this._source.position.distanceTo(this._target.position)
       if (dist > this.closeEnough) {
         this.setGoal('r', {
