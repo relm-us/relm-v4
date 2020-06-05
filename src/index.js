@@ -14,6 +14,7 @@ import { Network } from './network.js'
 import { stage, network } from './entity.js'
 import { KeyboardController } from './keyboard_controller.js'
 import { CameraController } from './camera_controller.js'
+import { FindIntersectionsFromScreenCoords } from './find_intersections_from_screen_coords.js'
 import { localstoreRestore } from './localstore_gets_state.js'
 import { MousePointer } from './mouse_pointer.js'
 import { Decoration } from './decoration.js'
@@ -45,6 +46,7 @@ const GLTF_FILETYPE_RE = /\.(gltf|glb)$/
 
 const cfg = config(window.location)
 const decorationLayerThickness = 0.01
+const intersectionFinder = FindIntersectionsFromScreenCoords({ stage })
 let previousMousedownIndex = 0
 let decorationLayer = 0
 let mostRecentlyCreatedObjectId = null
@@ -58,16 +60,23 @@ THREE.Cache.enabled = true
 const security = Security()
 
 let player
-let mouse
+let mousePointer
 
-const initializePlayer = (entity) => {
-  player = window.player = entity
-}
 
 const playerExists = async () => {
   return new Promise((resolve) => {
     setInterval(() => {
       if (player) {
+        resolve()
+      }
+    }, 10)
+  })
+}
+
+const mousePointerExists = async () => {
+  return new Promise((resolve) => {
+    setInterval(() => {
+      if (mousePointer) {
         resolve()
       }
     }, 10)
@@ -108,6 +117,24 @@ const defaultPlayerState = (uuid) => {
   }
 }
 
+const defaultMousePointerState = (uuid) => {
+  return {
+    "@type": "mouse",
+    "uniqcolor": {
+      "r": 1,
+      "g": 1,
+      "b": 1,
+      "@due": 1591157877353
+    },
+    "p": {
+      "x": 1,
+      "y": 1,
+      "z": 1,
+      "@due": 1591157877353
+    },
+  }
+}
+
 const start = async () => {
   const playerId = await security.getOrCreateId()
   
@@ -121,7 +148,9 @@ const start = async () => {
       entity.goalsFromJSON(state)
       // Special case: player gets bootstrapped
       if (uuid === playerId) {
-        initializePlayer(entity)
+        player = window.player = entity
+      } else if (entity.type === 'mouse' && !mousePointer) {
+        mousePointer = window.mousePointer = entity
       }
     } else {
       const info = (state && state.toJSON) ? state.toJSON() : state
@@ -243,6 +272,10 @@ const start = async () => {
   network.setTransientState(playerId, localstoreRestore(playerId) || defaultPlayerState(playerId))
   await playerExists()
   
+  const mouseId = uuidv4()
+  network.setTransientState(mouseId, defaultMousePointerState(mouseId))
+  await mousePointerExists()
+  
   // Perform several calculations once per game loop:
   // 1. (occasionally) Refresh videoBubble diameter
   // 2. Calculate centroid of all players on stage
@@ -315,25 +348,51 @@ const start = async () => {
     decorationLayer += decorationLayerThickness
     // Add the decoration to the network so everyone can see it
     const url = cfg.SERVER_UPLOAD_URL + '/' + response.file
-    mostRecentlyCreatedObjectId = uuidv4()
-    console.log('mostRecentlyCreatedObjectId', mostRecentlyCreatedObjectId)
+    // mostRecentlyCreatedObjectId = uuidv4()
+    // console.log('mostRecentlyCreatedObjectId', mostRecentlyCreatedObjectId)
     
     if (response.file.match(IMAGE_FILETYPE_RE)) {
-      network.setState(mostRecentlyCreatedObjectId, {
-        type: 'decoration',
-        position: {
-          x: player.state.position.now.x,
-          y: player.state.position.now.y + decorationLayer, // a little above the ground
-          z: player.state.position.now.z,
+      const due = Date.now()
+      network.setPermanentState(uuidv4(), {
+        '@type': 'decoration',
+        'p': {
+          'x': player.object.position.x,
+          'y': player.object.position.y,
+          'z': player.object.position.z,
+          '@due': due,
         },
-        asset: {
-          id: response.id,
-          url: url,
+        'r': {
+          'x': 0,
+          'y': 0,
+          'z': 0,
+          '@due': due,
         },
-        speed: 500,
-        imageScale: 1.0,
-        orientation: 0,
+        's': {
+          'x': 1,
+          'y': 1,
+          'z': 1,
+          '@due': due,
+        },
+        'asset': {
+          url,
+          '@due': due,
+        },
       })
+      // network.setState(mostRecentlyCreatedObjectId, {
+      //   type: 'decoration',
+      //   position: {
+      //     x: player.state.position.now.x,
+      //     y: player.state.position.now.y + decorationLayer, // a little above the ground
+      //     z: player.state.position.now.z,
+      //   },
+      //   asset: {
+      //     id: response.id,
+      //     url: url,
+      //   },
+      //   speed: 500,
+      //   imageScale: 1.0,
+      //   orientation: 0,
+      // })
     } else if (response.file.match(GLTF_FILETYPE_RE)) {
       // Load it before adding to the network so we can normalize the scale
       const thing3d = Thing3D({
@@ -403,8 +462,8 @@ const start = async () => {
   })
   stage.add(padController)
   
-  const mousePointer = window.mousePointer = await stage.findOrCreateEntity('mouse')
-  console.log("Created MousePointer", mousePointer.uuid, mousePointer)
+  // const mousePointer = window.mousePointer = await stage.findOrCreateEntity('mouse')
+  // console.log("Created MousePointer", mousePointer.uuid, mousePointer)
   
   let dragLock = false
   let dragStart = false
@@ -412,11 +471,11 @@ const start = async () => {
   let dragDelta = new THREE.Vector3()
   window.addEventListener('mousemove', (event) => {
     // Show mouse pointer
-    mousePointer.setScreenCoords(event.clientX, event.clientY)
+    intersectionFinder.setScreenCoords(event.clientX, event.clientY)
     
     // If mouse has moved a certain distance since clicking, then turn into a "drag"
     if (dragStart && !dragLock) {
-      const intersection = mousePointer.getIntersection(stage.ground)
+      const intersection = intersectionFinder.getOneIntersection(stage.ground)
       if (intersection) {
         const mousePos = intersection.point
         if (mousePos.distanceTo(dragStartPos) > 10) {
@@ -426,7 +485,7 @@ const start = async () => {
     }
     
     if (dragLock) {
-      const intersection = mousePointer.getIntersection(stage.ground)
+      const intersection = intersectionFinder.getOneIntersection(stage.ground)
       if (intersection && stage.selection.hasAtLeast(1)) {
         stage.selection.forEach((entity) => {
           dragDelta.copy(intersection.point)
@@ -440,11 +499,16 @@ const start = async () => {
             dragDelta.z = Math.floor(dragDelta.z / size) * size
           }
           
-          entity.disableFollowsTarget()
+          // entity.disableFollowsTarget()
           entity.object.position.copy(dragDelta)
-          entity.state.position.now.copy(dragDelta)
-          entity.state.position.target.copy(dragDelta)
-          network.setEntity(entity)
+          entity.setGoal('p', {
+            x: dragDelta.x,
+            y: dragDelta.y,
+            z: dragDelta.z,
+          })
+          // entity.state.position.now.copy(dragDelta)
+          // entity.state.position.target.copy(dragDelta)
+          // network.setEntity(entity)
         })
       }
     }
@@ -453,20 +517,22 @@ const start = async () => {
   window.addEventListener('mousedown', (event) => {
     if (event.target.id !== 'game' && event.target.id !== 'glcanvas') { return }
     
+    intersectionFinder.setScreenCoords(event.clientX, event.clientY)
+    
     // This might be the beginning of a drag & drop sequence, so prep for that possibility
     if (stage.selection.hasAtLeast(2)) {
-      const intersection = mousePointer.getIntersection(stage.ground)
+      const intersection = intersectionFinder.getOneIntersection(stage.ground)
       if (intersection) {
         dragStart = true
         dragStartPos = intersection.point
         stage.selection.savePositions('drag')
       }
     } else if (!event.shiftKey && !event.ctrlKey) {
-        let intersections = mousePointer.intersects
+        let intersections = intersectionFinder.getAllIntersectionsOnStage()
         if (!stage.editorMode) {
           intersections = intersections.filter((isect) => !isect.entity.isUiLocked())
         }
-        const groundIntersection = mousePointer.getIntersection(stage.ground)
+        const groundIntersection = intersectionFinder.getOneIntersection(stage.ground)
         // Don't allow selecting locked objects
         if (intersections.length > 0 && groundIntersection) {
           const isect = intersections[0]
@@ -493,14 +559,14 @@ const start = async () => {
     if (dragLock) {
       if (stage.selection.hasAtLeast(1)) {
         // If we disabled FollowsTarget during drag/drop, re-enable it
-        stage.selection.forEach((entity) => {
-          entity.enableFollowsTarget()
-        })
+        // stage.selection.forEach((entity) => {
+          // entity.enableFollowsTarget()
+        // })
       }
     } else {
     
       // Did player click on something with an onClick callback?
-      let clickedEntities = mousePointer.intersects.map((isect) => isect.entity)
+      let clickedEntities = intersectionFinder.getAllIntersectionsOnStage().map((isect) => isect.entity)
       clickedEntities.forEach((entity) => {
         if (entity.onClick) {
           entity.onClick()
@@ -517,7 +583,7 @@ const start = async () => {
          */
         const operation = event.shiftKey ? '+' : (event.ctrlKey ? '-' : '=')
         // Select whatever the most recent 'mousemove' event got us closest to
-        let selected = mousePointer.intersects.map((isect) => isect.entity)
+        let selected = intersectionFinder.getAllIntersectionsOnStage().map((isect) => isect.entity)
         if (!stage.editorMode) {
           // Don't allow selecting locked objects
           selected = selected.filter((entity) => !entity.isUiLocked())

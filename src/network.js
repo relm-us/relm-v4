@@ -78,25 +78,33 @@ const Network = stampit(EventEmittable, {
       this.entitiesMap.delete(uuid)
     },
     
-    setPermanent(entity, due = Date.now()) {
+    setPermanent(entity) {
       const uuid = entity.uuid
       const type = entity.type
       if (!type) {
         console.error("Can't set entity goals on network: entity.type not set", entity)
       }
+      const goalsState = entity.goalsToJSON()
+      this.setPermanentState(uuid, goalsState)
+    },
+    
+    setPermanentState(uuid, goalsState) {
       this.ydoc.transact((_transaction) => {
         if (!this.entitiesMap.has(uuid)) {
           this.entitiesMap.set(uuid, new Y.Map())
         }
         const entityMap = this.entitiesMap.get(uuid)
-        entityMap.set('@type', entity.type)
-        for (let [goalName, goal] of Object.entries(entity.goals)) {
-          this.setGoalPermanent(entityMap, goalName, goal.get(), due)
+        entityMap.set('@type', goalsState['@type'])
+        console.log('setPermanentState', goalsState)
+        for (let [goalName, goal] of Object.entries(goalsState)) {
+          if (goalName.slice(0, 1) !== '@') {
+            this.setGoalPermanent(entityMap, goalName, goal)
+          }
         }
       })
     },
     
-    setTransient(entity, due = Date.now()) {
+    setTransient(entity) {
       const uuid = entity.uuid
       const type = entity.type
       if (!type) {
@@ -104,24 +112,30 @@ const Network = stampit(EventEmittable, {
         throw Error('stop')
       }
       const goalsState = entity.goalsToJSON()
-      this.setTransientState(entity.uuid, goalsState)
+      this.setTransientState(uuid, goalsState)
     },
     
-    setTransientState(uuid, goalsState) {
+    setTransientState(uuid, goalsState, due = Date.now()) {
       this.wsProvider.awareness.setLocalStateField(uuid, goalsState)
     },
     
-    setGoalPermanent(entityMap, goalName, state, due = Date.now()) {
+    setGoalPermanent(entityMap, goalName, goalState) {
+    console.log('setGoalPermanent', entityMap, goalName, goalState)
       let stateMap
       if (!entityMap.has(goalName)) {
         stateMap = new Y.Map()
         entityMap.set(goalName, stateMap)
+        console.log('stateMap new', stateMap)
       } else {
         stateMap = entityMap.get(goalName)
+        console.log('stateMap exists', stateMap)
       }
-      stateMap.set('@due', due)
+      // stateMap.set('@due', due)
       // console.log('setGoalPermanent', goalName, state)
-      for (let [key, value] of Object.entries(state)) {
+      for (let [key, value] of Object.entries(goalState)) {
+        if (!stateMap.set) {
+          console.log('stateMap', stateMap)
+        }
         stateMap.set(key, value)
       }
     },

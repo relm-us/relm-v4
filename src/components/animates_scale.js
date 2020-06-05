@@ -2,7 +2,7 @@ import stampit from 'stampit'
 
 import { Component } from './component.js'
 
-import { GoalOriented } from '../goals/goal.js'
+import { GoalOriented, Equal } from '../goals/goal.js'
 
 const AnimatesScale = stampit(Component, GoalOriented, {
   init() {

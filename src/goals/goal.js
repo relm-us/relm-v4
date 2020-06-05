@@ -228,9 +228,9 @@ const GoalOriented = stampit(Component, {
         this.goals[goalName].set(goalState, due)
         if (this.network.isReady()) {
           if (this.permanence === Permanence.PERMANENT) {
-            this.network.setPermanent(this, due)
+            this.network.setPermanent(this)
           } else if (this.permanence === Permanence.TRANSIENT) {
-            this.network.setTransient(this, due)
+            this.network.setTransient(this)
           } else {
             console.error("Permanence value not in range", this.permanence, Permanence)
           }

@@ -11,7 +11,7 @@ const FindIntersectionsFromScreenCoords = stampit({
   },
 
   methods: {
-    _setScreenCoords(x, y) {
+    setScreenCoords(x, y) {
       this._screenCoords = {x, y}
     },
     
@@ -22,14 +22,14 @@ const FindIntersectionsFromScreenCoords = stampit({
       }
     },
 
-    _getOneIntersection(object3d) {
+    getOneIntersection(object3d) {
       this._raycaster.setFromCamera(this._getNormalizedCoords(), this.stage.camera)
       this._intersectsOne.length = 0
       this._raycaster.intersectObject(object3d, true, this._intersectsOne)
       return this._intersectsOne.length === 0 ? null : this._intersectsOne[0]
     },
     
-    _getAllIntersectionsOnStage() {
+    getAllIntersectionsOnStage() {
       this._raycaster.setFromCamera(this._getNormalizedCoords(), this.stage.camera)
 
       // Using a list of entites that are currently on stage, filter for those 
@@ -56,13 +56,13 @@ const FindIntersectionsFromScreenCoords = stampit({
     },
 
     getFirstIntersectionPoint(x, y) {
-      this._setScreenCoords(x, y)
-      let intersects = this._getAllIntersectionsOnStage()
+      this.setScreenCoords(x, y)
+      let intersects = this.getAllIntersectionsOnStage()
 
       if (intersects.length > 0) {
         return intersects[0].point
       } else {
-        intersects = this._getOneIntersection(this.stage.ground)
+        intersects = this.getOneIntersection(this.stage.ground)
         if (intersects) {
           return intersects.point
         }
