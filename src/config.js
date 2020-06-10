@@ -18,6 +18,10 @@ export default function config(location) {
   const params = new URLSearchParams(document.location.search.substring(1))
   const roomParam = params.get('room')
   const roomPath = location.pathname.split('/')[1]
+  
+  // TODO: Move this out of config
+  window.history.pushState("", "", `/${roomPath}`)
+
   let ROOM
   if (roomParam) {
     ROOM = roomParam
