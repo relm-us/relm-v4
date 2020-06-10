@@ -1,3 +1,6 @@
+2020-06-10
+
+- FIXED: When pressing "back button" on browser, it doesn't reset player's position to x,z coords
 
 2020-05-24
 
