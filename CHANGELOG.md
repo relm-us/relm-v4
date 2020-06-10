@@ -83,50 +83,50 @@
 
 2020-05-17
 
-– NEW: Clicking on an already selected object will unselect it
-– NEW: Portals can now be selected, deleted, moved
-– NEW: You can now use /object clone to clone a selected object (including portals)
-– CHANGED: Zoom now affects the video bubble size, so you can zoom in to your conversation
-– CHANGED: Mouse clicks (and hover) are now more accurate, based on raycasting instead of approximate “nearest point”
-– CHANGED: No more hover color (clicking is accurate enough that you don’t need to see annoying half-yellow state)
-– FIXED: You can now click on things in the sky / halfway through the ground
-– FIXED: Mouse wheel on Chrome+Windows platform now zooms more smoothly
+- NEW: Clicking on an already selected object will unselect it
+- NEW: Portals can now be selected, deleted, moved
+- NEW: You can now use /object clone to clone a selected object (including portals)
+- CHANGED: Zoom now affects the video bubble size, so you can zoom in to your conversation
+- CHANGED: Mouse clicks (and hover) are now more accurate, based on raycasting instead of approximate “nearest point”
+- CHANGED: No more hover color (clicking is accurate enough that you don’t need to see annoying half-yellow state)
+- FIXED: You can now click on things in the sky / halfway through the ground
+- FIXED: Mouse wheel on Chrome+Windows platform now zooms more smoothly
 
-– NEW: You can now add “x” and “z” url parameters to any Relm link and the character will be sent to that particular coordinate in a relm. Example: https://relm.us/relm?x=0&y=0 (sends someone to the center 0,0 coords of the default relm)
-– CHANGED: New 2D objects now default to the “up” orientation rather than flat “down”
-– CHANGED: The /link command has been changed to the /portal command
+- NEW: You can now add “x” and “z” url parameters to any Relm link and the character will be sent to that particular coordinate in a relm. Example: https://relm.us/relm?x=0&y=0 (sends someone to the center 0,0 coords of the default relm)
+- CHANGED: New 2D objects now default to the “up” orientation rather than flat “down”
+- CHANGED: The /link command has been changed to the /portal command
 
-– NEW: You can stand objects up on the left or right, e.g. /obj left and /obj right
-– CHANGED: Camera now focuses on character’s head. Zoom is affected most by this: on screens that are vertically short, you can now still see your video bubble
-– CHANGED: Vignette effect is now white, in the distance
+- NEW: You can stand objects up on the left or right, e.g. /obj left and /obj right
+- CHANGED: Camera now focuses on character’s head. Zoom is affected most by this: on screens that are vertically short, you can now still see your video bubble
+- CHANGED: Vignette effect is now white, in the distance
 
-– NEW: You can now drag and drop objects on the X-Z plane with the mouse!
-– NEW: Objects are now automaticaly selected after upload
-– NEW: You can now rotate objects with the /obj rotate DEGREES command
+- NEW: You can now drag and drop objects on the X-Z plane with the mouse!
+- NEW: Objects are now automaticaly selected after upload
+- NEW: You can now rotate objects with the /obj rotate DEGREES command
 
-– FIXED: Clicking on the “thought input box” no longer deselects the selected object
-– FIXED: Buttons no longer take focus away from game controls
-– FIXED: Video bubble no longer takes focus away from game controls
-– FIXED: Clicking on the “mute/unmute” button no longer selects whatever object is behind it
+- FIXED: Clicking on the “thought input box” no longer deselects the selected object
+- FIXED: Buttons no longer take focus away from game controls
+- FIXED: Video bubble no longer takes focus away from game controls
+- FIXED: Clicking on the “mute/unmute” button no longer selects whatever object is behind it
 
-– NEW: You can now /obj lock and /obj unlock an object. Locked objects can’t be visibly selected or moved.
-– NEW: /obj commands now show their results as a toast pop-up
+- NEW: You can now /obj lock and /obj unlock an object. Locked objects can’t be visibly selected or moved.
+- NEW: /obj commands now show their results as a toast pop-up
 
-– NEW: There is now a /zoomrange max command that lets you zoom in and out farther than the default zoom range. /zoomrange default will set it back to normal.
-– CHANGED: The “Help” button instructions are now a little more detailed.
+- NEW: There is now a /zoomrange max command that lets you zoom in and out farther than the default zoom range. /zoomrange default will set it back to normal.
+- CHANGED: The “Help” button instructions are now a little more detailed.
 
-– NEW: Character’s name is now underlined in color, and mouse pointer now matches that color.
-– FIXED: Mouse wheel direction is natural direction for zoom
-– FIXED: Offscreen player labels now stay inside the screen
+- NEW: Character’s name is now underlined in color, and mouse pointer now matches that color.
+- FIXED: Mouse wheel direction is natural direction for zoom
+- FIXED: Offscreen player labels now stay inside the screen
 
-– NEW: You can now upload 3D objects! GLBs and GLTFs are accepted. Currently, you can move & delete 3D objects, but not scale or rotate.
+- NEW: You can now upload 3D objects! GLBs and GLTFs are accepted. Currently, you can move & delete 3D objects, but not scale or rotate.
 
-– FIXED: Scaled image objects now work and don’t disappear or move mysteriously
+- FIXED: Scaled image objects now work and don’t disappear or move mysteriously
 
-– NEW: 3D Objects are now normalized on first upload and can be scaled with /obj scale N command
-– NEW: 3D Objects can now be rotated around the Y axis with /obj rotate DEGREES command
+- NEW: 3D Objects are now normalized on first upload and can be scaled with /obj scale N command
+- NEW: 3D Objects can now be rotated around the Y axis with /obj rotate DEGREES command
 
-– NEW: Right-click on objects shows info about it: type, UUID, asset, position, scale, rotation. You can further click on the asset URL to be taken to the source image/GLTF.
-– CHANGED: Style changes to pop-up messages (gray background)
-– CHANGED: Hovering over pop-up messages now prevents pop-up from automatically disappearing. Clicking dismisses it.
-– CHANGED: Higher maximum for default “zoom in” size
+- NEW: Right-click on objects shows info about it: type, UUID, asset, position, scale, rotation. You can further click on the asset URL to be taken to the source image/GLTF.
+- CHANGED: Style changes to pop-up messages (gray background)
+- CHANGED: Hovering over pop-up messages now prevents pop-up from automatically disappearing. Clicking dismisses it.
+- CHANGED: Higher maximum for default “zoom in” size
