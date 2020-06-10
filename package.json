@@ -5,6 +5,7 @@
   "license": "GPL-3.0-only",
   "scripts": {
     "start": "parcel src/index.html",
+    "test": "jest --watch",
     "sandbox": "parcel src/sandbox.html",
     "build": "parcel build --public-url / src/index.html",
     "format": "standard 'src/*.js' 'lib/*.js' --fix"
@@ -29,10 +30,13 @@
     "stampit": "^4.3.1",
     "toastify-js": "^1.7.0",
     "y-indexeddb": "^9.0.3",
-    "y-websocket": "^1.2.5",
-    "yjs": "^13.0.4"
+    "y-websocket": "^1.3.0",
+    "yjs": "^13.1.1"
   },
   "devDependencies": {
+    "@babel/core": "^7.0.0-0",
+    "@babel/preset-env": "^7.10.2",
+    "jest": "^26.0.1",
     "parcel-bundler": "^1.12.4",
     "parcel-plugin-asset-copier": "^1.0.0",
     "parcel-plugin-externals": "^0.3.3",

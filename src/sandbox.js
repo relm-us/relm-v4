@@ -1,24 +1,23 @@
 import stampit from 'stampit'
 
-
-const Typed = stampit({
-  statics: {
-    setType(type) {
-      this.type = type
-      return this
-    }
-  },
-  init(_, { stamp }) {
-    this.type = stamp.type
+const A = stampit({
+  init({ goals = {} }) {
+    console.log("A", goals.a || "a")
   }
 })
 
-const Entity = window.Entity = stampit({
-  init() {
-    this.isEntity = true
+const B = stampit({
+  init({ goals = {} }) {
+    console.log("B", goals.b || "b")
   }
-}).compose(Typed).setType('john')
+})
 
-const e = Entity()
-console.log(Entity, e.type, Entity.type)
+const Combined = stampit(A, B)
+
+const c = Combined({
+  goals: {
+    a: "1",
+    b: "2"
+  }
+})
 

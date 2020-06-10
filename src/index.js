@@ -140,11 +140,12 @@ const start = async () => {
   
   // Initialize network first so that entities can send their initial state
   // even before we've connected to server (or eventually, peers)
+  /*
   network.on('add', async (uuid, state) => {
     const type = state['@type']
     if (type) {
       const entity = stage.findOrCreateEntity(type, uuid)
-      console.log('entity', entity)
+      console.log('entity', entity, state)
       entity.goalsFromJSON(state)
       // Special case: player gets bootstrapped
       if (uuid === playerId) {
@@ -164,6 +165,7 @@ const start = async () => {
       stage.remove(entity)
     }
   })
+  */
   
   const params = { id: playerId }
   const url = new URL(window.location.href)
@@ -269,11 +271,26 @@ const start = async () => {
   // player.videoBubble.object.on('mute', muteAudio)
   // player.videoBubble.object.on('unmute', unmuteAudio)
   
-  network.setTransientState(playerId, localstoreRestore(playerId) || defaultPlayerState(playerId))
-  await playerExists()
+  // const playerGoals = DefaultPlayerGoalGroup.setUuid(playerId)
+  // const defaultPlayer = Player({ uuid: playerId })
+  // network.firstCreation(defaultPlayer.goals, true)
+  // console.log('defaultPlayer goals', defaultPlayer.goals.toJSON())
+  // network.setTransientState(playerId, localstoreRestore(playerId) || defaultPlayerState(playerId))
+  // await playerExists()
+  
+  const defaultTree = Decoration({
+    goals: {
+    }
+  })
+  network.create({
+    type: 'decoration',
+    goals: {
+      asset: { url: 'http://localhost:1235/asset/16c111cda60de632a67531f6f673822e-65197.png'}
+    }
+  })
   
   const mouseId = uuidv4()
-  network.setTransientState(mouseId, defaultMousePointerState(mouseId))
+  // network.setTransientState(mouseId, defaultMousePointerState(mouseId))
   await mousePointerExists()
   
   // Perform several calculations once per game loop:

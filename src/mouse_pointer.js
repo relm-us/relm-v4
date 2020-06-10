@@ -6,7 +6,7 @@ import { HasObject } from './components/has_object.js'
 // import { HasUniqueColor, CopiesUniqueColor } from './components/has_unique_color.js'
 import { FindIntersectionsFromScreenCoords } from './find_intersections_from_screen_coords.js'
 import { AnimatesPosition } from './components/animates_position.js'
-import { GoalOriented, Permanence } from './goals/goal.js'
+import { GoalOriented, Permanence } from './goals/goal_oriented.js'
 
 
 const HasSphere = stampit(Component, {
@@ -85,8 +85,8 @@ const MousePointer = stampit(
     },
 
     init() {
-      this.addGoal('uniqcolor', { r: 1.0, g: 1.0, b: 1.0 })
-      this.addGoal('p', {x: 0.0, y: 0.0, z: 0.0 })
+      this.addGoal('uniqueColor', { r: 1.0, g: 1.0, b: 1.0 })
+      this.addGoal('position', {x: 0.0, y: 0.0, z: 0.0 })
       
       this._finder = 
         FindIntersectionsFromScreenCoords({ stage: this.stage })
@@ -99,7 +99,7 @@ const MousePointer = stampit(
         if (point) {
           // As long as mouse intersected with something (even the ground), set the new goal
           // console.log('setting p', this.uuid)
-          this.setGoal('p', {
+          this.goals.position.update({
             x: point.x - 3,
             y: point.y + 10,
             z: point.z + 10,
@@ -108,16 +108,16 @@ const MousePointer = stampit(
       },
       
       update(delta) {
-        const uniqueColorGoal = this.goals.uniqcolor
+        const uniqueColorGoal = this.goals.uniqueColor
         if (!uniqueColorGoal.achieved) {
           const color = uniqueColorGoal.get()
           this.setRingColor(new THREE.Color(color.r, color.g, color.b))
           uniqueColorGoal.markAchieved()
         }
         
-        const positionGoal = this.goals.p
+        const positionGoal = this.goals.position
         if (!positionGoal.achieved) {
-          this.object.position.copy(positionGoal.get())
+          this.object.position.copy(positionGoal.toJSON())
           positionGoal.markAchieved()
         }
       }

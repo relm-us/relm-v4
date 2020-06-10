@@ -1,48 +1,53 @@
-
 import stampit from 'stampit'
+import EventEmittable from '@stamp/eventemittable'
 
-import FlatQueue from 'flatqueue'
-import { Component } from '../components/component.js'
-import { shallowCompare } from '../util.js'
+import * as Y from 'yjs'
 
+import { mapToObject } from '../util.js'
 
-const Equal = {
+const Equality = {
   Distance: (threshold) => {
     return (a, b) => {
-      const dx = a.x - b.x
-      const dy = a.y - b.y
-      const dz = a.z - b.z
-      return Math.sqrt(dx * dx + dy * dy + dz * dz) < threshold
+      const dx = a.get('x') - b.get('x')
+      const dy = a.get('y') - b.get('y')
+      const dz = a.get('z') - b.get('z')
+      return Math.sqrt(dx * dx + dy * dy + dz * dz) <= threshold
     }
   },
   
-  Angle: (threshold) => {
-    return (a, b) => {
-      return Math.abs(a.angleTo(b)) < threshold
-    }
-  },
+  // Angle: (threshold) => {
+  //   return (a, b) => {
+  //     return Math.abs(a.angleTo(b)) < threshold
+  //   }
+  // },
 
-  Delta: (threshold) => {
+  Delta: (property, threshold) => {
     return (a, b) => {
-      return Math.abs(a - b) < threshold
+      const delta = Math.abs(a.get(property) - b.get(property)) 
+      return delta <= threshold
     }
   },
   
-  Compare: () => {
-    return shallowCompare
+  /**
+   * Checks for shallow equality between two Map-compatible objects (e.g. Map, Y.Map). Ignores keys that begin with '@'.
+   */
+  Map: () => {
+    return (map1, map2) => {
+      let keys = new Set([...map1.keys(), ...map2.keys()])
+      for (let k of keys.values()) {
+        if (k.slice(0, 1) === '@') continue
+        if (!map1.has(k) || !map2.has(k)) return false
+        if (map1.get(k) !== map2.get(k)) return false
+      }
+      return true
+    }
   }
 }
 
 
-const Permanence = {
-  PERMANENT: 0,
-  TRANSIENT: 1,
-}
-
-
 /**
- * A Goal is a set of states. It's intended that the animation engine will attempt to generate
- * an animation that transitions the current state to the goal state. For example, if a player.object
+ * A Goal is a time-sequenced queue of states. It's intended that the animation engine will attempt to
+ * generate an animation that transitions the current state to the goal state. For example, if a player.object
  * is an Object3D, and its `position` has `x`, `y`, and `z` values, then the position's corresponding
  * goal would also have `x`, `y`, and `z` values.
  *
@@ -56,13 +61,14 @@ const Permanence = {
  * 
  * Goals also use a custom equality test function per property. This allows us, for example, to check
  * for current state and goal state as being "close enough" when dealing with floating point numbers.
- * (See Equal.Delta).
+ * (See Equality.Delta).
  * 
- * @typedef GoalMetadata
- * @property {any} default - A default value
+ * @property {string} name - a name for the goal, e.g. 'position'
+ * @property {Object} defaults - the default state of the goal
+ * @property {Function} equality - a function that tests for equality--it takes two Maps as params and returns true or false
  */
-const Goal = stampit({
-  init({ name, defaults, equalityTest, toValue, fromValue }) {
+const Goal = stampit(EventEmittable, {
+  init({ name, defaults, equality, map }) {
     /**
      * The name of the goal, e.g. 'position', or 'quaternion'.
      *
@@ -71,34 +77,13 @@ const Goal = stampit({
     this.name = name
     
     /**
-     * The goal's states. Each state is a priority queue, allowing us to grab the "next" value quickly.
-     *
-     * @type {FlatQueue}
-     */
-    this.states = new FlatQueue()
-    
-    /**
-     * The goal's values' metadata.
-     *
-     * @type {Map<string, GoalMetadata>}
-     */
-    this.defaults = Object.assign({}, defaults)
-    
-    /**
-     * The time at which the goal is 'due', in milliseconds.
-     * 
-     * @type {number}
-     */
-    this.due = Date.now()
-    
-    /**
      * A function that tests if a this goal is "equal" to another value or set of values. For instance,
      * if this goal is a position with components x, y, z, then the equalityTest would be a distance
      * calculation with a < threshold. Defaults to a shallow comparison of two objects.
      * 
      * @type {Function}
      */
-    this.equalityTest = equalityTest || Equal.Compare()
+    this.testEquality = equality || Equality.Map()
     
     /**
      * Keeps track of whether any of this goal's values have been achieved. Values also individually hold
@@ -107,15 +92,42 @@ const Goal = stampit({
      * that haven't changed since the last animation frame.
      */
     this.achieved = false
+    
+    /**
+     * The goal's current state, e.g. `{x: 10, y: 10, z: 100}`.
+     *
+     * @type {Y.Map}
+     */
+    this._map = map
+    if (!map) { throw Error('Goal requires a Map object') }
+    // Set initial values with a `due` value that is long ago (0)
+    this.update(defaults || {}, 0)
+    
   },
 
   methods: {
-    setDue(due = Date.now()) {
-      this.due = due
+    /**
+     * The time at which the goal is 'due', in milliseconds.
+     */
+    get due() {
+      const due = this._map.get('@due')
+      if (due === undefined) {
+        throw Error('Goal has not been added to a Y.Doc, time undefined')
+      }
+      return due
+    },
+    
+    set due(dueAt) {
+      this._map.set('@due', dueAt)
+    },
+    
+    get(key) {
+      if (!key) throw Error('Key is required')
+      return this._map.get(key)
     },
 
     /**
-     * isPastDue checks the time this goal is `due` and returns  true or false if it past due. This
+     * isPastDue checks the time this goal is `due` and returns true or false if it past due. This
      * can be used to determine if an animation needs to be cut short and resort to instantaneous
      * motion instead.
      * 
@@ -126,147 +138,42 @@ const Goal = stampit({
     },
     
     /**
-     * This function skips past any values in the queue that are not current and retrieves the
-     * most current value.
+     * Change the goal by updating the state. If values are the same, no update will occur.
      * 
-     * NOTE: This method has side effects! Once `now` is passed in, it will destructively remove
-     *       old values from the queue.
-     * 
-     * @param {number} now - the time in milliseconds to consider as "now" when getting a value
+     * @param {Map<string,any>} state - the state to set
+     * @param {number} due - the time at which the state comes due for animation completion
      */
-    get(now = Date.now()) {
-      const state = this.fastForward(now).peek()
-      return (state !== undefined ? state : this.defaults)
-    },
-
-    /**
-     * This function sets a value, valid within a certain time window.
-     * 
-     * @param {any} value - the value
-     * @param {number} now - the time in milliseconds (now) when the value becomes active
-     */
-    set(state, due = Date.now(), now = Date.now()) {
-      this.setDue(due)
+    updateMap(state, due = Date.now()) {
+      this.due = due
       // We only set the value if it differs from the 'current' value. Otherwise, we'll
       // churn on unachieved goals.
       if (!this.equals(state)) {
         this.achieved = false
-        this.states.push(state, now)
+        for (let [k, v] of state.entries()) {
+          this._map.set(k, v)
+        }
+        this.emit('update', state, this._map)
       }
     },
     
-    equals(otherValue, now = Date.now()) {
-      return this.equalityTest(this.get(now), otherValue)
+    update(object, due = Date.now()) {
+      this.updateMap(new Map(Object.entries(object)), due)
     },
     
-    /**
-     * fastForward takes the `states` queue and removes states that are older than 'now',
-     * preserving only those states in the queue that are 'in the future'.
-     * 
-     * @param {number} now - the time in milliseconds to consider as "now" when discarding old values
-     */
-    fastForward(now = Date.now()) {
-      const queue = this.states
-      while (queue.peekValue() < now && queue.length > 1) {
-        queue.pop()
-      }
-      return queue
+    equals(otherValue) {
+      return this.testEquality(this._map, otherValue)
     },
     
     markAchieved() {
-      // console.log('goal achieved', this.name)
       this.achieved = true     
     },
     
-    markAchievedIfEqual(value, now = Date.now()) {
-      // console.log('goal achieved (eq)', this.name)
-      this.achieved = this.equals(value, now)
+    markAchievedIfEqual(value) {
+      this.achieved = this.equals(value)
     },
 
-    toJSON(now = Date.now()) {
-      return Object.assign({}, this.get(now), { '@due': this.due })
-    },
-
-    fromJSON(obj, now = Date.now()) {
-      const due = obj['@due']
-      const object = Object.assign({}, obj)
-      delete object['@due']
-      this.set(object, due, now)
-    }
-  }
-})
-
-
-const GoalOriented = stampit(Component, {
-  props: {
-    permanence: Permanence.PERMANENT
-  },
-  
-  init() {
-    this.network.on(`update-${this.uuid}`, this._updateGoals.bind(this))
-  },
-
-  methods: {
-    addGoal(name, defaults, { equals = null, to = null, from = null } = {}) {
-      if (!this.goals) {
-        this.goals = {}
-      }
-      if (name in this.goals) {
-        console.error('Goal previously added to entity', name, this)
-      }
-      this.goals[name] = Goal({
-        name,
-        defaults,
-        equalityTest: equals,
-        toValue: to,
-        fromValue: from
-      })
-    },
-    
-    setGoal(goalName, goalState, due = Date.now()) {
-      if (goalName in this.goals) {
-        this.goals[goalName].set(goalState, due)
-        if (this.network.isReady()) {
-          if (this.permanence === Permanence.PERMANENT) {
-            this.network.setPermanent(this)
-          } else if (this.permanence === Permanence.TRANSIENT) {
-            this.network.setTransient(this)
-          } else {
-            console.error("Permanence value not in range", this.permanence, Permanence)
-          }
-        } else {
-          console.log("Network not ready, can't send goal yet", goalName, goalState)
-        }
-      } else {
-        console.warn("Can't setGoal, goal not found", goalName, this.goals)
-      }
-    },
-    
-    goalsToJSON() {
-      const obj = { '@type': this.type }
-      for (let [goalName, goal] of Object.entries(this.goals)) {
-        obj[goalName] = goal.toJSON()
-      }
-      return obj
-    },
-    
-    goalsFromJSON(obj) {
-      if (obj['@type'] === this.type) {
-        for (let [goalName, goalState] of Object.entries(obj)) {
-          if (goalName === '@type') continue
-          const goal = this.goals[goalName]
-          if (goal) {
-            goal.fromJSON(goalState)
-          }
-        }
-      } else {
-        console.trace("Won't update goals, type differs:", obj['@type'], type)
-      }
-    },
-
-    _updateGoals(state) {
-      // console.log('_updateGoals', state['@type'], state, this)
-      this.goalsFromJSON(state)
+    toJSON() {
+      return mapToObject(this._map)
     },
   }
 })
@@ -274,7 +181,5 @@ const GoalOriented = stampit(Component, {
 
 export {
   Goal,
-  GoalOriented,
-  Equal,
-  Permanence,
+  Equality
 }

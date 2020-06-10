@@ -8,6 +8,24 @@ import { IndexeddbPersistence } from 'y-indexeddb'
 import { stateToObject } from './state_to_object.js'
 import config from './config.js'
 
+
+
+/**
+ * The Network object is an adapter between Yjs and the rest of Relm. It's responsible for setting values that
+ * will propagate to other peers / servers, and conversely, forwarding events that should trigger game state
+ * changes such as adding an object, or updating a property on an already existing object.
+ * 
+ * The `yobjects` part of the ydoc is an array of maps of maps:
+ * [
+ *   {
+ *      "@id": "ca1901f9-853d-4570-a6af-9d810fa37b9d",
+ *      "@type": "decoration",
+ *      "p": { "x": 0, "y": 0, "z": 0, "@due": 1234567890 },
+ *      "speed": { "value": 1.0, "@due": 1234567890 }
+ *   },
+ *   ...
+ * ]
+ */
 const Network = stampit(EventEmittable, {
   props: {
     ydoc: null,
@@ -21,17 +39,17 @@ const Network = stampit(EventEmittable, {
   init() {
     window.network = this
     
+    // Transient document: holds things like player state and mouse pointer state
+    this.tobjects = {}
+    
+    // Permanent Y document: holds game object state & everything that stays in each relm
     this.ydoc = new Y.Doc()
+    this.invitations = this.ydoc.getMap('invitations')
+    this.yobjects = this.ydoc.getArray('objects')
 
     this.clientIdsToEntityState = {}
     this.clientIdsConnected = new Set()
     this.clientIdsAdded = new Set()
-    
-    this.entityStates = this.ydoc.getMap('entities')
-    this.invitations = this.ydoc.getMap('invitations')
-    
-    // For now, keep goalnet state separate
-    this.entitiesMap = this.ydoc.getMap('goals')
   },
   
   methods: {
@@ -44,9 +62,10 @@ const Network = stampit(EventEmittable, {
       
       // Start observing before opening connections so that we get a replay of the world state
       // this.observeEntityStates()
-      this.entitiesMap.observeDeep((events, t) => {
+      this.yobjects.observeDeep((events, t) => {
         this.onGoalsChanged(events)
       })
+      
       
       console.log('Opening local database...', cfg.ROOM, params)
       try {
@@ -58,49 +77,83 @@ const Network = stampit(EventEmittable, {
 
       console.log('Opening remote websocket...', cfg.SERVER_YJS_URL, cfg.ROOM, params)
       this.wsProvider = new WebsocketProvider(cfg.SERVER_YJS_URL, cfg.ROOM, this.ydoc, { params })
-      
-      this.wsProvider.on('status', (status) => {
-        if (status.status === 'connected') {
-          this.connected = true
-        } else if (status.status === 'disconnected') {
-          this.connected = false
-        }
-      })
-      this.wsProvider.awareness.on('change', ({ added, updated, removed}, _conn) => {
+      this.wsProvider.awareness.on('update', ({ added, updated, removed}, _conn) => {
+        // console.log('awareness change added', added)
+        // console.log('awareness change updated', updated)
+        // console.log('awareness change removed', removed)
         this.onAwarenessChanged(added)
         this.onAwarenessChanged(updated)
         this.onAwarenessRemoved(removed)
       })
     },
     
+    // /**
+    //  * Create a Y.Map that has been added to either the `tobjects` or `yobjects` lists
+    //  * 
+    //  * @param {boolean} transient - true if the Y.Map should be added to the transient `tobjects` list
+    //  */
+    // createTrackedYMap(transient = false) {
+    //   const map = new Y.Map()
+    //   (transient ? this.tobjects : this.yobjects).insert(0, [map])
+    //   return map
+    // },
+    
+    create({ type, uuid = null, goals = {}, transient = false }) {
+      console.log('first creation', type, uuid, goals, transient)
+      if (transient) {
+        this.tobjects[uuid] = state
+        this.wsProvider.awareness.setLocalStateField(uuid, state)
+      } else {
+        const map = new Y.Map()
+        // const goalGroup = GoalGroup(uuid, type, map)
+        // goalGroup.initializeGoals(goals)
+        this.yobjects.insert(0, [map])
+      }
+    },
 
     remove(uuid) {
       this.entitiesMap.delete(uuid)
     },
     
     setPermanent(entity) {
-      const uuid = entity.uuid
-      const type = entity.type
-      if (!type) {
-        console.error("Can't set entity goals on network: entity.type not set", entity)
-      }
       const goalsState = entity.goalsToJSON()
-      this.setPermanentState(uuid, goalsState)
+      this.setPermanentState(goalsState)
     },
     
-    setPermanentState(uuid, goalsState) {
+    setPermanentState(state) {
+      const type = state['@type']
+      if (!type) {
+        console.error("Can't set entity goals: @type not set", state)
+      }
+      
+      const uuid = state['@id']
+      if (!uuid) {
+        console.error("Can't set entity goals: @id not set", state)
+      }
+      
       this.ydoc.transact((_transaction) => {
-        if (!this.entitiesMap.has(uuid)) {
-          this.entitiesMap.set(uuid, new Y.Map())
+        let ymap
+        if (uuid in this.objects) {
+          ymap = this.objects[uuid]
+        } else {
+          ymap = new Y.Map()
+          this.objects[uuid] = ymap
+          this.yobjects.insert(0, ymap)
         }
-        const entityMap = this.entitiesMap.get(uuid)
-        entityMap.set('@type', goalsState['@type'])
-        console.log('setPermanentState', goalsState)
-        for (let [goalName, goal] of Object.entries(goalsState)) {
-          if (goalName.slice(0, 1) !== '@') {
+        
+        // const entityMap = this.entitiesMap.get(uuid)
+        // entityMap.set('@type', goalsState['@type'])
+        // console.log('setPermanentState', goalsState, entityMap.toJSON())
+        for (let [key, value] of Object.entries(state)) {
+          if (key.slice(0, 1) === '@') {
+            ymap.set(key, value)
+          } else {
+            let ymap2
+            if (key)
             this.setGoalPermanent(entityMap, goalName, goal)
           }
         }
+        console.log('setPermanentState after', entityMap.toJSON())
       })
     },
     
@@ -120,22 +173,22 @@ const Network = stampit(EventEmittable, {
     },
     
     setGoalPermanent(entityMap, goalName, goalState) {
-    console.log('setGoalPermanent', entityMap, goalName, goalState)
+    // console.log('setGoalPermanent', entityMap, goalName, goalState)
       let stateMap
       if (!entityMap.has(goalName)) {
         stateMap = new Y.Map()
         entityMap.set(goalName, stateMap)
-        console.log('stateMap new', stateMap)
+        // console.log('stateMap new', stateMap)
       } else {
         stateMap = entityMap.get(goalName)
-        console.log('stateMap exists', stateMap)
+        // console.log('stateMap exists', stateMap)
       }
       // stateMap.set('@due', due)
       // console.log('setGoalPermanent', goalName, state)
       for (let [key, value] of Object.entries(goalState)) {
-        if (!stateMap.set) {
-          console.log('stateMap', stateMap)
-        }
+        // if (!stateMap.set) {
+        //   console.log('stateMap', stateMap)
+        // }
         stateMap.set(key, value)
       }
     },
@@ -185,8 +238,10 @@ const Network = stampit(EventEmittable, {
     },
 
     onGoalsChanged(events) {
+      // console.log('onGoalsChanged', events)
       for (let event of events) {
         if (event.path.length === 0) {
+          console.log('len-zero', event.changes, event)
           event.changes.keys.forEach(({ action }, uuid) => {
             // console.log(this.entitiesMap, uuid)
             const goalState = this.entitiesMap.get(uuid).toJSON()
@@ -203,6 +258,8 @@ const Network = stampit(EventEmittable, {
               console.warn('action not handled', action, uuid)
             }
           })
+        } else {
+          console.log('event', event.path, event, event.changes, event.changes.keys)
         }
       }
     }

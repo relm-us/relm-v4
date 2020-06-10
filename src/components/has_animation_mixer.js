@@ -33,16 +33,16 @@ function findAnimationClip(objectOrClipArray, condition) {
 }
 
 const HasAnimationMixer = stampit(Component, {
-  init() {
+  init({ goals = {} }) {
+    // Two independent goals because they can each be achieved separately
+    this.addGoal('animationMesh', goals.animationMesh || { v: null })
+    this.addGoal('animationSpeed', goals.animationSpeed || { v: 1.0 })
+    
     this.clips = {}
     this.animationMixer = null
     this.animationResourceId = 'people'
     this.animatedObject = null
     this.animationActions = ['walking', 'falling']
-    
-    // Two independent goals because they can each be achieved separately
-    this.addGoal('animMesh', { v: null })
-    this.addGoal('animSpd', { v: 1.0 })
   },
 
   methods: {
@@ -122,16 +122,16 @@ const HasAnimationMixer = stampit(Component, {
     },
 
     update(delta) {
-      const animMeshGoal = this.goals.animMesh
+      const animMeshGoal = this.goals.animationMesh
       if (!animMeshGoal.achieved) {
-        const meshName = animMeshGoal.get().v
+        const meshName = animMeshGoal.get('v')
         if (meshName !== null) {
           this.changeAnimationMesh(meshName)
           animMeshGoal.markAchieved()
         }
       }
       
-      const animSpeedGoal = this.goals.animSpd
+      const animSpeedGoal = this.goals.animationSpeed
       // if (!animSpeedGoal.achieved) {
       //   const speed = animSpeedGoal.get().v
       //   if (this.mixer) {
@@ -143,7 +143,7 @@ const HasAnimationMixer = stampit(Component, {
       // }
       
       if (this.mixer) {
-        const speed = animSpeedGoal.get().v
+        const speed = animSpeedGoal.get('v')
         this.mixer.update(delta * speed)
       }
     },

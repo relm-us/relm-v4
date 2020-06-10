@@ -2,7 +2,7 @@ import stampit from 'stampit'
 import EventEmittable from '@stamp/eventemittable'
 
 import { Component } from './component.js'
-import { CanAddGoal, Equal } from '../goals/goal.js'
+import { GoalOriented } from '../goals/goal_oriented.js'
 
 import { GLTFLoader } from '../lib/GLTFLoader.js'
 
@@ -25,9 +25,9 @@ const getLoaderFromUrl = (url) => {
   }
 }
 
-const LoadsAsset = stampit(CanAddGoal, Component, EventEmittable, {
-  init() {
-    this.addGoal('asset', { url: null })
+const LoadsAsset = stampit(GoalOriented, Component, EventEmittable, {
+  init({ goals = {} }) {
+    this.addGoal('asset', goals.asset || { url: null })
     this.asset = null
   },
 

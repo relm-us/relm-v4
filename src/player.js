@@ -14,18 +14,18 @@ import { HasVideoBubble } from './components/has_video_bubble.js'
 import { HasOpacity } from './components/has_opacity.js'
 import { HasOffscreenIndicator } from './components/has_offscreen_indicator.js'
 import { LocalstoreGetsState } from './localstore_gets_state.js'
-import { GoalOriented, Permanence } from './goals/goal.js'
+import { GoalOriented, Permanence } from './goals/goal_oriented.js'
 import { AnimatesPosition } from './components/animates_position.js'
 import { AnimatesRotation } from './components/animates_rotation.js'
 
 const HasMaxSpeed = stampit(Component, GoalOriented, {
-  init() {
-    this.addGoal('speed', { max: 250 })
+  init({ goals = {} }) {
+    this.addGoal('speed', goals.speed || { max: 250 })
   },
 
   methods: {
     setSpeed(speed) {
-      this.goals.speed.set({max: speed})
+      this.goals.speed.update('max', speed)
     },
 
     _getPositionLerpAlpha(distance, delta) {
@@ -73,7 +73,7 @@ const FollowsTarget2 = stampit(Component, GoalOriented, {
       const dueAt = Date.now() + FOLLOW_TARGET_SUFFICIENT_TIME
       const goalToTargetDist = this._goalPos.position.distanceTo(this._target.position)
       if (goalToTargetDist > FOLLOW_TARGET_DISTANCE_AHEAD/2) {
-        this.setGoal('p', {
+        this.goals.position.update({
           x: this._target.position.x,
           y: this._target.position.y,
           z: this._target.position.z,
@@ -84,7 +84,7 @@ const FollowsTarget2 = stampit(Component, GoalOriented, {
       this._source.lookAt(this._target.position)
       const dist = this._source.position.distanceTo(this._target.position)
       if (dist > this.closeEnough) {
-        this.setGoal('r', {
+        this.goals.rotation.update({
           x: this._source.rotation.x,
           y: this._source.rotation.y,
           z: this._source.rotation.z,

@@ -3,11 +3,11 @@ import stampit from 'stampit'
 
 import { Component } from './component.js'
 import { Label } from '../label.js'
-import { CanAddGoal, CanSetGoal } from '../goals/goal.js'
+import { GoalOriented } from '../goals/goal_oriented.js'
 
 const { Vector3, Color } = THREE
 
-const HasLabel = stampit(Component, CanAddGoal, CanSetGoal, {
+const HasLabel = stampit(Component, GoalOriented, {
   name: 'HasLabel',
 
   props: {
@@ -17,11 +17,12 @@ const HasLabel = stampit(Component, CanAddGoal, CanSetGoal, {
   },
 
   init({
+    goals = {},
     labelOffset = this.labelOffset,
     labelColor = this.labelColor,
     onLabelChanged
   }) {
-    this.addGoal('label', { text: null })
+    this.addGoal('label', goals.label || { text: null })
     
     this.labelPosition = new Vector3()
     this.labelOffset = labelOffset || new Vector3()
@@ -36,14 +37,14 @@ const HasLabel = stampit(Component, CanAddGoal, CanSetGoal, {
      * @returns {string}
      */
     getLabel() {
-      return this.goals.label.get().text
+      return this.goals.label.get('text')
     },
 
     /**
      * @param {string} text
      */
     setLabel(text) {
-      this.setGoal('label', { text })
+      this.goals.label.set('text', text)
     },
     
     setLabelColor(color) {
@@ -73,7 +74,7 @@ const HasLabel = stampit(Component, CanAddGoal, CanSetGoal, {
     update() {
       const labelGoal = this.goals.label
       if (!labelGoal.achieved) {
-        this.labelObj.setText(labelGoal.get().text)
+        this.labelObj.setText(labelGoal.get('text'))
         labelGoal.markAchieved()
       }
     },

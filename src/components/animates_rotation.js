@@ -2,11 +2,11 @@ import stampit from 'stampit'
 
 import { Component } from './component.js'
 
-import { GoalOriented } from '../goals/goal.js'
+import { GoalOriented } from '../goals/goal_oriented.js'
 
 const AnimatesRotation = stampit(Component, GoalOriented, {
-  init() {
-    this.addGoal('r', { x: 0.0, y: 0.0, z: 0.0 })
+  init({ goals = {} }) {
+    this.addGoal('rotation', goals.rotation || { x: 0.0, y: 0.0, z: 0.0 })
     
     this._rotation = new THREE.Euler()
     this._quaternion = new THREE.Quaternion()
@@ -16,7 +16,7 @@ const AnimatesRotation = stampit(Component, GoalOriented, {
     update(_delta) {
       const rotationGoal = this.goals.r;
       if (!rotationGoal.achieved) {
-        const r = rotationGoal.get()
+        const r = rotationGoal.toJSON()
         if (rotationGoal.isPastDue()) {
           this.object.rotation.set(r.x, r.y, r.z)
           rotationGoal.markAchieved()
