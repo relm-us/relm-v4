@@ -83,36 +83,35 @@ const Stage = stampit(
 
     add(entity) {
       if (!entity.uuid) {
-        throw new Error('Entity must have uuid', entity)
+        entity.uuid = uuidv4()
       }
       if (entity.uuid in this.entities) {
-        console.error(`Entity already on stage, skipping 'add'`, entity)
-        return
+        console.warn(`Entity already on stage, skipping 'add'`, entity)
+        return entity
       }
+      console.log(`Adding entity '${entity.type}' to stage`, entity)
       this.entities[entity.uuid] = entity
       if (typeof entity.setup === 'function') {
         entity.setup()
       }
+      return entity
     },
     
-    findOrCreateEntity(type, uuid) {
-      let entity = this.entities[uuid]
-      if (entity) {
-        if (entity.type === type) {
-          return entity
-        } else {
-          console.error("Entity found, but does not match type", uuid, type, entity.type)
-        }
+    create(type, params = {}) {
+      const CreateEntity = Stage.registeredTypes[type]
+      if (CreateEntity) {
+        return this.add(CreateEntity(params))
       } else {
-        const CreateEntity = Stage.registeredTypes[type]
-        if (CreateEntity) {
-          entity = CreateEntity({ uuid })
-          console.log(`Adding entity '${entity.type}' to stage`, entity)
-          this.add(entity)
-          return entity
-        } else {
-          console.error(`Can't create entity of type '${type}': type not registered`)
-        }
+        console.error(`Can't create entity of type '${type}': type not registered`)
+      }
+    },
+    
+    findOrCreateEntity(goals) {
+      let entity = this.entities[goals.uuid]
+      if (entity) {
+        return entity
+      } else {
+        return this.create(goals.type, { goals })
       }
     },
 

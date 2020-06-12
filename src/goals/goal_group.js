@@ -3,7 +3,7 @@ import * as Y from 'yjs'
 
 import { Goal } from './goal.js'
 import { ABBREV } from './abbrev.js'
-import { mapToObject } from '../util.js'
+import { uuidv4, mapToObject } from '../util.js'
 
 const newMapOfSameType = (map) => {
   return Reflect.construct(Reflect.getPrototypeOf(map).constructor, [])
@@ -11,23 +11,72 @@ const newMapOfSameType = (map) => {
 
 
 const GoalGroup = stampit({
-  init({ uuid, type, map = new Map() }) {
-    if (!type) {
-      throw Error('GoalGroup must have type', type)
+  init({ map }) {
+    if (!map) {
+      console.trace(map)
+      throw Error('GoalGroup must be given a map (Map or Y.Map)')
     }
     this._goals = new Map()
     this._map = map
-    if (!map) { console.trace(); throw Error('Goal requires a Map object') }
-    
-    this.uuid = uuid
-    this.type = type
+  },
+
+  statics: {
+    goalsDescToJson: (type, uuid, goals) => {
+      if (!type) {
+        console.trace(type)
+        throw Error('goalsDescToJson requires type')
+      }
+      const json = {
+        '@id': uuid,
+        '@type': type,
+      }
+      for (let [goalName, goalAttrs] of Object.entries(goals)) {
+        json[goalName] = { '@due': 0 }
+        for (let [attrName, attrValue] of Object.entries(goalAttrs)) {
+          json[goalName][attrName] = attrValue
+        }
+      }
+      return json
+    },
+
+    // Given a javascript object, convert to a Map-like suitable to init a GoalGroup
+    goalsDescToMap: (MapLike, type, uuid, goals) => {
+      if (!type) {
+        console.trace(type)
+        throw Error('goalsDescToMap requires type')
+      }
+      const state = new MapLike()
+      state.set('@id', uuid || uuidv4())
+      state.set('@type', type)
+      for (let [goalName, goalAttrs] of Object.entries(goals)) {
+        const abbrev = ABBREV[goalName] || goalName
+        const child = new MapLike()
+        state.set(abbrev, child)
+        child.set('@due', 0)
+        for (let [attrName, attrValue] of Object.entries(goalAttrs)) {
+          child.set(attrName, attrValue)
+        }
+      }
+      console.log('goalsDescToMap', goals, state.get('ast').get('url'))
+      return state
+    },
+
+    jsonToMap: (MapLike, json) => {
+      const state = new MapLike()
+      for (let [goalName, goalAttrs] of Object.entries(json)) {
+        if (goalName.slice(0,1) === '@') {
+          state.set(goalName, goalAttrs)
+        } else {
+          state.set(goalName, new MapLike(Object.entries(goalAttrs)))
+        }
+      }
+      return state
+    }
   },
   
   methods: {
     get uuid () {
-      if (!this._map.has('@id')) {
-        this._map.set('@id', uuidv4())
-      }
+      if (typeof this._map.get !== 'function') { console.trace(this._map) }
       return this._map.get('@id')
     },
     
@@ -36,6 +85,7 @@ const GoalGroup = stampit({
     },
     
     get type () {
+      if (typeof this._map.get !== 'function') { console.trace(this._map) }
       return this._map.get('@type')
     },
 
@@ -59,7 +109,7 @@ const GoalGroup = stampit({
         get: () => this.get(abbrev)
       })
 
-      return this
+      return goal
     },
     
     /**

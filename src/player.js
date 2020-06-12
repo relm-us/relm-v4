@@ -19,8 +19,8 @@ import { AnimatesPosition } from './components/animates_position.js'
 import { AnimatesRotation } from './components/animates_rotation.js'
 
 const HasMaxSpeed = stampit(Component, GoalOriented, {
-  init({ goals = {} }) {
-    this.addGoal('speed', goals.speed || { max: 250 })
+  init() {
+    this.addGoal('speed',{ max: 250 })
   },
 
   methods: {
@@ -29,7 +29,7 @@ const HasMaxSpeed = stampit(Component, GoalOriented, {
     },
 
     _getPositionLerpAlpha(distance, delta) {
-      const speed = this.goals.speed.get().max
+      const speed = this.goals.speed.max
       const alpha = speed * delta / distance
       return THREE.MathUtils.clamp(alpha, 0.00001, 0.5)
     }
@@ -55,13 +55,13 @@ const FollowsTarget2 = stampit(Component, GoalOriented, {
     },
     
     getDistanceToTarget() {
-      this._goalPos.position.copy(this.goals.p.get())
+      this._goalPos.position.copy(this.goals.position)
       const distance = this.object.position.distanceTo(this._goalPos.position)
       return distance
     },
 
     update(delta) {
-      this._goalPos.position.copy(this.goals.p.get())
+      this._goalPos.position.copy(this.goals.position)
       
       this._source.position.copy(this.object.position)
       this._source.rotation.copy(this.object.rotation)

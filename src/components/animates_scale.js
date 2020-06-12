@@ -6,8 +6,8 @@ import { Equality } from '../goals/goal.js'
 import { GoalOriented } from '../goals/goal_oriented.js'
 
 const AnimatesScale = stampit(Component, GoalOriented, {
-  init({ goals = {} }) {
-    this.addGoal('scale', goals.scale || { x: 1.0, y: 1.0, z: 1.0 }, Equality.Distance(0.001))
+  init() {
+    this.addGoal('scale', { x: 1.0, y: 1.0, z: 1.0 }, Equality.Distance(0.001))
     
     this._scale = new THREE.Vector3()
   },
@@ -22,7 +22,7 @@ const AnimatesScale = stampit(Component, GoalOriented, {
           this._scale.copy(scaleGoal.toJSON())
           this.object.scale.lerp(this._scale, 0.1)
         }
-        scaleGoal.markAchievedIfEqual(this.object.scale)
+        scaleGoal.markAchievedIfEqual(new Map(Object.entries(this.object.scale)))
       }
     }
   }

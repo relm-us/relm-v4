@@ -26,10 +26,6 @@ const GoalOriented = stampit(Component, {
       }
     },
     
-    addGoal(name, defaults, equality) {
-      this._ensureGoalGroupInitialized()
-      this.goals.add(name, defaults, equality)
-    },
     
     /*
     setGoal(goalName, goalState, due = Date.now()) {

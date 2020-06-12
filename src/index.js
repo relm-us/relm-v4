@@ -25,6 +25,7 @@ import config from './config.js'
 import { PadController } from './pad_controller.js'
 import { relmImport } from './lib/relmExport.js'
 import { Player } from './player.js'
+import { GoalGroup } from './goals/goal_group.js'
 
 import "toastify-js/src/toastify.css"
 import { Thing3D } from './thing3d.js'
@@ -83,39 +84,6 @@ const mousePointerExists = async () => {
   })
 }
 
-const defaultPlayerState = (uuid) => {
-  return {
-    "@type": "player",
-    "label": {
-      "text": guestNameFromPlayerId(uuid),
-      "@due":1591157877357
-    },
-    "p": {
-      "x":0,
-      "y":0,
-      "z":0,
-      "@due":1591157877353
-    },
-    "r": {
-      "x":0,
-      "y":0,
-      "z":0,
-      "@due":1591157877353
-    },
-    "animMesh":{
-      "v": "fem-D-armature",
-      "@due":1591157877353
-    },
-    "animSpd":{
-      "v":1,
-      "@due":1591157877353
-    },
-    "speed":{
-      "max":250,
-      "@due":1591157877353
-    }
-  }
-}
 
 const defaultMousePointerState = (uuid) => {
   return {
@@ -140,22 +108,16 @@ const start = async () => {
   
   // Initialize network first so that entities can send their initial state
   // even before we've connected to server (or eventually, peers)
-  /*
-  network.on('add', async (uuid, state) => {
-    const type = state['@type']
-    if (type) {
-      const entity = stage.findOrCreateEntity(type, uuid)
-      console.log('entity', entity, state)
-      entity.goalsFromJSON(state)
-      // Special case: player gets bootstrapped
-      if (uuid === playerId) {
-        player = window.player = entity
-      } else if (entity.type === 'mouse' && !mousePointer) {
-        mousePointer = window.mousePointer = entity
-      }
-    } else {
-      const info = (state && state.toJSON) ? state.toJSON() : state
-      console.warn("Can't add entity to stage (entity has no type)", uuid, info)
+  network.on('add', async (goalGroupMap) => {
+    const group = GoalGroup({ map: goalGroupMap })
+    const entity = stage.findOrCreateEntity(group)
+    console.log('add entity to stage', entity, group.toJSON())
+    
+    // Special case: player gets bootstrapped
+    if (group.uuid === playerId) {
+      player = window.player = entity
+    } else if (entity.type === 'mouse' && !mousePointer) {
+      mousePointer = window.mousePointer = entity
     }
   })
   
@@ -165,7 +127,6 @@ const start = async () => {
       stage.remove(entity)
     }
   })
-  */
   
   const params = { id: playerId }
   const url = new URL(window.location.href)
@@ -276,12 +237,19 @@ const start = async () => {
   // network.firstCreation(defaultPlayer.goals, true)
   // console.log('defaultPlayer goals', defaultPlayer.goals.toJSON())
   // network.setTransientState(playerId, localstoreRestore(playerId) || defaultPlayerState(playerId))
-  // await playerExists()
-  
-  const defaultTree = Decoration({
+  network.create({
+    type: 'player',
+    uuid: playerId,
     goals: {
-    }
+      label: { text: guestNameFromPlayerId(playerId) },
+      animationMesh: { v: 'fem-D-armature' },
+      animationSpeed: { v: 1.0 },
+      speed: { max: 250 }
+    },
+    transient: true
   })
+  await playerExists()
+  
   network.create({
     type: 'decoration',
     goals: {
@@ -291,7 +259,7 @@ const start = async () => {
   
   const mouseId = uuidv4()
   // network.setTransientState(mouseId, defaultMousePointerState(mouseId))
-  await mousePointerExists()
+  // await mousePointerExists()
   
   // Perform several calculations once per game loop:
   // 1. (occasionally) Refresh videoBubble diameter
@@ -370,30 +338,16 @@ const start = async () => {
     
     if (response.file.match(IMAGE_FILETYPE_RE)) {
       const due = Date.now()
-      network.setPermanentState(uuidv4(), {
-        '@type': 'decoration',
-        'p': {
-          'x': player.object.position.x,
-          'y': player.object.position.y,
-          'z': player.object.position.z,
-          '@due': due,
-        },
-        'r': {
-          'x': 0,
-          'y': 0,
-          'z': 0,
-          '@due': due,
-        },
-        's': {
-          'x': 1,
-          'y': 1,
-          'z': 1,
-          '@due': due,
-        },
-        'asset': {
-          url,
-          '@due': due,
-        },
+      network.create({
+        type: 'decoration',
+        goals: {
+          position: {
+            x: player.object.position.x,
+            y: player.object.position.y,
+            z: player.object.position.z,
+          },
+          asset: { url },
+        }
       })
       // network.setState(mostRecentlyCreatedObjectId, {
       //   type: 'decoration',
@@ -448,7 +402,7 @@ const start = async () => {
     dropzone.removeAllFiles()
   })
 
-  const padController = PadController({ type: 'pad', target: player })
+  const padController = stage.create('padcon', { target: player })
   const controlPadEl = document.getElementById('control-pad')
   // controlPadEl.addEventListener('mousemove', (event) => {
   //   const rect = controlPadEl.getBoundingClientRect()
@@ -477,7 +431,7 @@ const start = async () => {
   controlPadEl.addEventListener('touchcancel', (event) => {
     padController.padDirectionChanged(new THREE.Vector3())
   })
-  stage.add(padController)
+  // stage.add(padController)
   
   // const mousePointer = window.mousePointer = await stage.findOrCreateEntity('mouse')
   // console.log("Created MousePointer", mousePointer.uuid, mousePointer)
@@ -883,7 +837,7 @@ const start = async () => {
     event.preventDefault()
   })
   
-  const kbController = KeyboardController({ type: "keyboard", target: player })
+  const kbController = stage.create('keycon', { target: player })
   document.addEventListener('keydown', e => {
     
     if (e.target === stage.renderer.domElement) {
@@ -957,13 +911,11 @@ const start = async () => {
     player.setGoal('animSpd', { v: 1.5 })
     // network.setEntity(player)
   })
-  stage.add(kbController)
 
-  const camController = CameraController({
+  const camController = stage.create('camcon', {
     targetNear: playersCentroid,
     targetFar: player.object.position
   })
-  stage.add(camController)
   
   
 

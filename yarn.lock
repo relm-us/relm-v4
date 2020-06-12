@@ -9001,9 +9001,9 @@ yargs@^15.3.1:
     y18n "^4.0.0"
     yargs-parser "^18.1.1"
 
-yjs@^13.1.1:
-  version "13.1.1"
-  resolved "https://registry.yarnpkg.com/yjs/-/yjs-13.1.1.tgz#6b1371c2dd6985bbddcee44c1ffa8398aa6c0743"
-  integrity sha512-h2c0Qnvjc4lYQdcHqW9G8q/US6as+0uiKhmQyO7TwLdxqFhiwowMfCh0D5f6zwuHyBIIQOTuvyzohwgtAxoHVA==
+yjs@^13.2.0:
+  version "13.2.0"
+  resolved "https://registry.yarnpkg.com/yjs/-/yjs-13.2.0.tgz#179997208bd835b84cbc9ffd1037b076299a5eed"
+  integrity sha512-0augWOespX5KC8de62GCR8WloZhAyBfEF3ZPDpjZlRs6yho7iFKqarpzxxJgmP8zA/pNJiV1EIpMezSxEdNdDw==
   dependencies:
     lib0 "^0.2.27"

@@ -7,8 +7,8 @@ const IMAGE_DEFAULT_COLOR = 0xFFFFFF
 const IMAGE_DEFAULT_ALPHA_TEST = 0.2
 
 const UsesAssetAsImage = stampit(Component, GoalOriented, {
-  init({ goals = {} }) {
-    this.addGoal('pivot', goals.pivot || { x: 0.0, y: 0.0, z: 0.0 })
+  init() {
+    this.addGoal('pivot', { x: 0.0, y: 0.0, z: 0.0 })
     
     this.geometry = null
     this.material = null

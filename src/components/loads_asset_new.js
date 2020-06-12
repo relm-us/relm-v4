@@ -26,15 +26,15 @@ const getLoaderFromUrl = (url) => {
 }
 
 const LoadsAsset = stampit(GoalOriented, Component, EventEmittable, {
-  init({ goals = {} }) {
-    this.addGoal('asset', goals.asset || { url: null })
+  init() {
+    this.addGoal('asset', { url: null })
     this.asset = null
   },
 
   methods: {
     loadAsset() {
-      const url = this.goals.asset.get().url
-      // console.log('loadAsset', url)
+      const url = this.goals.asset.get('url')
+      console.log('loadAsset', url)
       if (url) {
         const loader = getLoaderFromUrl(url)
         this.asset = loader.load(url, () => {

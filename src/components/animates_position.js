@@ -5,8 +5,8 @@ import { Equality } from '../goals/goal.js'
 import { GoalOriented } from '../goals/goal_oriented.js'
 
 const AnimatesPosition = stampit(GoalOriented, Component, {
-  init({ goals = {} }) {
-    this.addGoal('position', goals.position || { x: 0.0, y: 0.0, z: 0.0 }, Equality.Distance(0.01))
+  init() {
+    this.addGoal('position', { x: 0.0, y: 0.0, z: 0.0 }, Equality.Distance(0.01))
     
     this._position = new THREE.Vector3()
   },

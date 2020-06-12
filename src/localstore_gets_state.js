@@ -22,9 +22,9 @@ const LocalstoreGetsState = stampit(Component, {
     
     update(delta) {
       this._lsGetsStateCounter++
-      if (this._lsGetsStateCounter % SAVE_EVERY_NTH_FRAME === 0) {
-        localStorage.setItem(this.uuid, JSON.stringify(this.goalsToJSON()))
-      }
+      // if (this._lsGetsStateCounter % SAVE_EVERY_NTH_FRAME === 0) {
+      //   localStorage.setItem(this.uuid, JSON.stringify(this.goalsToJSON()))
+      // }
     }
   }
 })

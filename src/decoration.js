@@ -1,6 +1,7 @@
 import stampit from 'stampit'
 
 import { Entity } from './entity.js'
+import { Component } from './components/component.js'
 import { HasObject } from './components/has_object.js'
 import { HasEmissiveMaterial } from './components/has_emissive_material.js'
 import { ReceivesPointer } from './receives_pointer.js'
@@ -24,7 +25,7 @@ const Decoration = window.DecorationNew = stampit(
   HasEmissiveMaterial,
   ReceivesPointer,
   // FollowsTarget,
-  {
+  stampit(Component, {
     init() {
       this.edges = VisibleEdges({
         object: this.object,
@@ -32,8 +33,14 @@ const Decoration = window.DecorationNew = stampit(
       this.on('object-modified', () => {
         this.edges.enable()
       })
+    },
+
+    methods: {
+      update() {
+        // console.log('decoration', this.goals)
+      }
     }
-  }
+  })
 ).setType('decoration')
 
 export { Decoration }

@@ -33,10 +33,10 @@ function findAnimationClip(objectOrClipArray, condition) {
 }
 
 const HasAnimationMixer = stampit(Component, {
-  init({ goals = {} }) {
+  init() {
     // Two independent goals because they can each be achieved separately
-    this.addGoal('animationMesh', goals.animationMesh || { v: null })
-    this.addGoal('animationSpeed', goals.animationSpeed || { v: 1.0 })
+    this.addGoal('animationMesh', { v: null })
+    this.addGoal('animationSpeed', { v: 1.0 })
     
     this.clips = {}
     this.animationMixer = null

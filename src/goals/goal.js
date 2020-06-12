@@ -103,6 +103,10 @@ const Goal = stampit(EventEmittable, {
     // Set initial values with a `due` value that is long ago (0)
     this.update(defaults || {}, 0)
     
+    // console.log('observe added to goal', this)
+    this._map.observe((event) => {
+      console.log('goal observed change', this, event)
+    })
   },
 
   methods: {
