@@ -8,15 +8,31 @@ import { req, mapToObject } from '../util.js'
 const GoalGroup = stampit({
   statics: {
     // Given a javascript object, convert to a Map-like suitable to init a GoalGroup
-    goalsDescToYMap: ({ type = req`type`, uuid = req`uuid`, ymap = req`ymap`, goals = {} }) => {
+    goalsDescToYMap: ({
+      type = req`type`,
+      uuid = req`uuid`,
+      ymap = req`ymap`,
+      goalDefinitions = req`goalDefinitions`,
+      goalsDesc = {}
+    }) => {
       ymap.set('@id', uuid)
       ymap.set('@type', type)
-      for (let [goalName, goalAttrs] of Object.entries(goals)) {
-        const abbrev = ABBREV[goalName] || goalName
+      for (const [goalName, goalDefinition] of Object.entries(goalDefinitions)) {
+        const abbrev = goalDefinition.abbrev
+        if (!abbrev) {
+          throw Error('goal definition requires abbrev')
+        }
+        
         const child = new Y.Map()
         ymap.set(abbrev, child)
         child.set('@due', 0)
+        // console.log('lookup goalsDesc', goalName, goalsDesc, goalsDesc[goalName])
+        let goalAttrs = goalsDesc[goalName]
+        if (!goalAttrs) {
+          goalAttrs = goalDefinition.defaults
+        }
         for (let [attrName, attrValue] of Object.entries(goalAttrs)) {
+          // console.log('child.set', attrName, attrValue)
           child.set(attrName, attrValue)
         }
       }

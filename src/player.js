@@ -27,7 +27,7 @@ const HasMaxSpeed = stampit(Component, {
   
   methods: {
     setSpeed(speed) {
-      this.goals.speed.update('max', speed)
+      this.goals.speed.update({ max: speed })
     },
 
     _getPositionLerpAlpha(distance, delta) {

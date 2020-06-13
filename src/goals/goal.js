@@ -34,6 +34,7 @@ const Equality = {
   Map: () => {
     return (map1, map2) => {
       let keys = new Set([...map1.keys(), ...map2.keys()])
+      console.log('Equality.Map', map1, map2, keys)
       for (let k of keys.values()) {
         if (k.slice(0, 1) === '@') continue
         if (!map1.has(k) || !map2.has(k)) return false
@@ -97,11 +98,6 @@ const Goal = stampit(EventEmittable, {
     this.achieved = false
     
     /**
-     * The default values to return if the goal's value has not yet been set
-     */
-    this._defaults = defaults || {}
-    
-    /**
      * The goal's current state, e.g. `{x: 10, y: 10, z: 100}`.
      *
      * @type {Y.Map}
@@ -110,8 +106,17 @@ const Goal = stampit(EventEmittable, {
     
     // console.log('observe added to goal', this)
     this._map.observe((event) => {
+      this.achieved = false
       console.log('goal observed change', this, event)
     })
+    
+    // Set default values, as long as they don't overwrite existing values
+    this._due = 0
+    for (const [k, v] of Object.entries(defaults)) {
+      if (!this._map.has(k)) {
+        this._map.set(k, v)
+      }
+    }
     
     // For easier debugging, define 'value' as a getter on this object (instead of on the prototype)
     Object.defineProperty(this, 'value', {
@@ -134,11 +139,7 @@ const Goal = stampit(EventEmittable, {
     
     get(key) {
       if (!key) throw Error('key is required')
-      if (this._map.has(key)) {
-        return this._map.get(key)
-      } else {
-        return this._defaults[key]
-      }
+      return this._map.get(key)
     },
 
     /**
@@ -158,21 +159,28 @@ const Goal = stampit(EventEmittable, {
      * @param {Map<string,any>} state - the state to set
      * @param {number} due - the time at which the state comes due for animation completion
      */
-    updateMap(state, due = Date.now()) {
-      this.due = due
-      // We only set the value if it differs from the 'current' value. Otherwise, we'll
-      // churn on unachieved goals.
-      if (!this.equals(state)) {
-        this.achieved = false
-        for (let [k, v] of state.entries()) {
-          this._map.set(k, v)
-        }
-        this.emit('update', state, this._map)
-      }
-    },
+    // updateMap(state, due = Date.now()) {
+    //   this.due = due
+    //   // We only set the value if it differs from the 'current' value. Otherwise, we'll
+    //   // churn on unachieved goals.
+    //   console.log('asking to update goal', this.name, state, this.toJSON())
+    //   if (!this.equals(state)) {
+    //     this.achieved = false
+    //     for (let [k, v] of state.entries()) {
+    //       this._map.set(k, v)
+    //     }
+    //     console.log('updating goal', this.name, state, this.toJSON())
+    //     // this.emit('update', state, this._map)
+    //   }
+    // },
     
     update(object, due = Date.now()) {
-      this.updateMap(new Map(Object.entries(object)), due)
+      this.due = due
+      this._map.doc.transact(() => {
+        for (const [k, v] of Object.entries(object)) {
+          this._map.set(k, v)
+        }
+      })
     },
     
     equals(otherValue) {
@@ -188,7 +196,7 @@ const Goal = stampit(EventEmittable, {
     },
 
     toJSON() {
-      return mapToObject(this._map)
+      return this._map.toJSON()
     },
   }
 })

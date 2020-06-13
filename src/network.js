@@ -2,11 +2,11 @@ import stampit from 'stampit'
 import EventEmittable from '@stamp/eventemittable'
 
 import * as Y from 'yjs'
-import * as R from './rmap.js'
 import { WebsocketProvider } from 'y-websocket'
 import { IndexeddbPersistence } from 'y-indexeddb'
 
 import { GoalGroup } from './goals/goal_group.js'
+import { Typed } from './typed.js'
 import { uuidv4 } from './util.js'
 import { config } from './config.js'
 
@@ -36,12 +36,19 @@ const Document = stampit({
  
   methods: {
     create({ type, uuid = uuidv4(), goals = {} }) {
+      const Type = Typed.getType(type)
       const ymap = new Y.Map()
       this.doc.transact(() => {
         this.objects.set(uuid, ymap)
-        GoalGroup.goalsDescToYMap({ type, uuid, ymap, goals })
+        GoalGroup.goalsDescToYMap({
+          type,
+          uuid,
+          ymap,
+          goalDefinitions: Type.goalDefinitions,
+          goalsDesc: goals
+        })
       })
-      console.log('created', type, uuid, 'goals', goals, 'ymap', ymap.toJSON())
+      console.log('created', type, uuid, 'goals', goals, 'definitions', Type.goalDefinitions, 'ymap', ymap.toJSON())
     },
     
     remove(uuid) {

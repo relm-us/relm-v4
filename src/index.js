@@ -253,6 +253,7 @@ const start = async () => {
     },
   })
   await playerExists()
+  console.log('Player exists!')
   
   // network.permanents.create({
   //   type: 'decoration',
@@ -921,8 +922,6 @@ const start = async () => {
     targetFar: player.object.position
   })
   
-  
-
 
   initializeAVChat(player.uuid, 'relm-' + cfg.ROOM, {
     onMuteChanged: (track, playerId) => {

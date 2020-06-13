@@ -11,6 +11,9 @@ const Typed = stampit({
     },
 
     getType(type) {
+      if (!(type in this.registeredTypes)) {
+        throw Error(`getType not found: ${type}`)
+      }
       return this.registeredTypes[type]
     }
   },

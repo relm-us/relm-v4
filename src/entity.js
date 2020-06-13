@@ -42,7 +42,6 @@ const Entity = stampit(Typed, Component, {
     
     Object.defineProperty(this, 'uuid', { configurable: true,
       get: () => {
-        console.log('Entity get uuid', this._uuid)
         return this._uuid
       },
       set: (uuid) => {

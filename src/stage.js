@@ -100,16 +100,6 @@ const Stage = stampit(
       }
     },
     
-    findOrCreateEntity(goals) {
-      let entity = this.entities[goals.uuid]
-      if (entity) {
-        return entity
-      } else {
-        console.log('findOrCreateEntity goals', goals)
-        return this.create(goals.type, { goals })
-      }
-    },
-
     remove(entity) {
       if (typeof entity.teardown === 'function') {
         entity.teardown()

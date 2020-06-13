@@ -131,11 +131,10 @@ const HasAnimationMixer = stampit(Component, {
         const meshName = animMeshGoal.get('v')
         if (meshName) {
           this.changeAnimationMesh(meshName)
-          animMeshGoal.markAchieved()
+        } else {
+          console.warn("changeAnimationMesh skipped, meshName not set:", meshName, this.goals.toJSON())
         }
-        // else {
-        //   console.warn("Can't change mesh", meshName, this.goals.toJSON())
-        // }
+        animMeshGoal.markAchieved()
       }
       
       const animSpeedGoal = this.goals.animationSpeed
