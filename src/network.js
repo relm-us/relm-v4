@@ -8,25 +8,53 @@ import { IndexeddbPersistence } from 'y-indexeddb'
 
 import { GoalGroup } from './goals/goal_group.js'
 import { uuidv4 } from './util.js'
-import config from './config.js'
+import { config } from './config.js'
 
+
+const Document = stampit({
+  init({ emitter }) {
+    this.emitter = emitter
+    this.doc = new Y.Doc()
+    this.objects = this.doc.getMap('objects')
+    
+    this.addedObjects = {}
+
+    this.objects.observe((event) => {
+      event.keysChanged.forEach(key => {
+        if (this.objects.has(key)) {
+          const added = this.objects.get(key)
+          this.addedObjects[key] = added
+          emitter.emit('add', added)
+        } else {
+          const added = this.addedObjects[key]
+          emitter.emit('remove', added)
+          delete this.addedObjects[key]
+        }
+      })
+    })
+  },
+ 
+  methods: {
+    create({ type, uuid = uuidv4(), goals = {} }) {
+      const ymap = new Y.Map()
+      this.doc.transact(() => {
+        this.objects.set(uuid, ymap)
+        GoalGroup.goalsDescToYMap({ type, uuid, ymap, goals })
+      })
+      console.log('created', type, uuid, 'goals', goals, 'ymap', ymap.toJSON())
+    },
+    
+    remove(uuid) {
+      this.objects.delete(uuid)
+    }
+  }
+})
 
 
 /**
  * The Network object is an adapter between Yjs and the rest of Relm. It's responsible for setting values that
  * will propagate to other peers / servers, and conversely, forwarding events that should trigger game state
  * changes such as adding an object, or updating a property on an already existing object.
- * 
- * The `yobjects` part of the ydoc is an array of maps of maps:
- * [
- *   {
- *      "@id": "ca1901f9-853d-4570-a6af-9d810fa37b9d",
- *      "@type": "decoration",
- *      "p": { "x": 0, "y": 0, "z": 0, "@due": 1234567890 },
- *      "speed": { "value": 1.0, "@due": 1234567890 }
- *   },
- *   ...
- * ]
  */
 const Network = stampit(EventEmittable, {
   props: {
@@ -42,155 +70,50 @@ const Network = stampit(EventEmittable, {
     window.network = this
     
     // Transient document: holds things like player state and mouse pointer state
-    this.tdoc = new Y.Doc()
-    this.transients = this.ydoc.getArray('transients')
+    this.transients = Document({ emitter: this })
     
     // Permanent Y document: holds game object state & everything that stays in each relm
-    this.ydoc = new Y.Doc()
-    this.invitations = this.ydoc.getMap('invitations')
-    this.objects = this.ydoc.getArray('objects')
-
-    this.clientIdsToEntityState = {}
-    this.clientIdsConnected = new Set()
-    this.clientIdsAdded = new Set()
+    this.permanents = Document({ emitter: this })
+    
+    // Store connections to local or remote servers
+    this.providers = []
   },
   
   methods: {
-    isReady() {
-      return !!this.idbProvider && !!this.wsProvider
-    },
-    
     async connect(params = {}) {
       const cfg = config(window.location)
+      const serverUrl = cfg.SERVER_YJS_URL
       
-      // Start observing before opening connections so that we get a replay of the world state
-      // this.observeEntityStates()
-      this.objects.observeDeep((events, t) => {
-        this.onGoalsChanged(events)
-      })
-      
-      
-      /*
-      console.log('Opening local database...', cfg.ROOM, params)
+      {
+        const ydoc = this.permanents.doc
+        const room = cfg.ROOM
+        // await this.connectToLocal(ydoc, room)
+        await this.connectToServer(ydoc, serverUrl, room, params)
+      }
+    },
+    
+    async connectToLocal(ydoc, room) {
+      console.log('Opening local database...', room)
       try {
-        this.idbProvider = new IndexeddbPersistence(cfg.ROOM, this.ydoc)
-        await this.idbProvider.whenSynced
+        const provider = new IndexeddbPersistence(room, ydoc)
+        await provider.whenSynced
+        this.providers.push(provider)
       } catch (err) {
         console.warn("Unable to open indexeddb:", err)
       }
-      */
-
-      console.log('Opening remote websocket...', cfg.SERVER_YJS_URL, cfg.ROOM, params)
-      this.wsProvider = new WebsocketProvider(cfg.SERVER_YJS_URL, cfg.ROOM, this.ydoc, { params })
-      this.wsProvider.awareness.on('update', ({ added, updated, removed}, _conn) => {
-        // console.log('awareness change added', added)
-        // console.log('awareness change updated', updated)
-        // console.log('awareness change removed', removed)
-        this.onAwarenessChanged(added)
-        this.onAwarenessChanged(updated)
-        this.onAwarenessRemoved(removed)
-      })
     },
     
-    create({ type, uuid = null, goals = {}, transient = false }) {
-      const id = uuid || uuidv4()
-      if (transient) {
-        const stateJson = GoalGroup.goalsDescToJson(type, id, goals)
-        this.tobjects[id] = stateJson
-        this.wsProvider.awareness.setLocalStateField(id, stateJson)
-        console.log('create transient', type, id, stateJson)
-      } else {
-        const stateMap = GoalGroup.goalsDescToMap(Y.Map, type, id, goals)
-        console.log('create permanent-1', type, id, goals, stateMap.toJSON(), stateMap.get('ast').get('url'))
-        this.objects.push([stateMap])
-        console.log('create permanent-2', type, id, goals, stateMap.toJSON(), stateMap.get('ast').get('url'))
-      }
+    async connectToServer(ydoc, server, room, params) {
+      console.log('Opening remote websocket...', server, room, params)
+      const provider = new WebsocketProvider(server, room, ydoc, { params })
+      this.providers.push(provider)
     },
-
-    remove(uuid) {
-      this.entitiesMap.delete(uuid)
-    },
-    
-    onAwarenessChanged(added) {
-      // Note: `clientId` is the yjs-assigned integer for each client.
-      for (let clientId of added) {
-        const keyedState = this.wsProvider.awareness.getStates().get(clientId)
-        if (keyedState) {
-          this.clientIdsToEntityState[clientId] = keyedState
-          for (let uuid in keyedState) {
-            const state = keyedState[uuid]
-            if (!this.clientIdsAdded.has(uuid)) {
-              const stateMap = GoalGroup.jsonToMap(R.Map, state)
-              console.log('awareness add', uuid, stateMap, state)
-              this.emit('add', stateMap)
-              this.clientIdsAdded.add(uuid)
-              this.clientIdsConnected.add(uuid)
-            } else if (!this.clientIdsConnected.has(uuid)) {
-              this.emit('connect', uuid, state)
-              this.clientIdsConnected.add(uuid)
-            } else {
-              // console.log('awareness update', uuid, state)
-              this.emit(`update-${uuid}`, state)
-            }
-          }
-        } else {
-          console.warn('Unable to accept state change', clientId, state)
-        }
-      }
-    },
-
-    onAwarenessRemoved(removed) {
-      // Note: `clientId` is the yjs-assigned integer for each client.
-      for (let clientId of removed) {
-        if (clientId === this.ydoc.clientID) { continue }
-        const keyedState = this.clientIdsToEntityState[clientId]
-        if (keyedState) {
-          for (let uuid in keyedState) {
-            const state = keyedState[uuid]
-            this.emit('disconnect', uuid, state)
-            this.clientIdsConnected.delete(uuid)
-          }
-        } else {
-          console.warn('Unable to accept disconnect', clientId, state)
-        }
-      }
-    },
-
-    onGoalsChanged(events) {
-      // console.log('onGoalsChanged', events)
-      for (let event of events) {
-        if (event.path.length === 0) {
-          event.changes.added.forEach((item) => {
-            const goalGroupMap = item.content.type
-            this.emit('add', goalGroupMap)
-          })
-          event.changes.deleted.forEach((item) => {
-            const goalGroupMap = item.content.type
-            this.emit('remove', goalGroupMap)
-          })
-          // event.changes.keys.forEach(({ action }, uuid) => {
-          //   // console.log(this.entitiesMap, uuid)
-          //   const goalState = this.entitiesMap.get(uuid).toJSON()
-          //   if (action === 'add') {
-          //     console.log('goal added', uuid, goalState)
-          //     this.emit('add', uuid, goalState)
-          //   } else if (action === 'delete') {
-          //     console.log('goal deleted', uuid)
-          //     this.emit('remove', uuid)
-          //   } else if (action === 'update') {
-          //     console.log('goal updated', uuid)
-          //     this.emit(`update-${uuid}`, state)
-          //   } else {
-          //     console.warn('action not handled', action, uuid)
-          //   }
-          // })
-        } else {
-          console.log('event', event.path, event, event.changes, event.changes.keys)
-        }
-      }
-    }
-
   }
 })
 
-export { Network }
+const network = window.network = Network()
+
+export {
+  Network,
+  network,
+}

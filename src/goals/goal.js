@@ -3,7 +3,7 @@ import EventEmittable from '@stamp/eventemittable'
 
 import * as Y from 'yjs'
 
-import { mapToObject } from '../util.js'
+import { req, mapToObject } from '../util.js'
 
 const Equality = {
   Distance: (threshold) => {
@@ -44,6 +44,9 @@ const Equality = {
   }
 }
 
+function defineGoal(abbrev, defaults, equality = Equality.Map) {
+  return { abbrev, defaults, equality }
+}
 
 /**
  * A Goal is a time-sequenced queue of states. It's intended that the animation engine will attempt to
@@ -68,7 +71,7 @@ const Equality = {
  * @property {Function} equality - a function that tests for equality--it takes two Maps as params and returns true or false
  */
 const Goal = stampit(EventEmittable, {
-  init({ name, defaults, equality, map }) {
+  init({ name = req`name`, map = req`map`, defaults, equality }) {
     /**
      * The name of the goal, e.g. 'position', or 'quaternion'.
      *
@@ -94,18 +97,25 @@ const Goal = stampit(EventEmittable, {
     this.achieved = false
     
     /**
+     * The default values to return if the goal's value has not yet been set
+     */
+    this._defaults = defaults || {}
+    
+    /**
      * The goal's current state, e.g. `{x: 10, y: 10, z: 100}`.
      *
      * @type {Y.Map}
      */
     this._map = map
-    if (!map) { throw Error('Goal requires a Map object') }
-    // Set initial values with a `due` value that is long ago (0)
-    this.update(defaults || {}, 0)
     
     // console.log('observe added to goal', this)
     this._map.observe((event) => {
       console.log('goal observed change', this, event)
+    })
+    
+    // For easier debugging, define 'value' as a getter on this object (instead of on the prototype)
+    Object.defineProperty(this, 'value', {
+      get: () => this._map.toJSON()
     })
   },
 
@@ -114,10 +124,7 @@ const Goal = stampit(EventEmittable, {
      * The time at which the goal is 'due', in milliseconds.
      */
     get due() {
-      const due = this._map.get('@due')
-      if (due === undefined) {
-        throw Error('Goal has not been added to a Y.Doc, time undefined')
-      }
+      const due = this._map.get('@due') || 0
       return due
     },
     
@@ -126,8 +133,12 @@ const Goal = stampit(EventEmittable, {
     },
     
     get(key) {
-      if (!key) throw Error('Key is required')
-      return this._map.get(key)
+      if (!key) throw Error('key is required')
+      if (this._map.has(key)) {
+        return this._map.get(key)
+      } else {
+        return this._defaults[key]
+      }
     },
 
     /**
@@ -185,5 +196,6 @@ const Goal = stampit(EventEmittable, {
 
 export {
   Goal,
-  Equality
+  Equality,
+  defineGoal,
 }

@@ -1,4 +1,13 @@
 /**
+ * A simple way to mark some function parameters as required
+ * 
+ * @param {string} missing - the name of the potentially missing parameter
+ */
+function req(missing) {
+  throw new Error('Missing ' + missing)
+}
+
+/**
  * Generates a random UUID (version 4). This can be used as a decentralized way
  * to create an identifier that has such a low probability of collision that it
  * can essentially be treated as universally unique.
@@ -80,4 +89,5 @@ export {
   coinToss,
   checkOverflow,
   mapToObject,
+  req,
 }

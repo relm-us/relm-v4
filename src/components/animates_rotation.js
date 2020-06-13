@@ -1,13 +1,16 @@
 import stampit from 'stampit'
 
 import { Component } from './component.js'
+import { defineGoal } from '../goals/goal.js'
 
-import { GoalOriented } from '../goals/goal_oriented.js'
-
-const AnimatesRotation = stampit(Component, GoalOriented, {
+const AnimatesRotation = stampit(Component, {
+  deepStatics: {
+    goalDefinitions: {
+      rotation: defineGoal('r', { x: 0, y: 0, z: 0 })
+    }
+  },
+  
   init() {
-    this.addGoal('rotation', { x: 0.0, y: 0.0, z: 0.0 })
-    
     this._rotation = new THREE.Euler()
     this._quaternion = new THREE.Quaternion()
   },

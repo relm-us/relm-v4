@@ -1,13 +1,16 @@
 import stampit from 'stampit'
 
 import { Component } from './component.js'
-import { Equality } from '../goals/goal.js'
-import { GoalOriented } from '../goals/goal_oriented.js'
+import { Equality, defineGoal } from '../goals/goal.js'
 
-const AnimatesPosition = stampit(GoalOriented, Component, {
+const AnimatesPosition = stampit(Component, {
+  deepStatics: {
+    goalDefinitions: {
+      position: defineGoal('p', { x: 0, y: 0, z: 0 }, Equality.Distance(0.01))
+    }
+  },
+  
   init() {
-    this.addGoal('position', { x: 0.0, y: 0.0, z: 0.0 }, Equality.Distance(0.01))
-    
     this._position = new THREE.Vector3()
   },
 

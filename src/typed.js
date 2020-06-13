@@ -1,13 +1,17 @@
 import stampit from 'stampit'
 
-import { Stage } from './stage.js'
-
 const Typed = stampit({
   statics: {
+    registeredTypes: {},
+    
     setType(type) {
       const newStamp = this.conf({ type })
-      Stage.registerType(type, newStamp)
+      this.registeredTypes[type] = newStamp
       return newStamp
+    },
+
+    getType(type) {
+      return this.registeredTypes[type]
     }
   },
   init(_, { stamp }) {

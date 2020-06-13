@@ -3,12 +3,16 @@ import stampit from 'stampit'
 
 import { Component } from './component.js'
 import { Label } from '../label.js'
-import { GoalOriented } from '../goals/goal_oriented.js'
+import { defineGoal } from '../goals/goal.js'
 
 const { Vector3, Color } = THREE
 
-const HasLabel = stampit(Component, GoalOriented, {
-  name: 'HasLabel',
+const HasLabel = stampit(Component, {
+  deepStatics: {
+    goalDefinitions: {
+      label: defineGoal('lbl', { text: null })
+    }
+  },
 
   props: {
     labelPosition: null,
@@ -17,13 +21,10 @@ const HasLabel = stampit(Component, GoalOriented, {
   },
 
   init({
-    goals = {},
     labelOffset = this.labelOffset,
     labelColor = this.labelColor,
     onLabelChanged
   }) {
-    this.addGoal('label', goals.label || { text: null })
-    
     this.labelPosition = new Vector3()
     this.labelOffset = labelOffset || new Vector3()
     this.labelColor = labelColor || new Color()

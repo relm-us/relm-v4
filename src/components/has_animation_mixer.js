@@ -2,7 +2,7 @@ import stampit from 'stampit'
 
 import { SkeletonUtils } from '../lib/SkeletonUtils.js'
 import { Component } from './component.js'
-import { CanAddGoal } from '../goals/goal.js'
+import { defineGoal } from '../goals/goal.js'
 
 const { AnimationMixer } = THREE
 
@@ -33,11 +33,15 @@ function findAnimationClip(objectOrClipArray, condition) {
 }
 
 const HasAnimationMixer = stampit(Component, {
+  deepStatics: {
+    goalDefinitions: {
+      // Two independent goals because they can each be achieved separately
+      animationMesh: defineGoal('anm', { v: null }),
+      animationSpeed: defineGoal('ans', { v: 1.0 }),
+    }
+  },
+
   init() {
-    // Two independent goals because they can each be achieved separately
-    this.addGoal('animationMesh', { v: null })
-    this.addGoal('animationSpeed', { v: 1.0 })
-    
     this.clips = {}
     this.animationMixer = null
     this.animationResourceId = 'people'
@@ -125,10 +129,13 @@ const HasAnimationMixer = stampit(Component, {
       const animMeshGoal = this.goals.animationMesh
       if (!animMeshGoal.achieved) {
         const meshName = animMeshGoal.get('v')
-        if (meshName !== null) {
+        if (meshName) {
           this.changeAnimationMesh(meshName)
           animMeshGoal.markAchieved()
         }
+        // else {
+        //   console.warn("Can't change mesh", meshName, this.goals.toJSON())
+        // }
       }
       
       const animSpeedGoal = this.goals.animationSpeed

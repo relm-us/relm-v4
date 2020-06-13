@@ -1,15 +1,19 @@
 import stampit from 'stampit'
 
 import { Component } from './component.js'
-import { GoalOriented } from '../goals/goal.js'
+import { defineGoal } from '../goals/goal.js'
 
 const IMAGE_DEFAULT_COLOR = 0xFFFFFF
 const IMAGE_DEFAULT_ALPHA_TEST = 0.2
 
-const UsesAssetAsImage = stampit(Component, GoalOriented, {
+const UsesAssetAsImage = stampit(Component, {
+  deepStatics: {
+    goalDefinitions: {
+      pivot: defineGoal('pvt', { x: 0, y: 0, z: 0 })
+    }
+  },
+  
   init() {
-    this.addGoal('pivot', { x: 0.0, y: 0.0, z: 0.0 })
-    
     this.geometry = null
     this.material = null
     this.mesh = null
@@ -46,9 +50,10 @@ const UsesAssetAsImage = stampit(Component, GoalOriented, {
     _createImageMeshFromLoadedTexture(texture) {
       const w = texture.image.width
       const h = texture.image.height
-      const pivot = this.goals.pivot.get()
+      const pivot = this.goals.pivot
+      console.log('pivot', pivot.get('y'))
       
-      const geometry = this._createFoldingPlaneBufferGeometry(w, h, pivot.y)
+      const geometry = this._createFoldingPlaneBufferGeometry(w, h, pivot.get('y'))
       const material = this._createMaterial(texture)
       const mesh = new THREE.Mesh(geometry, material)
     

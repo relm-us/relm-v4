@@ -3,6 +3,7 @@ import EventEmittable from '@stamp/eventemittable'
 
 import { calculateAverageDelta } from './average_delta.js'
 
+import { Typed } from './typed.js'
 import { HasScene } from './has_scene.js'
 import { SceneWithCamera } from './scene_with_camera.js'
 import { SceneWithRenderer } from './scene_with_renderer.js'
@@ -46,13 +47,6 @@ const Stage = stampit(
     editorMode: false,
   },
   
-  statics: {
-    registeredTypes: {},
-    registerType(type, stamp) {
-      this.registeredTypes[type] = stamp
-    }
-  },
-
 
   init({ width, height }) {
     this.entities = {}
@@ -98,7 +92,7 @@ const Stage = stampit(
     },
     
     create(type, params = {}) {
-      const CreateEntity = Stage.registeredTypes[type]
+      const CreateEntity = Typed.registeredTypes[type]
       if (CreateEntity) {
         return this.add(CreateEntity(params))
       } else {
@@ -111,6 +105,7 @@ const Stage = stampit(
       if (entity) {
         return entity
       } else {
+        console.log('findOrCreateEntity goals', goals)
         return this.create(goals.type, { goals })
       }
     },

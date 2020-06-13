@@ -10,8 +10,7 @@ import { normalizeWheel } from './lib/normalizeWheel.js'
 import { showToast } from './lib/Toast.js'
 import { showInfoAboutObject } from './show_info_about_object.js'
 
-import { Network } from './network.js'
-import { stage, network } from './entity.js'
+import { Typed } from './typed.js'
 import { KeyboardController } from './keyboard_controller.js'
 import { CameraController } from './camera_controller.js'
 import { FindIntersectionsFromScreenCoords } from './find_intersections_from_screen_coords.js'
@@ -21,7 +20,8 @@ import { Decoration } from './decoration.js'
 import { Teleportal } from './teleportal.js'
 import { InteractionDiamond } from './interaction_diamond.js'
 import { uuidv4 } from './util.js'
-import config from './config.js'
+import { config, stage } from './config.js'
+import { network } from './network.js'
 import { PadController } from './pad_controller.js'
 import { relmImport } from './lib/relmExport.js'
 import { Player } from './player.js'
@@ -39,8 +39,6 @@ import {
   KEY_BACK_SLASH, KEY_SLASH,
   KEY_BACK_SPACE, KEY_DELETE
 } from 'keycode-js'
-
-window.Network = Network
 
 const IMAGE_FILETYPE_RE = /\.(png|gif|jpg|jpeg|webp)$/
 const GLTF_FILETYPE_RE = /\.(gltf|glb)$/
@@ -109,12 +107,19 @@ const start = async () => {
   // Initialize network first so that entities can send their initial state
   // even before we've connected to server (or eventually, peers)
   network.on('add', async (goalGroupMap) => {
-    const group = GoalGroup({ map: goalGroupMap })
-    const entity = stage.findOrCreateEntity(group)
-    console.log('add entity to stage', entity, group.toJSON())
+    console.log('network.on add', goalGroupMap.toJSON())
+    
+    // Get the stamp that has registered itself as a named, matching type
+    const typeName = goalGroupMap.get('@type')
+    const Type = Typed.getType(typeName)
+    
+    const goals = GoalGroup({ goalDefinitions: Type.goalDefinitions, goalGroupMap })
+    
+    const entity = Type({ goals })
+    stage.add(entity)
     
     // Special case: player gets bootstrapped
-    if (group.uuid === playerId) {
+    if (entity.uuid === playerId) {
       player = window.player = entity
     } else if (entity.type === 'mouse' && !mousePointer) {
       mousePointer = window.mousePointer = entity
@@ -237,7 +242,7 @@ const start = async () => {
   // network.firstCreation(defaultPlayer.goals, true)
   // console.log('defaultPlayer goals', defaultPlayer.goals.toJSON())
   // network.setTransientState(playerId, localstoreRestore(playerId) || defaultPlayerState(playerId))
-  network.create({
+  network.transients.create({
     type: 'player',
     uuid: playerId,
     goals: {
@@ -246,16 +251,15 @@ const start = async () => {
       animationSpeed: { v: 1.0 },
       speed: { max: 250 }
     },
-    transient: true
   })
   await playerExists()
   
-  network.create({
-    type: 'decoration',
-    goals: {
-      asset: { url: 'http://localhost:1235/asset/16c111cda60de632a67531f6f673822e-65197.png'}
-    }
-  })
+  // network.permanents.create({
+  //   type: 'decoration',
+  //   goals: {
+  //     asset: { url: 'http://localhost:1235/asset/16c111cda60de632a67531f6f673822e-65197.png'}
+  //   }
+  // })
   
   const mouseId = uuidv4()
   // network.setTransientState(mouseId, defaultMousePointerState(mouseId))

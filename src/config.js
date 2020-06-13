@@ -1,10 +1,15 @@
+import { ShowLoadingProgress } from './show_loading_progress.js'
+import { ResourceLoader } from './resource_loader.js'
+import { Stage } from './stage.js'
+import { Network } from './network.js'
+
 /**
  * Uses the window.location as a way to distinguish which server environment we are in.
  * 
  * @param {Location} location The window.location of this web page
  * @returns {Object}
  */
-export default function config(location) {
+function config(location) {
   let SERVER_YJS_URL
   let SERVER_UPLOAD_URL
   if (location.origin === 'https://relm.us') {
@@ -48,4 +53,21 @@ export default function config(location) {
   }
   
   return window.config
+}
+
+
+// Show progress as we load resources
+const resources = window.resources = ResourceLoader()
+resources.on('loaded', ({ id, currentProgress, maxProgress }) => {
+  ShowLoadingProgress(id, currentProgress, maxProgress) 
+})
+
+// The Stage is where all the THREE.js things come together, e.g. camera, lights
+const stage = window.stage = Stage({ width: window.innerWidth, height: window.innerHeight })
+
+
+export {
+  config,
+  resources,
+  stage,
 }

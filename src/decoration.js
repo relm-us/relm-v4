@@ -1,6 +1,6 @@
 import stampit from 'stampit'
 
-import { Entity } from './entity.js'
+import { EntityShared } from './entity_shared.js'
 import { Component } from './components/component.js'
 import { HasObject } from './components/has_object.js'
 import { HasEmissiveMaterial } from './components/has_emissive_material.js'
@@ -13,8 +13,8 @@ import { AnimatesPosition } from './components/animates_position.js'
 import { UsesAssetAsImage } from './components/uses_asset_as_image.js'
 import { NetworkSetsGoals } from './goals/goal.js'
 
-const Decoration = window.DecorationNew = stampit(
-  Entity,
+const Decoration = stampit(
+  EntityShared,
   HasObject,
   LoadsAsset,
   UsesAssetAsImage,

@@ -5,9 +5,7 @@ import { Component } from './components/component.js'
 import { HasObject } from './components/has_object.js'
 // import { HasUniqueColor, CopiesUniqueColor } from './components/has_unique_color.js'
 import { FindIntersectionsFromScreenCoords } from './find_intersections_from_screen_coords.js'
-import { AnimatesPosition } from './components/animates_position.js'
-import { GoalOriented, Permanence } from './goals/goal_oriented.js'
-
+import { defineGoal } from './goals/goal.js'
 
 const HasSphere = stampit(Component, {
   methods: {
@@ -78,16 +76,15 @@ const MousePointer = stampit(
   HasSphere,
   HasRing,
   // HasUniqueColor,
-  GoalOriented,
   stampit(Component, {
-    props: {
-      permanence: Permanence.TRANSIENT
+    deepStatics: {
+      goalDefinitions: {
+        'uniqueColor': defineGoal('ucol', { r: 1.0, g: 1.0, b: 1.0 }),
+        'position': defineGoal('p', { x: 0, y: 0, z: 0 }),
+      }
     },
 
     init() {
-      this.addGoal('uniqueColor', { r: 1.0, g: 1.0, b: 1.0 })
-      this.addGoal('position', {x: 0.0, y: 0.0, z: 0.0 })
-      
       this._finder = 
         FindIntersectionsFromScreenCoords({ stage: this.stage })
     },

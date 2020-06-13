@@ -2,7 +2,7 @@ import stampit from 'stampit'
 import EventEmittable from '@stamp/eventemittable'
 
 import { Component } from './component.js'
-import { GoalOriented } from '../goals/goal_oriented.js'
+import { defineGoal } from '../goals/goal.js'
 
 import { GLTFLoader } from '../lib/GLTFLoader.js'
 
@@ -25,9 +25,14 @@ const getLoaderFromUrl = (url) => {
   }
 }
 
-const LoadsAsset = stampit(GoalOriented, Component, EventEmittable, {
+const LoadsAsset = stampit(Component, EventEmittable, {
+  deepStatics: {
+    goalDefinitions: {
+      asset: defineGoal('ast', { url: null })
+    }
+  },
+  
   init() {
-    this.addGoal('asset', { url: null })
     this.asset = null
   },
 

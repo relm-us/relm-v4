@@ -1,6 +1,6 @@
 import stampit from 'stampit'
 
-import { Entity } from './entity.js'
+import { EntityShared } from './entity_shared.js'
 import { Component } from './components/component.js'
 import { HasObject } from './components/has_object.js'
 import { HasLabel } from './components/has_label.js'
@@ -14,15 +14,17 @@ import { HasVideoBubble } from './components/has_video_bubble.js'
 import { HasOpacity } from './components/has_opacity.js'
 import { HasOffscreenIndicator } from './components/has_offscreen_indicator.js'
 import { LocalstoreGetsState } from './localstore_gets_state.js'
-import { GoalOriented, Permanence } from './goals/goal_oriented.js'
 import { AnimatesPosition } from './components/animates_position.js'
 import { AnimatesRotation } from './components/animates_rotation.js'
+import { defineGoal } from './goals/goal.js'
 
-const HasMaxSpeed = stampit(Component, GoalOriented, {
-  init() {
-    this.addGoal('speed',{ max: 250 })
+const HasMaxSpeed = stampit(Component, {
+  deepStatics: {
+    goalDefinitions: {
+      speed: defineGoal('spd', { max: 250 })
+    }
   },
-
+  
   methods: {
     setSpeed(speed) {
       this.goals.speed.update('max', speed)
@@ -39,7 +41,7 @@ const HasMaxSpeed = stampit(Component, GoalOriented, {
 const FOLLOW_TARGET_DISTANCE_AHEAD = 100.0
 const FOLLOW_TARGET_SUFFICIENT_TIME = 2000.0
 
-const FollowsTarget2 = stampit(Component, GoalOriented, {
+const FollowsTarget2 = stampit(Component, {
   init() {
     // this.addGoal('p', { x: 0.0, y: 0.0, z: 0.0 })
 
@@ -98,7 +100,7 @@ const FollowsTarget2 = stampit(Component, GoalOriented, {
 
 
 const Player = stampit(
-  Entity,
+  EntityShared,
   HasObject,
   HasOpacity,
   HasLabel,
@@ -115,10 +117,6 @@ const Player = stampit(
   // HasOffscreenIndicator,
   LocalstoreGetsState,
   {
-    props: {
-      permanence: Permanence.TRANSIENT
-    },
-
     init() {
       this.videoBubble.offset = new THREE.Vector3(0, 190, 0)
     }

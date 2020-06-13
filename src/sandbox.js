@@ -1,23 +1,29 @@
 import stampit from 'stampit'
+import * as Y from 'yjs'
+import { Equality } from './goals/goal'
 
 const A = stampit({
-  init({ goals = {} }) {
-    console.log("A", goals.a || "a")
-  }
-})
+  conf: {
+    stage: null,
+    resources: null,
+  },
+  init({}, { stamp }) {
+    this.stage = stamp.compose.configuration.stage
+    this.resources = stamp.compose.configuration.resources
+  },
+}).conf({ stage: 1, resources: 2 })
 
 const B = stampit({
-  init({ goals = {} }) {
-    console.log("B", goals.b || "b")
-  }
-})
+  conf: {
+    network: null
+  },
+  init({}, { stamp }) {
+    this.network = stamp.compose.configuration.network
+  },
+}).conf({ network: 3 })
 
-const Combined = stampit(A, B)
+const Together = stampit(A, B)
 
-const c = Combined({
-  goals: {
-    a: "1",
-    b: "2"
-  }
-})
+const t = Together()
 
+console.log(t.stage, t.resources, t.network)
