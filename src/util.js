@@ -82,6 +82,18 @@ function mapToObject(map) {
   }
 }
 
+
+const domReady = () => {
+  return new Promise((resolve, reject) => {
+    if( document.readyState !== 'loading' ) {
+      resolve()
+    } else {
+      document.addEventListener('DOMContentLoaded', resolve);
+    }
+  })
+}
+
+
 /**
  * Set union - taken from MDN
  *
@@ -134,6 +146,7 @@ export {
   checkOverflow,
   mapToObject,
   req,
+  domReady,
   union,
   difference,
   intersection,

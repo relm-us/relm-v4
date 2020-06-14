@@ -1,7 +1,6 @@
 import stampit from 'stampit'
 
 import Dropzone from 'dropzone'
-import { DOMReady } from './domready.js'
 import { addManifestTo } from './manifest_loaders.js'
 import { guestNameFromPlayerId, avatarOptionFromPlayerId, avatarOptionsOfGender } from './avatars.js'
 import { Security } from './security.js'
@@ -11,20 +10,19 @@ import { showToast } from './lib/Toast.js'
 import { showInfoAboutObject } from './show_info_about_object.js'
 
 import { Typed } from './typed.js'
+import { Player } from './player.js'
+import { Decoration } from './decoration.js'
+import { MousePointer } from './mouse_pointer.js'
+
 import { KeyboardController } from './keyboard_controller.js'
 import { CameraController } from './camera_controller.js'
 import { FindIntersectionsFromScreenCoords } from './find_intersections_from_screen_coords.js'
 import { localstoreRestore } from './localstore_gets_state.js'
-import { MousePointer } from './mouse_pointer.js'
-import { Decoration } from './decoration.js'
-import { Teleportal } from './teleportal.js'
-import { InteractionDiamond } from './interaction_diamond.js'
-import { uuidv4 } from './util.js'
+import { uuidv4, domReady } from './util.js'
 import { config, stage } from './config.js'
 import { network } from './network.js'
 import { PadController } from './pad_controller.js'
 import { relmImport } from './lib/relmExport.js'
-import { Player } from './player.js'
 import { GoalGroup } from './goals/goal_group.js'
 
 import "toastify-js/src/toastify.css"
@@ -82,24 +80,6 @@ const mousePointerExists = async () => {
   })
 }
 
-
-const defaultMousePointerState = (uuid) => {
-  return {
-    "@type": "mouse",
-    "uniqcolor": {
-      "r": 1,
-      "g": 1,
-      "b": 1,
-      "@due": 1591157877353
-    },
-    "p": {
-      "x": 1,
-      "y": 1,
-      "z": 1,
-      "@due": 1591157877353
-    },
-  }
-}
 
 const start = async () => {
   const playerId = await security.getOrCreateId()
@@ -175,45 +155,13 @@ const start = async () => {
   stage.start()
 
 
-  await DOMReady()
+  await domReady()
   
   let playersCentroid = new THREE.Vector3()
   let occasionalUpdate = 0
   const sortByZ = (a, b) => (a.object.position.z - b.object.position.z)
   
   // The player!
-  // const player = window.player = await stage.findOrCreateEntity('player', playerId)
-  // player.setGoal('label', { text: guestNameFromPlayerId(playerId) })
-
-  // const player = window.player = Player({
-  //   uuid: playerId,
-  //   type: 'player',
-  //   label: guestNameFromPlayerId(playerId),
-  //   animationMeshName: avatarOptionFromPlayerId(playerId).avatarId,
-  //   speed: 250,
-  //   followTurning: true,
-  //   animationSpeed: 1.5,
-  //   labelOffset: { x: 0, y: 0, z: 60 },
-  //   videoBubbleOffset: {x: 0, y: 190, z: 0 },
-  //   thoughtBubbleOffset: {x: 50, y: 100},
-  //   animationResourceId: 'people',
-  //   lsKey: 'player',
-  //   onLabelChanged: (newName) => {
-  //     player.setLabel(newName)
-  //   }
-  // })
-  // if (!player.localstoreRestore()) {
-    // First-time users can choose their character
-    // document.getElementById('avatars').classList.remove('hide')
-  // }
-  // if (cfg.LANDING_COORDS) {
-    // player.state.position.target.copy(cfg.LANDING_COORDS)
-  // }
-  // Warp the player to their 'saved' location, if any
-  // player.warpToPosition(player.state.position.target)
-  // player.goals.p.set()
-  // Restore to fully opaque, in case we were saved in a translucent state
-  // player.state.opacity.target = 1.0
   // player.on('thoughtBubbleAction', (thought) => {
   //   mostRecentlyCreatedObjectId = uuidv4()
   //   const position = Object.assign({}, player.state.position.now)
@@ -231,17 +179,9 @@ const start = async () => {
     
   //   player.setThought(null)
   // })
-  // await stage.findOrCreateEntity('player', playerId)
-  
   // player.videoBubble.object.createDomElement()
   // player.videoBubble.object.on('mute', muteAudio)
   // player.videoBubble.object.on('unmute', unmuteAudio)
-  
-  // const playerGoals = DefaultPlayerGoalGroup.setUuid(playerId)
-  // const defaultPlayer = Player({ uuid: playerId })
-  // network.firstCreation(defaultPlayer.goals, true)
-  // console.log('defaultPlayer goals', defaultPlayer.goals.toJSON())
-  // network.setTransientState(playerId, localstoreRestore(playerId) || defaultPlayerState(playerId))
   network.transients.create({
     type: 'player',
     uuid: playerId,
@@ -253,14 +193,6 @@ const start = async () => {
     },
   })
   await playerExists()
-  console.log('Player exists!')
-  
-  // network.permanents.create({
-  //   type: 'decoration',
-  //   goals: {
-  //     asset: { url: 'http://localhost:1235/asset/16c111cda60de632a67531f6f673822e-65197.png'}
-  //   }
-  // })
   
   const mouseId = uuidv4()
   // network.setTransientState(mouseId, defaultMousePointerState(mouseId))
