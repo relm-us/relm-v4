@@ -304,12 +304,12 @@ const commands = {
         return true /* add to success count */
       })
       case 'f':
-      case 'fetch': return actionToEachObject((object, env) => {
-        const destination = new THREE.Vector3()
-        destination.copy(env.position)
-        destination.y = object.state.position.now.y
-        object.setPosition(destination)
-        env.network.setEntity(object)
+      case 'fetch': return actionToEachObject((entity, env) => {
+        entity.goals.position.update({
+          x: env.player.object.position.x,
+          y: entity.goals.position.get('y'),
+          z: env.player.object.position.z,
+        }, Date.now() + 4000)
         return true /* add to success count */
       })
       case 'i':
