@@ -415,6 +415,8 @@ const start = async () => {
   
   window.addEventListener('mousedown', (event) => {
     if (event.target.id !== 'game' && event.target.id !== 'glcanvas') { return }
+    // must be left-click
+    if (event.button !== 0) { return }
     
     intersectionFinder.setScreenCoords(event.clientX, event.clientY)
     
