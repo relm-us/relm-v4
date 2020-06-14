@@ -355,21 +355,17 @@ const commands = {
       })
       
       
-      case 'pivot': return actionToEachObject((entity, env) => {
-        const value = parseFloat(takeOne(args, `Shouldn't there be a [PIVOT] value after '/object pivot'?`))
+      case 'fold': return actionToEachObject((entity, env) => {
+        const value = parseFloat(takeOne(args, `Shouldn't there be a [FOLD] value after '/object fold'?`))
         if (value < 0 || value > 1) {
-          throw Error('The pivot value should be between 0 and 1')
+          throw Error('The fold value should be between 0 and 1')
         }
-        const pivotGoal = entity.goals.pivot
-        if (pivotGoal) {
-          pivotGoal.update({
-            x: pivotGoal.get('x'),
-            y: value,
-            z: pivotGoal.get('z'),
-          }, Date.now() + 2000)
+        const foldGoal = entity.goals.fold
+        if (foldGoal) {
+          foldGoal.update({ v: value }, Date.now() + 2000)
           return true /* add to success count */
         } else {
-          throw Error(`This object doesn't have a pivot point`)
+          throw Error(`This object isn't foldable`)
         }
       })
       

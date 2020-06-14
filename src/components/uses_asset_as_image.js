@@ -9,7 +9,7 @@ const IMAGE_DEFAULT_ALPHA_TEST = 0.2
 const UsesAssetAsImage = stampit(Component, {
   deepStatics: {
     goalDefinitions: {
-      pivot: defineGoal('pvt', { x: 0, y: 0, z: 0 })
+      fold: defineGoal('pvt', { v: 0 })
     }
   },
   
@@ -50,10 +50,9 @@ const UsesAssetAsImage = stampit(Component, {
     _createImageMeshFromLoadedTexture(texture) {
       const w = texture.image.width
       const h = texture.image.height
-      const pivot = this.goals.pivot
-      console.log('pivot', pivot.get('y'))
+      const fold = this.goals.fold
       
-      const geometry = this._createFoldingPlaneBufferGeometry(w, h, pivot.get('y'))
+      const geometry = this._createFoldingPlaneBufferGeometry(w, h, fold.get('v'))
       const material = this._createMaterial(texture)
       const mesh = new THREE.Mesh(geometry, material)
     
@@ -132,10 +131,10 @@ const UsesAssetAsImage = stampit(Component, {
 
     
     update(_delta) {
-      const pivotGoal = this.goals.pivot
-      if (!pivotGoal.achieved && this.texture) {
+      const foldGoal = this.goals.fold
+      if (!foldGoal.achieved && this.texture) {
         this._createImageMeshFromLoadedTexture(this.texture)
-        pivotGoal.markAchieved()
+        foldGoal.markAchieved()
       }
     }
   }
