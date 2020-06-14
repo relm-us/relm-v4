@@ -256,19 +256,17 @@ const commands = {
     }
   },
   object: (args) => {
-    const subCommand = takeOne(args, `Shouldn't there be a subcommand after '/sign'? e.g. 'create', 'label', 'message'`)
-    console.log('object subcommand', subCommand)
+    const subCommand = takeOne(args, `Shouldn't there be a subcommand after '/object'? e.g. 'clone', 'delete', 'scale'`)
     switch (subCommand) {
-      case 'clone': return actionToEachObject((object, env) => {
+      case 'clone': return actionToEachObject((entity, env) => {
         let count
         try { count = parseInt(takeOne(args), 10) }
         catch (e) { count = 1 }
-        const clonedState = stateToObject(object.type, object.state)
-        clonedState.position = Object.assign({}, clonedState.position)
+        const goalsDesc = entity.goals.toDesc()
         for (let i = 0; i < count; i++) {
-          clonedState.position.x += 25
-          clonedState.position.z += 25
-          network.setState(uuidv4(), clonedState)
+          goalsDesc.position.x += 25
+          goalsDesc.position.z += 25
+          network.permanents.create({ type: entity.goals.type, goals: goalsDesc })
         }
         return true /* add to success count */
       })

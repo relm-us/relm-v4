@@ -41,6 +41,7 @@ const GoalGroup = stampit({
   
   init({ goalDefinitions = req`goalDefinitions`, goalGroupMap = req`goalGroupMap` }) {
     this._map = goalGroupMap
+    this._definitions = goalDefinitions
     this._goals = this._createGoals(goalDefinitions)
   },
 
@@ -111,6 +112,16 @@ const GoalGroup = stampit({
 
     keys() {
       return Object.keys(this._goals)
+    },
+
+    toDesc() {
+      const desc = {}
+      for (const [goalName, definition] of Object.entries(this._definitions)) {
+        const goalValues = this.get(definition.abbrev).toJSON()
+        delete goalValues['@due']
+        desc[goalName] = goalValues
+      }
+      return desc
     },
 
     toJSON() {
