@@ -1,6 +1,7 @@
 import stampit from 'stampit'
 
 import { Component } from './component.js'
+import { defineGoal } from '../goals/goal.js'
 
 const findFirstMesh = (object3d) => {
   if (object3d.type === 'Object3D' || object3d.type === 'Mesh') {
@@ -12,6 +13,12 @@ const findFirstMesh = (object3d) => {
 }
 
 const UsesAssetAsGltf = stampit(Component, {
+  deepStatics: {
+    goalDefinitions: {
+      normalizedScale: defineGoal('nsc', { v: 1.0 })
+    }
+  },
+
   init() {
     this.geometry = null
     this.material = null
@@ -33,24 +40,19 @@ const UsesAssetAsGltf = stampit(Component, {
         } else {
           console.warn("Couldn't find first mesh in GLTF scene", gltf.scene)
         }
-        console.log('set gltf', this.child, gltf)
-        // this._createMeshFromLoadedGltf(this.child)
       } else {
         this.child = null
       }
     },
     
-
-    // _setMesh(mesh) {
-    //   if (this.mesh) { this.object.remove(this.mesh) }
-    //   this.mesh = mesh
-    //   this.object.add(this.mesh)
-    //   this.emit('mesh-updated')
-    // },
-
-    
-    // update(_delta) {
-    // }
+    update(_delta) {
+      const normScaleGoal = this.goals.normalizedScale
+      if (!normScaleGoal.achieved && this.child) {
+        const n = normScaleGoal.get('v')
+        this.child.scale.set(n, n, n)
+        normScaleGoal.markAchieved()
+      }
+    }
   }
 })
 

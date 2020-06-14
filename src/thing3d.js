@@ -49,11 +49,12 @@ const Thing3D = stampit(
     methods: {
       normalize() {
         const ratio = getScaleRatio(this.object, DEFAULT_SIZE)
-        this.goals.scale.update({
-          x: this.goals.scale.get('x') * ratio,
-          y: this.goals.scale.get('y') * ratio,
-          z: this.goals.scale.get('z') * ratio,
-        })
+        this.goals.normalizedScale.update({ v: ratio })
+        // this.goals.scale.update({
+        //   x: this.goals.scale.get('x') * ratio,
+        //   y: this.goals.scale.get('y') * ratio,
+        //   z: this.goals.scale.get('z') * ratio,
+        // })
       },
     }
   })
