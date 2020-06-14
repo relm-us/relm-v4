@@ -104,10 +104,9 @@ const Goal = stampit(EventEmittable, {
      */
     this._map = map
     
-    // console.log('observe added to goal', this)
     this._map.observe((event) => {
       this.achieved = false
-      console.log('goal observed change', this, event)
+      // console.log('goal observed change', this, event)
     })
     
     // Set default values, as long as they don't overwrite existing values
@@ -152,27 +151,6 @@ const Goal = stampit(EventEmittable, {
     isPastDue(now = Date.now()) {
       return this.due < now
     },
-    
-    /**
-     * Change the goal by updating the state. If values are the same, no update will occur.
-     * 
-     * @param {Map<string,any>} state - the state to set
-     * @param {number} due - the time at which the state comes due for animation completion
-     */
-    // updateMap(state, due = Date.now()) {
-    //   this.due = due
-    //   // We only set the value if it differs from the 'current' value. Otherwise, we'll
-    //   // churn on unachieved goals.
-    //   console.log('asking to update goal', this.name, state, this.toJSON())
-    //   if (!this.equals(state)) {
-    //     this.achieved = false
-    //     for (let [k, v] of state.entries()) {
-    //       this._map.set(k, v)
-    //     }
-    //     console.log('updating goal', this.name, state, this.toJSON())
-    //     // this.emit('update', state, this._map)
-    //   }
-    // },
     
     update(object, due = Date.now()) {
       this.due = due
