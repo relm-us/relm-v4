@@ -270,8 +270,8 @@ const commands = {
         }
         return true /* add to success count */
       })
-      case 'delete': return actionToEachObject((object, env) => {
-        network.removeEntity(object.uuid)
+      case 'delete': return actionToEachObject((entity, env) => {
+        network.permanents.remove(entity.uuid)
         return true /* add to success count */
       })
       case 'f':

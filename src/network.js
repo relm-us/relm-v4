@@ -27,7 +27,7 @@ const Document = stampit({
           emitter.emit('add', added)
         } else {
           const added = this.addedObjects[key]
-          emitter.emit('remove', added)
+          emitter.emit('remove', key, added)
           delete this.addedObjects[key]
         }
       })
