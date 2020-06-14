@@ -127,7 +127,7 @@ const UsesAssetAsImage = stampit(Component, {
       if (this.mesh) { this.object.remove(this.mesh) }
       this.mesh = mesh
       this.object.add(this.mesh)
-      this.emit('object-modified')
+      this.emit('mesh-updated')
     },
 
     

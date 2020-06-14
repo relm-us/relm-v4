@@ -1,35 +1,5 @@
 import stampit from 'stampit'
-
-const DECORATION_NORMAL_COLOR = new THREE.Color(0x000000)
-const DECORATION_SELECTED_COLOR = new THREE.Color(0x666600)
-
-      
-function union(setA, setB) {
-  let _union = new Set(setA)
-  for (let elem of setB) {
-      _union.add(elem)
-  }
-  return _union
-}
-
-function difference(setA, setB) {
-  let _difference = new Set(setA)
-  for (let elem of setB) {
-      _difference.delete(elem)
-  }
-  return _difference
-}
-
-function intersection(setA, setB) {
-  let _intersection = new Set()
-  for (let elem of setB) {
-      if (setA.has(elem)) {
-          _intersection.add(elem)
-      }
-  }
-  return _intersection
-}
-
+import { difference, intersection } from './util.js'
 
 const Selection = stampit({
   props: {
@@ -56,9 +26,7 @@ const Selection = stampit({
       entitiesSet.forEach((entity) => this.selected.add(entity))
 
       added.forEach((entity) => {
-        if (entity.setEmissive) {
-          entity.setEmissive(DECORATION_SELECTED_COLOR)
-        }
+        entity.emit('select')
       })
       
       return added
@@ -69,9 +37,7 @@ const Selection = stampit({
       entitiesSet.forEach((entity) => this.selected.delete(entity))
 
       removed.forEach((entity) => {
-        if (entity.setEmissive) {
-          entity.setEmissive(DECORATION_NORMAL_COLOR)
-        }
+        entity.emit('deselect')
       })
       
       return removed
