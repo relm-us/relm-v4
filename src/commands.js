@@ -4,9 +4,9 @@ import { showInfoAboutObject } from './show_info_about_object.js'
 
 import { InteractionDiamond } from './interaction_diamond.js'
 import { Teleportal } from './teleportal.js'
-import { stateToObject } from './state_to_object.js'
 import { relmExport } from './lib/relmExport.js'
 import { muteAudio, unmuteAudio } from './avchat.js'
+import { avatarOptionsOfGender } from './avatars.js'
 
 import {
   take,
@@ -169,7 +169,7 @@ const commands = {
     } else {
       return (env) => {
         const avatarOptions = avatarOptionsOfGender(gender)
-        env.player.state.animationMeshName.target = avatarOptions[index].avatarId
+        env.player.goals.animationMesh.update({ v: avatarOptions[index].avatarId })
       }
     }
   },
