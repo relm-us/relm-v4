@@ -2,7 +2,6 @@ import stampit from 'stampit'
 import * as Y from 'yjs'
 
 import { Goal } from './goal.js'
-import { ABBREV } from './abbrev.js'
 import { req, mapToObject } from '../util.js'
 
 const GoalGroup = stampit({
