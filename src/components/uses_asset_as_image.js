@@ -9,7 +9,8 @@ const IMAGE_DEFAULT_ALPHA_TEST = 0.2
 const UsesAssetAsImage = stampit(Component, {
   deepStatics: {
     goalDefinitions: {
-      fold: defineGoal('pvt', { v: 0 })
+      fold: defineGoal('pvt', { v: 0 }),
+      flip: defineGoal('flp', { x: false, y: false }),
     }
   },
   
@@ -50,9 +51,10 @@ const UsesAssetAsImage = stampit(Component, {
     _createImageMeshFromLoadedTexture(texture) {
       const w = texture.image.width
       const h = texture.image.height
-      const fold = this.goals.fold
+      const fold = this.goals.fold.get('v')
+      const flip = this.goals.flip
       
-      const geometry = this._createFoldingPlaneBufferGeometry(w, h, fold.get('v'))
+      const geometry = this._createFoldingPlaneBufferGeometry(w, h, flip.get('x'), flip.get('y'), fold)
       const material = this._createMaterial(texture)
       const mesh = new THREE.Mesh(geometry, material)
     
@@ -71,7 +73,7 @@ const UsesAssetAsImage = stampit(Component, {
      *                        while 1.0 also means there is no fold (the entire image is "down", below
      *                        the fold)
      */
-    _createFoldingPlaneBufferGeometry(w, h, fold) {
+    _createFoldingPlaneBufferGeometry(w, h, flipx, flipy, fold) {
       const top = h * (1.0 - fold)
       const bot = h * fold
       
@@ -96,12 +98,12 @@ const UsesAssetAsImage = stampit(Component, {
       
       // Map the image to the folding plane
       const uvs = new Float32Array([
-        0.0, fold,
-        1.0, fold,
-        1.0, 1.0,
-        0.0, 1.0,
-        0.0, 0.0,
-        1.0, 0.0,
+        (flipx ? 1.0 : 0.0), (flipy ? (1.0 - fold) : fold),
+        (flipx ? 0.0 : 1.0), (flipy ? (1.0 - fold) : fold),
+        (flipx ? 0.0 : 1.0), (flipy ? 0.0 : 1.0),
+        (flipx ? 1.0 : 0.0), (flipy ? 0.0 : 1.0),
+        (flipx ? 1.0 : 0.0), (flipy ? 1.0 : 0.0),
+        (flipx ? 0.0 : 1.0), (flipy ? 1.0 : 0.0),
       ])
       
       geometry.setIndex(indices)
@@ -132,9 +134,11 @@ const UsesAssetAsImage = stampit(Component, {
     
     update(_delta) {
       const foldGoal = this.goals.fold
-      if (!foldGoal.achieved && this.texture) {
+      const flipGoal = this.goals.flip
+      if (this.texture && (!foldGoal.achieved || !flipGoal.achieved)) {
         this._createImageMeshFromLoadedTexture(this.texture)
         foldGoal.markAchieved()
+        flipGoal.markAchieved()
       }
     }
   }

@@ -11,7 +11,6 @@ import { AnimatesScale } from './components/animates_scale.js'
 import { AnimatesRotation } from './components/animates_rotation.js'
 import { AnimatesPosition } from './components/animates_position.js'
 import { UsesAssetAsImage } from './components/uses_asset_as_image.js'
-import { NetworkSetsGoals } from './goals/goal.js'
 
 const Decoration = stampit(
   EntityShared,
@@ -21,10 +20,8 @@ const Decoration = stampit(
   AnimatesScale,
   AnimatesRotation,
   AnimatesPosition,
-  NetworkSetsGoals,
   HasEmissiveMaterial,
   ReceivesPointer,
-  // FollowsTarget,
   stampit(Component, {
     init() {
       this.edges = VisibleEdges({
@@ -40,12 +37,6 @@ const Decoration = stampit(
         this.edges.disable()
       })
     },
-
-    methods: {
-      update() {
-        // console.log('decoration', this.goals)
-      }
-    }
   })
 ).setType('decoration')
 

@@ -367,6 +367,24 @@ const commands = {
         }
       })
       
+      
+      case 'flip': return actionToEachObject((entity, env) => {
+        let axis = 'x'
+        try { axis = (takeOne(args) == 'y' ? 'y' : 'x') }
+        catch (e) { }
+        
+        const flipGoal = entity.goals.flip
+        if (flipGoal) {
+          flipGoal.update({
+            x: axis === 'x' ? (!flipGoal.get('x')) : flipGoal.get('x'),
+            y: axis === 'y' ? (!flipGoal.get('y')) : flipGoal.get('y'),
+          }, Date.now() + 2000)
+          return true /* add to success count */
+        } else {
+          throw Error(`This object isn't flippable`)
+        }
+      })
+
 
       case 's':
       case 'scale': return actionToEachObject((entity, env) => {
