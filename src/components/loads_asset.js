@@ -2,70 +2,58 @@ import stampit from 'stampit'
 import EventEmittable from '@stamp/eventemittable'
 
 import { Component } from './component.js'
+import { defineGoal } from '../goals/goal.js'
+
+import { GLTFLoader } from '../lib/GLTFLoader.js'
 
 
-const LoadingState = {
-  UNSENT: 0,
-  LOADING: 1,
-  DONE: 2,
+// Loader for regular GLTFs and GLBs
+const regularGLTFLoader = new GLTFLoader()
+
+// Loader for Textures
+const textureLoader = new THREE.TextureLoader()
+
+
+const getLoaderFromUrl = (url) => {
+  if (!url.match) { console.error('URL is is not a string', url) }
+  if (url.match(/\.(png|jpg|jpeg|webp)$/)) {
+    return textureLoader
+  } else if (url.match(/\.(glb|gltf)/)) {
+    return regularGLTFLoader
+  } else {
+    throw Error(`Can't match loader for asset at URL '${url}'`)
+  }
 }
 
 const LoadsAsset = stampit(Component, EventEmittable, {
-  props: {
-    loadingState: LoadingState.UNSENT,
-    loadedAsset: null,
-    loader: null,
-  },
-
-  deepProps: {
-    state: {
-      asset: {
-        now: {id: null, url: null},
-        target: {id: null, url: null},
-      },
+  deepStatics: {
+    goalDefinitions: {
+      asset: defineGoal('ast', { url: null })
     }
   },
-
-
-  init({ asset, loader }) {
-    if (asset) {
-      Object.assign(this.state.asset.target, asset)
-    }
-    
-    // The loader should be a function such as 
-    if (loader) {
-      this.loader = loader
-    }
+  
+  init() {
+    this.asset = null
   },
 
   methods: {
     loadAsset() {
-      switch(this.loadingState) {
-        case LoadingState.UNSENT:
-          const asset = this.state.asset.target
-          this.loader(asset.url).then((gltf) => {
-            this.loadedAsset = gltf
-            this.loadingState = LoadingState.DONE
-          }, (rejectReason) => {
-            this.loadedAsset = null
-            this.loadingState = LoadingState.DONE
-            console.error('Unable to load asset:', rejectReason, asset)
-          })
-          this.loadingState = LoadingState.LOADING
-          break
-        case LoadingState.LOADING:
-          break
-        case LoadingState.DONE:
-          Object.assign(this.state.asset.now, this.state.asset.target)
-          this.emit('loaded', this.loadedAsset)
-          this.loadingState = LoadingState.UNSENT
-          break
+      const url = this.goals.asset.get('url')
+      if (url) {
+        const loader = getLoaderFromUrl(url)
+        this.asset = loader.load(url, (asset) => {
+          this.emit('asset-loaded', asset, url)
+        })
+      } else {
+        this.asset = null
+        this.emit('asset-loaded', null, url)
       }
     },
 
     update(_delta) {
-      if (this.state.asset.now.id !== this.state.asset.target.id) {
+      if (!this.goals.asset.achieved) {
         this.loadAsset()
+        this.goals.asset.markAchieved('url')
       }
     }
   }

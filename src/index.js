@@ -1,19 +1,21 @@
-import stampit from 'stampit'
-
+// Import external libraries and helpers
 import Dropzone from 'dropzone'
-import { addManifestTo } from './manifest_loaders.js'
 import { guestNameFromPlayerId, avatarOptionFromPlayerId, avatarOptionsOfGender } from './avatars.js'
 import { Security } from './security.js'
 import { initializeAVChat, muteAudio, unmuteAudio } from './avchat.js'
 import { normalizeWheel } from './lib/normalizeWheel.js'
 import { showToast } from './lib/Toast.js'
 import { showInfoAboutObject } from './show_info_about_object.js'
+import "toastify-js/src/toastify.css"
 
+// Register each type of shared entity
 import { Typed } from './typed.js'
 import { Player } from './player.js'
-import { Decoration } from './decoration.js'
 import { MousePointer } from './mouse_pointer.js'
+import { Decoration } from './decoration.js'
+import { Thing3D } from './thing3d.js'
 
+// Misc. other imports
 import { KeyboardController } from './keyboard_controller.js'
 import { CameraController } from './camera_controller.js'
 import { FindIntersectionsFromScreenCoords } from './find_intersections_from_screen_coords.js'
@@ -24,9 +26,7 @@ import { network } from './network.js'
 import { PadController } from './pad_controller.js'
 import { relmImport } from './lib/relmExport.js'
 import { GoalGroup } from './goals/goal_group.js'
-
-import "toastify-js/src/toastify.css"
-import { Thing3D } from './thing3d.js'
+import { addManifestTo } from './manifest_loaders.js'
 import { parseCommand } from './commands.js'
 import { recordCoords } from './record_coords.js'
 
@@ -42,11 +42,8 @@ const IMAGE_FILETYPE_RE = /\.(png|gif|jpg|jpeg|webp)$/
 const GLTF_FILETYPE_RE = /\.(gltf|glb)$/
 
 const cfg = config(window.location)
-const decorationLayerThickness = 0.01
 const intersectionFinder = FindIntersectionsFromScreenCoords({ stage })
 let previousMousedownIndex = 0
-let decorationLayer = 0
-let mostRecentlyCreatedObjectId = null
 
 // Don't look for 'dropzone' in HTML tags
 Dropzone.autoDiscover = false
@@ -60,10 +57,15 @@ let player
 let mousePointer
 
 
-const entityOnStage = async (uuid) => {
+/**
+ * 
+ * @param {string} uuid 
+ * @param {Function} condition - an optional additional condition to be met
+ */
+const entityOnStage = async (uuid, condition = null) => {
   return new Promise((resolve) => {
     setInterval(() => {
-      if (uuid in stage.entities) {
+      if (uuid in stage.entities && (condition === null || condition(stage.entities[uuid]))) {
         resolve(stage.entities[uuid])
       }
     }, 10)
@@ -259,14 +261,10 @@ const start = async () => {
     // Close the upload box automatically
     previews.classList.remove('show')
     
-    decorationLayer += decorationLayerThickness
-    // Add the decoration to the network so everyone can see it
     const url = cfg.SERVER_UPLOAD_URL + '/' + response.file
-    // mostRecentlyCreatedObjectId = uuidv4()
-    // console.log('mostRecentlyCreatedObjectId', mostRecentlyCreatedObjectId)
     
+    // Add the asset to the network so everyone can see it
     if (response.file.match(IMAGE_FILETYPE_RE)) {
-      const due = Date.now()
       network.permanents.create({
         type: 'decoration',
         goals: {
@@ -278,49 +276,29 @@ const start = async () => {
           asset: { url },
         }
       })
-      // network.setState(mostRecentlyCreatedObjectId, {
-      //   type: 'decoration',
-      //   position: {
-      //     x: player.state.position.now.x,
-      //     y: player.state.position.now.y + decorationLayer, // a little above the ground
-      //     z: player.state.position.now.z,
-      //   },
-      //   asset: {
-      //     id: response.id,
-      //     url: url,
-      //   },
-      //   speed: 500,
-      //   imageScale: 1.0,
-      //   orientation: 0,
-      // })
     } else if (response.file.match(GLTF_FILETYPE_RE)) {
-      // Load it before adding to the network so we can normalize the scale
-      const thing3d = Thing3D({
-        uuid: uuidv4(), // need to create
+      const uuid = uuidv4()
+      network.permanents.create({
         type: 'thing3d',
-        position: {
-          x: player.state.position.now.x,
-          y: player.state.position.now.y,
-          z: player.state.position.now.z,
+        uuid: uuid,
+        goals: {
+          position: {
+            x: player.object.position.x,
+            y: player.object.position.y,
+            z: player.object.position.z,
+          },
+          asset: { url },
         },
-        asset: {
-          id: response.id,
-          url: url,
-        },
-        speed: 500,
-        scale: 1.0,
       })
+      const thing3d = await entityOnStage(uuid, (entity) => entity.child)
+      
       // The `normalize` step happens just once after loading
-      thing3d.once('loaded', () => {
-        thing3d.normalize()
-        network.setEntity(thing3d)
+      thing3d.normalize()
         
-        // Select the thing that was just uploaded
-        stage.selection.select([thing3d])
+      // Select the thing that was just uploaded
+      stage.selection.select([thing3d])
         
-        showToast(`Uploaded with scale normalized to ${parseInt(thing3d.state.scale.target, 10)}`)
-      }) 
-      stage.add(thing3d)
+      showToast(`Uploaded with scale normalized to ${parseInt(thing3d.goals.scale.get('x'), 10)}`)
     } else {
       const ext = /(?:\.([^.]+))?$/.exec(response.file)[1] || 'unknown'
       showToast(`Upload canceled. We don't know how to use files of type ${ext}`)

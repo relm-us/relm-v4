@@ -1,22 +1,17 @@
 import stampit from 'stampit'
 
-import { Entity } from './entity.js'
+import { EntityShared } from './entity_shared.js'
 import { Component } from './components/component.js'
 import { HasObject } from './components/has_object.js'
 import { HasEmissiveMaterial } from './components/has_emissive_material.js'
 import { ReceivesPointer } from './receives_pointer.js'
-import { FollowsTarget } from './components/follows_target.js'
-// import { NetworkSetsState } from './network_persistence.js'
-import { regularGLTFLoader } from './manifest_loaders.js'
 import { LoadsAsset } from './components/loads_asset.js'
+import { AnimatesScale } from './components/animates_scale.js'
+import { AnimatesRotation } from './components/animates_rotation.js'
+import { AnimatesPosition } from './components/animates_position.js'
+import { UsesAssetAsGltf } from './components/uses_asset_as_gltf.js'
 
 const DEFAULT_SIZE = 100
-
-const loadGltf = (path) => {
-  return new Promise((resolve, reject) => {
-    regularGLTFLoader.load(path, resolve, null, reject)
-  })
-}
 
 /**
  * Returns a ratio that can be used to multiply by the object's current size so as to
@@ -40,143 +35,28 @@ const getScaleRatio = (object3d, largestSide) => {
   return ratio
 }
 
-const findFirstMesh = (object3d) => {
-  if (object3d.type === 'Object3D' || object3d.type === 'Mesh') {
-    return object3d
-  }
-  for (let child of object3d.children) {
-    return findFirstMesh(child)
-  }
-}
-
-const HasThing3D = stampit(Component, {
-  deepProps: {
-    fastforward: {
-      quaternion: false,
-    },
-    state: {
-      scale: {
-        now: 1.0,
-        target: 1.0,
-      },
-      quaternion: {
-        now: null,
-        target: null,
-      }
-    }
-  },
-
-  init({ scale, quaternion }) {
-    if (scale) {
-      this.state.scale.now = this.state.scale.target = scale
-    }
-    
-    this.state.quaternion.now = new THREE.Quaternion(0, 0, 0, 1)
-    this.state.quaternion.target = new THREE.Quaternion()
-    if (quaternion) {
-      const q = quaternion
-      const target = this.state.quaternion.target
-      if ('_x' in q) {
-        target.set(q._x, q._y, q._z, q._w)
-      } else if ('x' in q) {
-        target.set(q.x, q.y, q.z, q.w)
-      } else {
-        console.error('Thing3D expects quaternion to have `x` or `_x` keys', quaternion)
-      }
-    } else {
-      this.state.quaternion.target.copy(this.state.quaternion.now)
-    }
-    
-    // On first load, we want to skip the slerp animation if `now` and `target` differ
-    const angleDelta = Math.abs(this.state.quaternion.now.angleTo(this.state.quaternion.target))
-    if (angleDelta > 0.01) {
-      this.fastforward.quaternion = true
-    }
-    
-    this.loader = loadGltf
-    this.on('loaded', (gltf) => {
-      if (gltf) {
-        this.setGltf(gltf)
-        this.setScaleFromState()
-      }
-    })
-  },
-
-  methods: {
-    setGltf(gltf) {
-      // Search for mesh within scene
-      const child = findFirstMesh(gltf.scene)
-      if (child) {
-        child.scale.set(1, 1, 1)
-        child.position.set(0, 0, 0)
-        this.object.add(child)
-      } else {
-        console.warn("Couldn't find first mesh in GLTF scene", gltf.scene)
-      }
-    },
-    
-    normalize() {
-      const ratio = getScaleRatio(this.object, DEFAULT_SIZE)
-      const scale = this.state.scale.target
-      this.state.scale.target = scale * ratio
-    },
-    
-    setScale(scale) {
-      this.state.scale.target = scale
-    },
-    
-    getScale() {
-      return this.state.scale.now
-    },
-    
-    setScaleFromState() {
-      const scale = this.state.scale.now
-      this.object.scale.set(scale, scale, scale)
-    },
-    
-    setRotation(radians) {
-      this.state.quaternion.target.setFromAxisAngle(this.object.up, radians)
-    },
-    
-    getRotation() {
-      // return this.state.quaternion.target.angleTo(this.object.up)
-      return this.object.rotation.y
-    },
-    
-    setQuaternionFromState() {
-      this.object.quaternion.copy(this.state.quaternion.now)
-    },
-    
-    update(delta) {
-      const scaleDelta = Math.abs(this.state.scale.now - this.state.scale.target)
-      if (scaleDelta > 0.01) {
-        this.state.scale.now = this.state.scale.target
-        this.setScaleFromState()
-      }
-      
-      const angleDelta = Math.abs(this.state.quaternion.now.angleTo(this.state.quaternion.target))
-      if (angleDelta > 0.01) {
-        if (this.fastforward.quaternion) {
-          this.state.quaternion.now.copy(this.state.quaternion.target)
-          this.fastforward.quaternion = false
-        } else {
-          this.state.quaternion.now.slerp(this.state.quaternion.target, 0.1)
-        }
-        this.setQuaternionFromState()
-      }
-    }
-  }
-})
-
 const Thing3D = stampit(
-  Entity,
+  EntityShared,
   HasObject,
   LoadsAsset,
-  HasThing3D,
+  UsesAssetAsGltf,
+  AnimatesScale,
+  AnimatesRotation,
+  AnimatesPosition,
   HasEmissiveMaterial,
   ReceivesPointer,
-  FollowsTarget,
-  // NetworkSetsState
-)
+  stampit(Component, {
+    methods: {
+      normalize() {
+        const ratio = getScaleRatio(this.object, DEFAULT_SIZE)
+        this.goals.scale.update({
+          x: this.goals.scale.get('x') * ratio,
+          y: this.goals.scale.get('y') * ratio,
+          z: this.goals.scale.get('z') * ratio,
+        })
+      },
+    }
+  })
+).setType('thing3d')
 
 export { Thing3D }
