@@ -404,7 +404,7 @@ const commands = {
     if (iAmSure === 'iamsure') {
       return (env) => {
         network.entitiesMap.forEach((_, uuid) => {
-          network.removeEntityWithGoals(uuid)
+          network.permanents.remove(uuid)
         })
       }
     }

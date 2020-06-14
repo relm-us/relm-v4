@@ -7,7 +7,7 @@ import { Equality, defineGoal } from '../goals/goal.js'
 const AnimatesScale = stampit(Component, {
   deepStatics: {
     goalDefinitions: {
-      scale: defineGoal('s', { x: 0, y: 0, z: 0 }, Equality.Distance(0.001))
+      scale: defineGoal('s', { x: 1, y: 1, z: 1 }, Equality.Distance(0.001))
     }
   },
 

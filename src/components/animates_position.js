@@ -23,9 +23,6 @@ const AnimatesPosition = stampit(Component, {
       const positionGoal = this.goals.position
       if (!positionGoal.achieved) {
         if (positionGoal.isPastDue()) {
-          // if (this.type === 'mouse') {
-          //   console.log('mouse p past due', positionGoal.achieved, positionGoal.get())
-          // }
           this.object.position.copy(positionGoal.toJSON())
           positionGoal.markAchieved()
         } else {
@@ -33,7 +30,11 @@ const AnimatesPosition = stampit(Component, {
           const distance = this.object.position.distanceTo(this._position)
           const alpha = this._getPositionLerpAlpha(distance, delta)
           this.object.position.lerp(this._position, alpha)
-          positionGoal.markAchievedIfEqual(this.object.position)
+          if (isNaN(this.object.position.x)) {
+            // safeguard because NaN will cause whole render process to fail
+            throw Error('Position has NaN value')
+          }
+          positionGoal.markAchievedIfEqual(new Map(Object.entries(this.object.position)))
         }
       }
     }

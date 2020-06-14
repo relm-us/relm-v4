@@ -477,7 +477,7 @@ const start = async () => {
           
           // entity.disableFollowsTarget()
           entity.object.position.copy(dragDelta)
-          entity.setGoal('p', {
+          entity.goals.position.update({
             x: dragDelta.x,
             y: dragDelta.y,
             z: dragDelta.z,
@@ -775,7 +775,7 @@ const start = async () => {
       const index = parseInt(button.dataset.index, 10)
       const avatarOptions = avatarOptionsOfGender(gender)
       console.log('player set mesh', avatarOptions[index].avatarId)
-      player.setGoal('animMesh', { v: avatarOptions[index].avatarId })
+      player.goals.animationMesh.update({ v: avatarOptions[index].avatarId })
       console.log('player goals', player.goalsToJSON())
       // network.setGoalForEntity(player, 'animMesh', {v: avatarOptions[index].avatarId})
       avatarSelection.classList.add('hide')
@@ -907,13 +907,13 @@ const start = async () => {
   kbController.on('doublePressed', (action) => {
     player.setSpeed(500)
     // player.setAnimationSpeed(3)
-    player.setGoal('animSpd', { v: 3.0 })
+    player.goals.animationSpeed.update({ v: 3.0 })
     // network.setEntity(player)
   })
   kbController.on('released', (action) => {
     player.setSpeed(250)
     // player.setAnimationSpeed(1.5)
-    player.setGoal('animSpd', { v: 1.5 })
+    player.goals.animationSpeed.update({ v: 1.5 })
     // network.setEntity(player)
   })
 

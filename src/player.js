@@ -31,7 +31,10 @@ const HasMaxSpeed = stampit(Component, {
     },
 
     _getPositionLerpAlpha(distance, delta) {
-      const speed = this.goals.speed.max
+      const speed = this.goals.speed.get('max')
+      if (speed === undefined) {
+        throw Error('speed is undefined')
+      }
       const alpha = speed * delta / distance
       return THREE.MathUtils.clamp(alpha, 0.00001, 0.5)
     }
@@ -57,14 +60,15 @@ const FollowsTarget2 = stampit(Component, {
     },
     
     getDistanceToTarget() {
-      this._goalPos.position.copy(this.goals.position)
+      this._goalPos.position.copy(this.goals.position.toJSON())
       const distance = this.object.position.distanceTo(this._goalPos.position)
       return distance
     },
 
     update(delta) {
-      this._goalPos.position.copy(this.goals.position)
+      this._goalPos.position.copy(this.goals.position.toJSON())
       
+      // console.log('obj pos', this.object.position)
       this._source.position.copy(this.object.position)
       this._source.rotation.copy(this.object.rotation)
       
