@@ -26,6 +26,14 @@ import {
  * @property {THREE.Vector3} position The position to act at
  */
 
+function teleport(relm, x, z) {
+  let url = window.location.origin + '/' + relm
+  if (x !== undefined && z !== undefined) {
+    url += `?x=${parseFloat(x)}&z=${parseFloat(z)}`
+  }
+  setTimeout(() => { window.location = url }, 200)
+}
+
 function signCreate(message) {
   return (env) => {
     const position = new THREE.Vector3()
@@ -218,10 +226,28 @@ const commands = {
       setTimeout(() => { textarea.focus() } , 100)
     }
   },
-  home: (args) => {
-    if (args.length > 0) { throw Error(`I hope it's ok to ignore ${args.join(' ')}!`) }
-    else return (env) => {
-      env.player.warpToPosition({ x: 0, y: 0, z: 0 })
+  go: (args) => {
+    const coords = { x: 0, y: 0, z: 0 }
+    switch (args.length) {
+      case 0: break
+      case 1:
+        teleport(takeOne(args))
+        break
+      case 2:
+        coords.x = parseFloat(takeOne(args))
+        coords.z = parseFloat(takeOne(args))
+        break
+      case 3:
+        const relm = takeOne(args)
+        const x = takeOne(args)
+        const z = takeOne(args)
+        teleport(relm, x, z)
+        break
+      default:
+        throw Error(`Expecting x z coords or nothing (i.e. just '/home')`)
+    }
+    return (env) => {
+      env.player.goals.position.update(coords)
     }
   },
   mode: (args) => {
