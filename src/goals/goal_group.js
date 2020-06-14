@@ -109,8 +109,8 @@ const GoalGroup = stampit({
       return this._goals[abbrev]
     },
 
-    keys() {
-      return Object.keys(this._goals)
+    definitionKeys() {
+      return Object.keys(this._definitions)
     },
 
     toDesc() {

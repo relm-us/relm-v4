@@ -1,43 +1,60 @@
 import { showToast } from './lib/Toast.js'
 
+const formatAttr = (attrType, key, value) => {
+  switch (attrType) {
+    case 'rotation': return value / -THREE.Math.DEG2RAD
+    default:
+      if (typeof value === 'number') {
+        return value.toFixed(2)
+      } else if (value.match && value.match(/^https?:/)) {
+        return `<a href="${value}">${value}</a>`
+      } else {
+        return value
+      }
+  }
+
+}
+
+const makeAttrs = (attrType, attrs) => {
+  let sortedKeys = Object.keys(attrs)
+  sortedKeys.sort()
+
+  const divs = sortedKeys.map((k) => {
+    const v = attrs[k]
+    return `
+      <div class="info-attr-key">${k}:</div>
+      <div class="info-attr-value">${formatAttr(attrType, k, v)}</div>
+    `
+  })
+  return divs.map((div) => `<div class="info-attr">${div}</div>`).join('')
+}
+
+const makeGroup = (name, attrs) => {
+  return `
+    <div class="info-group">
+      <div class="info-label">${name}</div>
+      ${makeAttrs(name, attrs)}
+    </div>
+  `
+}
 const showInfoAboutObject = (entity) => {
   if (!entity) { return }
   const p = entity.object.position
   const infos = [
-    `type: ${entity.type}`,
-    `uuid: ${entity.uuid}`,
-    `position: {x: ${p.x.toFixed(1)}, y: ${p.y.toFixed(1)}, z: ${p.y.toFixed(1)}}`,
+    `
+      <div class="info-title">
+        <div class="info-type">${entity.type}</div>
+        <div class="info-uuid">${entity.uuid}</div>
+      </div>
+    `
   ]
   
-  if (entity.state.url) {
-    // portals have url
-    const url = entity.state.url.now
-    infos.push(`url: <a href="${url}" style="color:white">${url}</a>`)
-  } else if (entity.state.asset) {
-    const url = entity.state.asset.now.url
-    infos.push(`url: <a href="${url}" style="color:white">${url}</a>`)
-  } else if (entity.state.link) {
-    const url = entity.state.link.now || '[not set]'
-    infos.push(`url: <a href="${url}" style="color:white">${url}</a>`)
+  const json = entity.goals.toDesc()
+  for (const name of entity.goals.definitionKeys()) {
+    infos.push(makeGroup(name, json[name]))
   }
   
-  if (entity.getScale) {
-    const scale = entity.getScale()
-    infos.push(`scale: ${scale.toFixed(1)}`)
-  }
-  
-  if (entity.getRotation) {
-    const rotation = entity.getRotation() / -THREE.Math.DEG2RAD
-    infos.push(`rotation: ${rotation.toFixed(1)}`)
-  }
-  
-  const isLockable = !!entity.isUiLocked
-  if (isLockable) {
-    const locked = entity.isUiLocked() ? 'locked' : 'unlocked'
-    infos.push(`locked: ${locked}`)
-  }
-  
-  showToast(infos.join('<br>'))
+  showToast(infos.join(''))
 }
 
 export { showInfoAboutObject }

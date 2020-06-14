@@ -680,9 +680,9 @@ const start = async () => {
   })
   
   document.addEventListener('contextmenu', (event) => {
-    const isect = mousePointer.intersects
-    if (isect.length > 0) {
-      const clickedEntity = isect[0].entity
+    let intersections = intersectionFinder.getAllIntersectionsOnStage()
+    if (intersections.length > 0) {
+      const clickedEntity = intersections[0].entity
       showInfoAboutObject(clickedEntity)
     }
     event.preventDefault()

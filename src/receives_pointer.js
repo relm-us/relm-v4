@@ -1,5 +1,7 @@
 import stampit from 'stampit'
 
+import { defineGoal } from './goals/goal.js'
+
 /**
  * Component that allows an object to be selected with the mouse or touchpad.
  * 
@@ -8,42 +10,35 @@ import stampit from 'stampit'
  * so it can't be selected.
  */
 const ReceivesPointer = stampit({
-  deepProps: {
-    state: {
-      uiLocked: {
-        target: false
-      }
+  deepStatics: {
+    goalDefinitions: {
+      uiLocked: defineGoal('locked', { v: false })
     }
   },
 
-  init({ uiLocked }) {
+  init() {
     this.receivesPointer = true
-    if (typeof uiLocked === 'undefined') {
-      this.state.uiLocked.target = false
-    } else {
-      this.state.uiLocked.target = uiLocked
-    }
   },
 
   methods: {
     uiLockToggle() {
-      this.state.uiLocked.target = !this.state.uiLocked.target
+      this.goals.uiLocked.update({ v: !this.isUiLocked() })
     },
 
     uiLock() {
-      this.state.uiLocked.target = true
+      this.goals.uiLocked.update({ v: true })
     },
 
     uiUnlock() {
-      this.state.uiLocked.target = false
+      this.goals.uiLocked.update({ v: false })
     },
 
     isUiLocked() {
-      return this.state.uiLocked.target
+      return this.goals.uiLocked.get('v')
     },
 
     isEffectivelyUiLocked() {
-      return !this.stage.editorMode && this.state.uiLocked.target
+      return !this.stage.editorMode // && this.state.uiLocked.target
     }
   }
 })
