@@ -29,6 +29,7 @@ const AnimatesRotation = stampit(Component, {
           this.object.quaternion.slerp(this._quaternion, 0.1)
           const angleDelta = Math.abs(this.object.quaternion.angleTo(this._quaternion))
           if (angleDelta < 0.01) {
+            this.object.quaternion.copy(this._quaternion)
             rotationGoal.markAchieved()
           }
         }

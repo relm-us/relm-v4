@@ -105,6 +105,52 @@ function portalSetRadius(radius) {
   })
 }
 
+function objectScale(entity, { x, y, z }) {
+  const scaleGoal = entity.goals.scale
+  if (scaleGoal) {
+    scaleGoal.update({
+      x: x || scaleGoal.get('x'),
+      y: y || scaleGoal.get('y'),
+      z: z || scaleGoal.get('z'),
+    }, Date.now() + 2000)
+    return true /* add to success count */
+  } else {
+    showToast(`This object can't be scaled`)
+  }
+}
+
+function objectMove(entity, { x, y, z }) {
+  const posGoal = entity.goals.position
+  if (posGoal) {
+    posGoal.update({
+      x: posGoal.get('x') + (x || 0),
+      y: posGoal.get('y') + (y || 0),
+      z: posGoal.get('z') + (z || 0),
+    }, Date.now() + 2000)
+    return true /* add to success count */
+  } else {
+    showToast(`This object can't be moved`)
+  }
+}
+
+/**
+ * 
+ * @param {EntityShared} entity 
+ * @param {Object} axes - axes to rotate, in degrees 
+ */
+function objectRotate(entity, { x, y, z }) {
+  const rotGoal = entity.goals.rotation
+  if (rotGoal) {
+    rotGoal.update({
+      x: x !== undefined ? (x * -THREE.Math.DEG2RAD) : rotGoal.get('x'),
+      y: y !== undefined ? (y * -THREE.Math.DEG2RAD) : rotGoal.get('y'),
+      z: z !== undefined ? (z * -THREE.Math.DEG2RAD) : rotGoal.get('z'),
+    }, Date.now() + 2000)
+    return true /* add to success count */
+  } else {
+    throw Error(`This object can't rotate`)
+  }
+}
 /**
  * List of commands, in alphabetical order. Each command is executed in the game's thought box by prefixing with '/'.
  * Command functions are passed `args` as a single argument, and return a function with the following type signature:
@@ -287,41 +333,88 @@ const commands = {
           return true /* add to success count */
         }
       }, (count) => { showToast(`Unlocked ${numberOfObjects(count)}`) })
-      case 'r':
-      case 'rotate': return actionToEachObject((object, env) => {
-        if (object.setRotation) {
-          const degrees = parseFloat(takeOne(args, `Shouldn't there be a [DEG] value after '/object rotate'?`))
-          const radians = degrees * -THREE.Math.DEG2RAD
-          object.setRotation(radians)
-          env.network.setEntity(object)
+      
+
+      case 'rx':
+      case 'rotatex': return actionToEachObject((entity, env) => {
+        const degrees = parseFloat(takeOne(args, `Shouldn't there be a [DEG] value after '/object rotatex'?`))
+        return objectRotate(entity, { x: degrees })
+      })
+      
+      case 'ry':
+      case 'rotate': // for backwards compat
+      case 'rotatey': return actionToEachObject((entity, env) => {
+        const degrees = parseFloat(takeOne(args, `Shouldn't there be a [DEG] value after '/object rotatey'?`))
+        return objectRotate(entity, { y: degrees })
+      })
+      
+      case 'rz':
+      case 'rotatez': return actionToEachObject((entity, env) => {
+        const degrees = parseFloat(takeOne(args, `Shouldn't there be a [DEG] value after '/object rotatez'?`))
+        return objectRotate(entity, { z: degrees })
+      })
+      
+      
+      case 'pivot': return actionToEachObject((entity, env) => {
+        const value = parseFloat(takeOne(args, `Shouldn't there be a [PIVOT] value after '/object pivot'?`))
+        if (value < 0 || value > 1) {
+          throw Error('The pivot value should be between 0 and 1')
+        }
+        const pivotGoal = entity.goals.pivot
+        if (pivotGoal) {
+          pivotGoal.update({
+            x: pivotGoal.get('x'),
+            y: value,
+            z: pivotGoal.get('z'),
+          }, Date.now() + 2000)
           return true /* add to success count */
+        } else {
+          throw Error(`This object doesn't have a pivot point`)
         }
       })
+      
+
       case 's':
-      case 'scale': return actionToEachObject((object, env) => {
-        if (object.setScale) {
-          const scale = parseFloat(takeOne(args, `Shouldn't there be a [SCALE] value after '/object scale'?`))
-          object.setScale(scale)
-          env.network.setEntity(object)
-          return true /* add to success count */
-        }
+      case 'scale': return actionToEachObject((entity, env) => {
+        const scale = parseFloat(takeOne(args, `Shouldn't there be a [SCALE] value after '/object scale'?`))
+        return objectScale(entity, { x: scale, y: scale, z: scale })
       })
-      case 'x': return actionToEachObject((object, env) => {
-        object.state.position.target.x += parseFloat(takeOne(args, `Shouldn't there be an [X] value after '/object x'?`))
-        env.network.setEntity(object)
-        return true /* add to success count */
+      
+      case 'sx':
+      case 'scalex': return actionToEachObject((entity, env) => {
+        const scale = parseFloat(takeOne(args, `Shouldn't there be a [SCALE] value after '/object scalex'?`))
+        return objectScale(entity, { x: scale })
       })
-      case 'y': return actionToEachObject((object, env) => {
-        console.log('y', object, env)
-        object.state.position.target.y += parseFloat(takeOne(args, `Shouldn't there be an [Y] value after '/object y'?`))
-        env.network.setEntity(object)
-        return true /* add to success count */
+      
+      case 'sy':
+      case 'scaley': return actionToEachObject((entity, env) => {
+        const scale = parseFloat(takeOne(args, `Shouldn't there be a [SCALE] value after '/object scaley'?`))
+        return objectScale(entity, { y: scale })
       })
-      case 'z': return actionToEachObject((object, env) => {
-        object.state.position.target.z += parseFloat(takeOne(args, `Shouldn't there be an [Z] value after '/object z'?`))
-        env.network.setEntity(object)
-        return true /* add to success count */
+      
+      case 'sz':
+      case 'scalez': return actionToEachObject((entity, env) => {
+        const scale = parseFloat(takeOne(args, `Shouldn't there be a [SCALE] value after '/object scalez'?`))
+        return objectScale(entity, { z: scale })
       })
+      
+
+      case 'x': return actionToEachObject((entity, env) => {
+        const delta = parseFloat(takeOne(args, `Shouldn't there be an [X] value after '/object x'?`))
+        return objectMove(entity, { x: delta })
+      })
+      
+      case 'y': return actionToEachObject((entity, env) => {
+        const delta = parseFloat(takeOne(args, `Shouldn't there be a [Y] value after '/object y'?`))
+        return objectMove(entity, { y: delta })
+      })
+      
+      case 'z': return actionToEachObject((entity, env) => {
+        const delta = parseFloat(takeOne(args, `Shouldn't there be a [Z] value after '/object z'?`))
+        return objectMove(entity, { z: delta })
+      })
+      
+
       default: throw Error(`Is ${subCommand} a '/object' subcommand?`)
     }
   },
