@@ -38,7 +38,7 @@ const ReceivesPointer = stampit({
     },
 
     isEffectivelyUiLocked() {
-      return !this.stage.editorMode // && this.state.uiLocked.target
+      return !this.stage.editorMode && this.goals.uiLocked.get('v')
     }
   }
 })
