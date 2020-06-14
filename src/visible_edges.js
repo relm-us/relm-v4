@@ -20,6 +20,12 @@ const VisibleEdges = stampit({
       this.enabled = false
       this.object.remove(this.lines)
     },
+    
+    rebuild() {
+      if (this.enabled) {
+        this._createEdges()
+      }
+    },
 
     _findGeometry() {
       let mesh

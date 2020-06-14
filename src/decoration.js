@@ -30,8 +30,14 @@ const Decoration = stampit(
       this.edges = VisibleEdges({
         object: this.object,
       })
-      this.on('object-modified', () => {
+      this.on('mesh-updated', () => {
+        this.edges.rebuild()
+      })
+      this.on('select', () => {
         this.edges.enable()
+      })
+      this.on('deselect', () => {
+        this.edges.disable()
       })
     },
 
