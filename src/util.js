@@ -83,6 +83,16 @@ function mapToObject(map) {
 }
 
 
+function randomPastelColor() {
+  const hue = Math.floor(Math.random() * 360)
+  const color = new THREE.Color(`hsl(${hue}, 100%, 58%)`)
+  return {
+    r: color.r,
+    g: color.g,
+    b: color.b,
+  }
+}
+
 const domReady = () => {
   return new Promise((resolve, reject) => {
     if( document.readyState !== 'loading' ) {
@@ -145,6 +155,7 @@ export {
   coinToss,
   checkOverflow,
   mapToObject,
+  randomPastelColor,
   req,
   domReady,
   union,

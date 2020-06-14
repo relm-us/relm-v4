@@ -1,9 +1,8 @@
 import stampit from 'stampit'
 
-import { Entity } from './entity.js'
+import { EntityShared } from './entity_shared.js'
 import { Component } from './components/component.js'
 import { HasObject } from './components/has_object.js'
-// import { HasUniqueColor, CopiesUniqueColor } from './components/has_unique_color.js'
 import { FindIntersectionsFromScreenCoords } from './find_intersections_from_screen_coords.js'
 import { defineGoal } from './goals/goal.js'
 
@@ -71,15 +70,14 @@ const HasRing = stampit(Component, {
 
 
 const MousePointer = stampit(
-  Entity,
+  EntityShared,
   HasObject,
   HasSphere,
   HasRing,
-  // HasUniqueColor,
   stampit(Component, {
     deepStatics: {
       goalDefinitions: {
-        'uniqueColor': defineGoal('ucol', { r: 1.0, g: 1.0, b: 1.0 }),
+        'color': defineGoal('clr', { r: 1.0, g: 1.0, b: 1.0 }),
         'position': defineGoal('p', { x: 0, y: 0, z: 0 }),
       }
     },
@@ -105,11 +103,14 @@ const MousePointer = stampit(
       },
       
       update(delta) {
-        const uniqueColorGoal = this.goals.uniqueColor
-        if (!uniqueColorGoal.achieved) {
-          const color = uniqueColorGoal.get()
-          this.setRingColor(new THREE.Color(color.r, color.g, color.b))
-          uniqueColorGoal.markAchieved()
+        const colorGoal = this.goals.color
+        if (!colorGoal.achieved) {
+          this.setRingColor(new THREE.Color(
+            colorGoal.get('r'),
+            colorGoal.get('g'),
+            colorGoal.get('b'),
+          ))
+          colorGoal.markAchieved()
         }
         
         const positionGoal = this.goals.position

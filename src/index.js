@@ -18,7 +18,7 @@ import { KeyboardController } from './keyboard_controller.js'
 import { CameraController } from './camera_controller.js'
 import { FindIntersectionsFromScreenCoords } from './find_intersections_from_screen_coords.js'
 import { localstoreRestore } from './localstore_gets_state.js'
-import { uuidv4, domReady } from './util.js'
+import { uuidv4, randomPastelColor, domReady } from './util.js'
 import { config, stage } from './config.js'
 import { network } from './network.js'
 import { PadController } from './pad_controller.js'
@@ -60,21 +60,11 @@ let player
 let mousePointer
 
 
-const playerExists = async () => {
+const entityOnStage = async (uuid) => {
   return new Promise((resolve) => {
     setInterval(() => {
-      if (player) {
-        resolve()
-      }
-    }, 10)
-  })
-}
-
-const mousePointerExists = async () => {
-  return new Promise((resolve) => {
-    setInterval(() => {
-      if (mousePointer) {
-        resolve()
+      if (uuid in stage.entities) {
+        resolve(stage.entities[uuid])
       }
     }, 10)
   })
@@ -97,13 +87,6 @@ const start = async () => {
     
     const entity = Type({ goals })
     stage.add(entity)
-    
-    // Special case: player gets bootstrapped
-    if (entity.uuid === playerId) {
-      player = window.player = entity
-    } else if (entity.type === 'mouse' && !mousePointer) {
-      mousePointer = window.mousePointer = entity
-    }
   })
   
   network.on('remove', (uuid) => {
@@ -182,6 +165,7 @@ const start = async () => {
   // player.videoBubble.object.createDomElement()
   // player.videoBubble.object.on('mute', muteAudio)
   // player.videoBubble.object.on('unmute', unmuteAudio)
+  
   network.transients.create({
     type: 'player',
     uuid: playerId,
@@ -189,14 +173,22 @@ const start = async () => {
       label: { text: guestNameFromPlayerId(playerId), oz: 50 },
       animationMesh: { v: 'fem-D-armature' },
       animationSpeed: { v: 1.0 },
-      speed: { max: 250 }
+      speed: { max: 250 },
+      color: randomPastelColor(),
     },
   })
-  await playerExists()
+  player = window.player = await entityOnStage(playerId)
   
   const mouseId = uuidv4()
-  // network.setTransientState(mouseId, defaultMousePointerState(mouseId))
-  // await mousePointerExists()
+  network.transients.create({
+    type: 'mouse',
+    uuid: mouseId,
+    goals: {
+      color: randomPastelColor(),
+    }
+  })
+  mousePointer = window.mousePointer = await entityOnStage(mouseId)
+  
   
   // Perform several calculations once per game loop:
   // 1. (occasionally) Refresh videoBubble diameter
@@ -370,8 +362,6 @@ const start = async () => {
   })
   // stage.add(padController)
   
-  // const mousePointer = window.mousePointer = await stage.findOrCreateEntity('mouse')
-  // console.log("Created MousePointer", mousePointer.uuid, mousePointer)
   
   let dragLock = false
   let dragStart = false
@@ -379,6 +369,7 @@ const start = async () => {
   let dragDelta = new THREE.Vector3()
   window.addEventListener('mousemove', (event) => {
     // Show mouse pointer
+    mousePointer.setScreenCoords(event.clientX, event.clientY)
     intersectionFinder.setScreenCoords(event.clientX, event.clientY)
     
     // If mouse has moved a certain distance since clicking, then turn into a "drag"
@@ -550,80 +541,6 @@ const start = async () => {
   //       break
   //     default:
   //       console.warn('"disconnect" issued for unhandled type', uuid, state)
-  //   }
-  // })
-  
-  // network.on('add', (uuid, state) => {
-  //   if (Object.keys(stage.entities).includes(uuid)) {
-  //     console.warn(`Stage already has entity with UUID ${uuid}, not adding`)
-  //     return
-  //   }
-  //   switch(state.type) {
-  //     case 'player':
-  //       console.log('create other player', uuid, state)
-  //       try {
-  //         const otherPlayer = OtherPlayer(Object.assign({
-  //           speed: 250,
-  //           followTurning: true,
-  //           animationSpeed: 1.5,
-  //           labelOffset: { x: 0, y: 0, z: 60 },
-  //           videoBubbleOffset: {x: 0, y: 190, z: 0 },
-  //           thoughtBubbleOffset: {x: 50, y: 100},
-  //           animationResourceId: 'people',
-  //         }, state, { uuid }))
-  //         if (state.position) {
-  //           otherPlayer.warpToPosition(state.position)
-  //         }
-  //         otherPlayer.videoBubble.object.createDomElement()
-  //         stage.add(otherPlayer)
-  //       } catch (e) {
-  //         console.error(e)
-  //       }
-  //       break
-      
-  //     case 'decoration':
-  //       const decoration = Decoration(Object.assign({
-  //       }, state, { uuid }))
-  //       stage.add(decoration)
-  //       break
-      
-  //     case 'thing3d':
-  //       const thing3d = Thing3D(Object.assign({
-  //       }, state, { uuid }))
-  //       stage.add(thing3d)
-  //       break
-        
-  //     case 'diamond':
-  //       const diamond = InteractionDiamond(Object.assign({
-  //       }, state, { uuid }))
-  //       stage.add(diamond)
-  //       break
-      
-  //     case 'mouse':
-  //       const mousePointer = OtherMousePointer(Object.assign({}, state, { uuid }))
-  //       stage.add(mousePointer)
-  //       break
-      
-  //     case 'teleportal':
-  //       const teleportal = Teleportal(Object.assign({
-  //         target: player,
-  //         active: false,
-  //       }, state, { uuid }))
-  //       console.log('Added teleportal', state, teleportal)
-  //       stage.add(teleportal)
-  //       break
-      
-  //     default:
-  //       console.warn('"add" issued for unhandled type', uuid, state)
-  //   }
-  // })
-  
-  // network.on('remove', (uuid) => {
-  //   const entity = stage.entities[uuid]
-  //   if (entity) {
-  //     stage.remove(entity)
-  //   } else {
-  //     console.warn("Can't remove entity (not found)", uuid)
   //   }
   // })
   

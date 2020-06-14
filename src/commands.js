@@ -313,8 +313,8 @@ const commands = {
         return true /* add to success count */
       })
       case 'i':
-      case 'info': return actionToEachObject((object, env) => {
-        showInfoAboutObject(object)
+      case 'info': return actionToEachObject((entity, env) => {
+        showInfoAboutObject(entity)
         return true /* add to success count */
       })
       case 'locktoggle': 

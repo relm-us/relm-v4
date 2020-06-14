@@ -4,7 +4,6 @@ import { EntityShared } from './entity_shared.js'
 import { Component } from './components/component.js'
 import { HasObject } from './components/has_object.js'
 import { HasLabel } from './components/has_label.js'
-// import { HasUniqueColor } from './components/has_unique_color.js'
 // import { UpdatesLabelToUniqueColor } from './components/updates_label_to_unique_color.js'
 import { FollowsTarget } from './components/follows_target.js'
 import { HasAnimationMixer } from './components/has_animation_mixer.js'
@@ -114,17 +113,22 @@ const Player = stampit(
   AnimatesRotation,
   HasAnimationMixer,
   WalksWhenMoving,
-  // HasUniqueColor,
   // UpdatesLabelToUniqueColor,
   HasMaxSpeed,
   FollowsTarget2,
   // HasOffscreenIndicator,
   LocalstoreGetsState,
-  {
+  stampit(Component, {
+    deepStatics: {
+      goalDefinitions: {
+        color: defineGoal('clr', { r: 1.0, g: 1.0, b: 1.0 })
+      }
+    },
+
     init() {
       this.videoBubble.offset = new THREE.Vector3(0, 190, 0)
     }
-  }
+  })
 ).setType('player')
 
 export {
