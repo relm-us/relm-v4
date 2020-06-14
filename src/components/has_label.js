@@ -10,7 +10,7 @@ const { Vector3, Color } = THREE
 const HasLabel = stampit(Component, {
   deepStatics: {
     goalDefinitions: {
-      label: defineGoal('lbl', { text: null })
+      label: defineGoal('lbl', { text: null, ox: 0, oy: 0, oz: 0 })
     }
   },
 
@@ -21,14 +21,13 @@ const HasLabel = stampit(Component, {
   },
 
   init({
-    labelOffset = this.labelOffset,
     labelColor = this.labelColor,
     onLabelChanged
   }) {
     this.labelPosition = new Vector3()
-    this.labelOffset = labelOffset || new Vector3()
     this.labelColor = labelColor || new Color()
     this.labelObj = new Label({ onLabelChanged })
+    this.labelOffset = new Vector3()
     
     this.setLabelColor(labelColor)
   },
@@ -75,6 +74,9 @@ const HasLabel = stampit(Component, {
     update() {
       const labelGoal = this.goals.label
       if (!labelGoal.achieved) {
+        this.labelOffset.x = labelGoal.get('ox')
+        this.labelOffset.y = labelGoal.get('oy')
+        this.labelOffset.z = labelGoal.get('oz')
         this.labelObj.setText(labelGoal.get('text'))
         labelGoal.markAchieved()
       }

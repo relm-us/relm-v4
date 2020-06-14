@@ -246,7 +246,7 @@ const start = async () => {
     type: 'player',
     uuid: playerId,
     goals: {
-      label: { text: guestNameFromPlayerId(playerId) },
+      label: { text: guestNameFromPlayerId(playerId), oz: 50 },
       animationMesh: { v: 'fem-D-armature' },
       animationSpeed: { v: 1.0 },
       speed: { max: 250 }

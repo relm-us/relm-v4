@@ -255,9 +255,12 @@ const commands = {
     return (env) => {
     console.log('env', env)
       switch (mode) {
+        case 'e':
+        case 'edit':
         case 'editor':
           env.stage.enableEditorMode()
           break
+        case 'n':
         case 'normal':
           env.stage.disableEditorMode()
           break
@@ -278,7 +281,7 @@ const commands = {
   name: (args) => {
     const name = takeOne(args, `Shouldn't there be a [NAME] after '/name'?`)
     return (env) => {
-      env.player.setLabel(name)
+      env.player.goals.label.update({ text: name })
     }
   },
   object: (args) => {
