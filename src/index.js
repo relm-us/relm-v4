@@ -774,11 +774,8 @@ const start = async () => {
       const gender = button.dataset.gender
       const index = parseInt(button.dataset.index, 10)
       const avatarOptions = avatarOptionsOfGender(gender)
-      console.log('player set mesh', avatarOptions[index].avatarId)
-      player.goals.animationMesh.update({ v: avatarOptions[index].avatarId })
-      console.log('player goals', player.goalsToJSON())
-      // network.setGoalForEntity(player, 'animMesh', {v: avatarOptions[index].avatarId})
       avatarSelection.classList.add('hide')
+      player.goals.animationMesh.update({ v: avatarOptions[index].avatarId })
       focusOnGame()
     })
   })
