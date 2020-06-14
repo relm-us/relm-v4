@@ -343,7 +343,7 @@ const start = async () => {
     
     if (response.file.match(IMAGE_FILETYPE_RE)) {
       const due = Date.now()
-      network.create({
+      network.permanents.create({
         type: 'decoration',
         goals: {
           position: {
