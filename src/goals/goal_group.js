@@ -113,6 +113,17 @@ const GoalGroup = stampit({
       return Object.keys(this._definitions)
     },
 
+    /**
+     * A "description" of a goal group is a JSON document that contains
+     * the names of the goals as keys (not the abbrevs), and a straight-
+     * forward object containing key/value pairs as the values.
+     * 
+     * e.g.
+     * {
+     *   "position": { "x": 0, y: 0, x: 0 },
+     *   "portal": { "relm": "cafe", dx: 0, dy: 0, dz: 0 }
+     * }
+     */
     toDesc() {
       const desc = {}
       for (const [goalName, definition] of Object.entries(this._definitions)) {

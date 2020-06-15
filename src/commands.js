@@ -298,10 +298,14 @@ const commands = {
         }
         return true /* add to success count */
       })
+      
+
       case 'delete': return actionToEachObject((entity, env) => {
         network.permanents.remove(entity.uuid)
         return true /* add to success count */
       })
+      
+
       case 'f':
       case 'fetch': return actionToEachObject((entity, env) => {
         entity.goals.position.update({
@@ -311,11 +315,48 @@ const commands = {
         }, Date.now() + 4000)
         return true /* add to success count */
       })
+      
+      
+      case 'flip': return actionToEachObject((entity, env) => {
+        let axis = 'x'
+        try { axis = (takeOne(args) == 'y' ? 'y' : 'x') }
+        catch (e) { }
+        
+        const flipGoal = entity.goals.flip
+        if (flipGoal) {
+          flipGoal.update({
+            x: axis === 'x' ? (!flipGoal.get('x')) : flipGoal.get('x'),
+            y: axis === 'y' ? (!flipGoal.get('y')) : flipGoal.get('y'),
+          }, Date.now() + 2000)
+          return true /* add to success count */
+        } else {
+          throw Error(`This object isn't flippable`)
+        }
+      })
+      
+      
+      case 'fold': return actionToEachObject((entity, env) => {
+        const value = parseFloat(takeOne(args, `Shouldn't there be a [FOLD] value after '/object fold'?`))
+        if (value < 0 || value > 1) {
+          throw Error('The fold value should be between 0 and 1')
+        }
+        const foldGoal = entity.goals.fold
+        if (foldGoal) {
+          foldGoal.update({ v: value }, Date.now() + 2000)
+          return true /* add to success count */
+        } else {
+          throw Error(`This object isn't foldable`)
+        }
+      })
+      
+      
       case 'i':
       case 'info': return actionToEachObject((entity, env) => {
         showInfoAboutObject(entity)
         return true /* add to success count */
       })
+      
+
       case 'locktoggle': 
         let lockCount = 0
         let unlockCount = 0
@@ -343,6 +384,7 @@ const commands = {
             showToast(`Unlocked ${numberOfObjects(unlockCount)}`)
           }
         })
+      
       case 'lock': return actionToEachObject((object, env) => {
         if (object.uiLock) {
           object.uiLock()
@@ -351,6 +393,7 @@ const commands = {
           return true /* add to success count */
         }
       }, (count) => { showToast(`Locked ${numberOfObjects(count)}`) })
+
       case 'unlock': return actionToEachObject((object, env) => {
         if (object.uiUnlock) {
           object.uiUnlock()
@@ -359,6 +402,39 @@ const commands = {
           return true /* add to success count */
         }
       }, (count) => { showToast(`Unlocked ${numberOfObjects(count)}`) })
+      
+
+      case 'mat':
+      case 'material': return actionToEachObject((entity, env) => {
+        const newType = takeOne(args, `Shouldn't there be a material type after '/object material'? e.g. 'default' or 'photo'`)
+        const matGoal = entity.goals.material
+        if (matGoal && matGoal.get('type') !== newType) {
+          matGoal.update({ type: newType })
+          return true /* add to success count */
+        }
+      }, (count) => { showToast(`Changed material for ${numberOfObjects(count)}`) })
+      
+
+      case 'orient': return actionToEachObject((entity, env) => {
+        const subCommand = takeOne(args, `Shouldn't there be a subcommand after '/object orient'? e.g. 'up' or 'down'`)
+        switch (subCommand) {
+          case 'up':
+            entity.goals.rotation.update({ x: 0, y: 0, z: 0 }, Date.now() + 2000)
+            break
+          case 'down':
+            entity.goals.rotation.update({ x: 90 * -THREE.Math.DEG2RAD, y: 0, z: 0 }, Date.now() + 2000)
+            break
+          case 'left':
+            entity.goals.rotation.update({ x: 0, y: -45 * -THREE.Math.DEG2RAD, z: 0 }, Date.now() + 2000)
+            break
+          case 'right':
+            entity.goals.rotation.update({ x: 0, y: 45 * -THREE.Math.DEG2RAD, z: 0 }, Date.now() + 2000)
+            break
+          default:
+            throw Error(`Is ${subCommand} an '/orient' subcommand?`)
+        }
+        return true /* add to success count */
+      })
       
 
       case 'rx':
@@ -381,38 +457,6 @@ const commands = {
       })
       
       
-      case 'fold': return actionToEachObject((entity, env) => {
-        const value = parseFloat(takeOne(args, `Shouldn't there be a [FOLD] value after '/object fold'?`))
-        if (value < 0 || value > 1) {
-          throw Error('The fold value should be between 0 and 1')
-        }
-        const foldGoal = entity.goals.fold
-        if (foldGoal) {
-          foldGoal.update({ v: value }, Date.now() + 2000)
-          return true /* add to success count */
-        } else {
-          throw Error(`This object isn't foldable`)
-        }
-      })
-      
-      
-      case 'flip': return actionToEachObject((entity, env) => {
-        let axis = 'x'
-        try { axis = (takeOne(args) == 'y' ? 'y' : 'x') }
-        catch (e) { }
-        
-        const flipGoal = entity.goals.flip
-        if (flipGoal) {
-          flipGoal.update({
-            x: axis === 'x' ? (!flipGoal.get('x')) : flipGoal.get('x'),
-            y: axis === 'y' ? (!flipGoal.get('y')) : flipGoal.get('y'),
-          }, Date.now() + 2000)
-          return true /* add to success count */
-        } else {
-          throw Error(`This object isn't flippable`)
-        }
-      })
-
 
       case 's':
       case 'scale': return actionToEachObject((entity, env) => {
@@ -452,28 +496,6 @@ const commands = {
       case 'z': return actionToEachObject((entity, env) => {
         const delta = parseFloat(takeOne(args, `Shouldn't there be a [Z] value after '/object z'?`))
         return objectMove(entity, { z: delta })
-      })
-      
-
-      case 'orient': return actionToEachObject((entity, env) => {
-        const subCommand = takeOne(args, `Shouldn't there be a subcommand after '/object orient'? e.g. 'up' or 'down'`)
-        switch (subCommand) {
-          case 'up':
-            entity.goals.rotation.update({ x: 0, y: 0, z: 0 }, Date.now() + 2000)
-            break
-          case 'down':
-            entity.goals.rotation.update({ x: 90 * -THREE.Math.DEG2RAD, y: 0, z: 0 }, Date.now() + 2000)
-            break
-          case 'left':
-            entity.goals.rotation.update({ x: 0, y: -45 * -THREE.Math.DEG2RAD, z: 0 }, Date.now() + 2000)
-            break
-          case 'right':
-            entity.goals.rotation.update({ x: 0, y: 45 * -THREE.Math.DEG2RAD, z: 0 }, Date.now() + 2000)
-            break
-          default:
-            throw Error(`Is ${subCommand} an '/orient' subcommand?`)
-        }
-        return true /* add to success count */
       })
       
 

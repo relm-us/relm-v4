@@ -1,6 +1,7 @@
 import stampit from 'stampit'
 
 import { Component } from './component.js'
+import { PhotoMaterial } from '../materials/photo_material.js'
 import { defineGoal } from '../goals/goal.js'
 
 const IMAGE_DEFAULT_COLOR = 0xFFFFFF
@@ -11,6 +12,7 @@ const UsesAssetAsImage = stampit(Component, {
     goalDefinitions: {
       fold: defineGoal('pvt', { v: 0 }),
       flip: defineGoal('flp', { x: false, y: false }),
+      material: defineGoal('mat', { type: 'default' })
     }
   },
   
@@ -115,13 +117,24 @@ const UsesAssetAsImage = stampit(Component, {
     },
 
     _createMaterial(texture) {
-      return new THREE.MeshStandardMaterial({
-        color: IMAGE_DEFAULT_COLOR,
-        alphaTest: IMAGE_DEFAULT_ALPHA_TEST,
-        transparent: true,
-        side: THREE.DoubleSide,
-        map: texture,
-      })
+      switch (this.goals.material.get('type')) {
+        case 'photo':
+          return PhotoMaterial({ texture })
+        case 'add':
+          return PhotoMaterial({ texture, blending: THREE.AdditiveBlending })
+        case 'subtract':
+          return PhotoMaterial({ texture, blending: THREE.SubtractiveBlending })
+        case 'multiply':
+          return PhotoMaterial({ texture, blending: THREE.MultiplyBlending })
+        default:
+          return new THREE.MeshStandardMaterial({
+            color: IMAGE_DEFAULT_COLOR,
+            alphaTest: IMAGE_DEFAULT_ALPHA_TEST,
+            transparent: true,
+            side: THREE.DoubleSide,
+            map: texture,
+          })
+      }
     },
 
     _setMesh(mesh) {
@@ -130,15 +143,16 @@ const UsesAssetAsImage = stampit(Component, {
       this.object.add(this.mesh)
       this.emit('mesh-updated')
     },
-
     
     update(_delta) {
       const foldGoal = this.goals.fold
       const flipGoal = this.goals.flip
-      if (this.texture && (!foldGoal.achieved || !flipGoal.achieved)) {
+      const materialGoal = this.goals.material
+      if (this.texture && (!foldGoal.achieved || !flipGoal.achieved || !materialGoal.achieved)) {
         this._createImageMeshFromLoadedTexture(this.texture)
         foldGoal.markAchieved()
         flipGoal.markAchieved()
+        materialGoal.markAchieved()
       }
     }
   }

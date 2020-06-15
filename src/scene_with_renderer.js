@@ -19,6 +19,8 @@ const SceneWithRenderer = stampit({
 
     this.renderer.domElement.id = 'glcanvas'
     this.renderer.domElement.tabIndex = -1
+    
+    this.renderer.outputEncoding = THREE.sRGBEncoding;
 
     this.on('resize', ({ width, height }) => {
       this.renderer.setSize(width, height)
