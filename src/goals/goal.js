@@ -106,7 +106,6 @@ const Goal = stampit(EventEmittable, {
     
     this._map.observe((event) => {
       this.achieved = false
-      // console.log('goal observed change', this, event)
     })
     
     // Set default values, as long as they don't overwrite existing values
