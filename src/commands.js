@@ -3,10 +3,10 @@ import { showToast } from './lib/Toast.js'
 import { showInfoAboutObject } from './show_info_about_object.js'
 
 import { InteractionDiamond } from './interaction_diamond.js'
-import { Teleportal } from './teleportal.js'
 import { relmExport } from './lib/relmExport.js'
 import { muteAudio, unmuteAudio } from './avchat.js'
 import { avatarOptionsOfGender } from './avatars.js'
+import { teleportToOtherRelm } from './teleportal.js'
 
 import {
   take,
@@ -25,14 +25,6 @@ import {
  * @property {Array<any>} objects The selected objects to act on
  * @property {THREE.Vector3} position The position to act at
  */
-
-function teleport(relm, x, z) {
-  let url = window.location.origin + '/' + relm
-  if (x !== undefined && z !== undefined) {
-    url += `?x=${parseFloat(x)}&z=${parseFloat(z)}`
-  }
-  setTimeout(() => { window.location = url }, 200)
-}
 
 function signCreate(message) {
   return (env) => {
@@ -73,29 +65,36 @@ function signSetMessage(message) {
   })
 }
 
-function portalCreate(url) {
+function portalCreate({ relm, x = null, y = null, z = null }) {
   return (env) => {
-    const portal = Teleportal({
-      uuid: uuidv4(),
+    env.network.permanents.create({
       type: 'teleportal',
-      target: player,
-      url: url,
-      active: false,
-      radius: 150,
-      position: env.position,
-      speed: 500,
+      goals: {
+        position: {
+          x: env.player.object.position.x,
+          y: env.player.object.position.y,
+          z: env.player.object.position.z,
+        },
+        portal: {
+          relm: relm,
+          dx: x,
+          dy: y,
+          dz: z,
+        }
+      }
     })
-    portal.object.position.copy(env.position)
-    env.network.setEntity(portal)
-    env.stage.add(portal)
   }
 }
 
-function portalSetUrl(url) {
-  return actionToEachObject((object, env) => {
-    if (object.state.url) {
-      object.state.url.target = url
-      env.network.setEntity(object)
+function portalUpdate({ relm, x = null, y = null, z = null }) {
+  return actionToEachObject((entity, env) => {
+    if (entity.type === 'teleportal') {
+      entity.goals.portal.update({
+          relm: relm,
+          dx: x,
+          dy: y,
+          dz: z,
+      })
       return true /* add to success count */
     }
   })
@@ -231,7 +230,7 @@ const commands = {
     switch (args.length) {
       case 0: break
       case 1:
-        teleport(takeOne(args))
+        teleportToOtherRelm({ relm: takeOne(args) })
         break
       case 2:
         coords.x = parseFloat(takeOne(args))
@@ -241,7 +240,7 @@ const commands = {
         const relm = takeOne(args)
         const x = takeOne(args)
         const z = takeOne(args)
-        teleport(relm, x, z)
+        teleportToOtherRelm({ relm, x, z })
         break
       default:
         throw Error(`Expecting x z coords or nothing (i.e. just '/home')`)
@@ -547,9 +546,49 @@ const commands = {
   portal: (args) => {
     const subCommand = takeOne(args, `Shouldn't there be a subcommand after '/portal'? e.g. 'create', 'url', 'radius'`)
     switch (subCommand) {
-      case 'create': return portalCreate(joinAll(args))
-      case 'url': return portalSetUrl(takeOne(args, `Shouldn't there be a [URL] after '/portal url'?`))
-      case 'radius': return portalSetRadius(takeOne(args, `Shouldn't there be a [RADIUS] after '/portal radius'?`))
+      case 'create':
+        switch (args.length) {
+          case 0:
+            return portalCreate()
+          case 1:
+            return portalCreate({
+              relm: takeOne(args)
+            })
+          case 2:
+            return portalCreate({
+              x: parseFloat(takeOne(args)),
+              z: parseFloat(takeOne(args)),
+            })
+          case 3:
+            return portalCreate({
+              relm: takeOne(args),
+              x: parseFloat(takeOne(args)),
+              z: parseFloat(takeOne(args)),
+            })
+          default:
+            throw Error('Creating a portal can have one of: [RELM], or [X] [Z], or [RELM] [X] [Z]')
+        }
+      case 'update':
+        switch (args.length) {
+          case 1:
+            return portalUpdate({
+              relm: takeOne(args)
+            })
+          case 2:
+            return portalUpdate({
+              x: parseFloat(takeOne(args)),
+              z: parseFloat(takeOne(args)),
+            })
+          case 3:
+            return portalUpdate({
+              relm: takeOne(args),
+              x: parseFloat(takeOne(args)),
+              z: parseFloat(takeOne(args)),
+            })
+          default:
+            throw Error('Updating a portal can have one of: [RELM], or [X] [Z], or [RELM] [X] [Z]')
+          
+        }
       default: throw Error(`Is ${subCommand} a '/portal' subcommand?`)
     }
   },

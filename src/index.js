@@ -14,6 +14,7 @@ import { Player } from './player.js'
 import { MousePointer } from './mouse_pointer.js'
 import { Decoration } from './decoration.js'
 import { Thing3D } from './thing3d.js'
+import { Teleportal } from './teleportal.js'
 
 // Misc. other imports
 import { KeyboardController } from './keyboard_controller.js'
@@ -85,9 +86,11 @@ const start = async () => {
     const typeName = goalGroupMap.get('@type')
     const Type = Typed.getType(typeName)
     
-    const goals = GoalGroup({ goalDefinitions: Type.goalDefinitions, goalGroupMap })
+    const params = {
+      goals: GoalGroup({ goalDefinitions: Type.goalDefinitions, goalGroupMap })
+    }
     
-    const entity = Type({ goals })
+    const entity = Type(params)
     stage.add(entity)
   })
   
@@ -179,7 +182,7 @@ const start = async () => {
       color: randomPastelColor(),
     },
   })
-  player = window.player = await entityOnStage(playerId)
+  player = stage.player = await entityOnStage(playerId)
   
   const mouseId = uuidv4()
   network.transients.create({
@@ -189,7 +192,7 @@ const start = async () => {
       color: randomPastelColor(),
     }
   })
-  mousePointer = window.mousePointer = await entityOnStage(mouseId)
+  mousePointer = stage.mouse = await entityOnStage(mouseId)
   
   
   // Perform several calculations once per game loop:

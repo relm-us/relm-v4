@@ -1,76 +1,57 @@
 import stampit from 'stampit'
 
-import { Entity } from './entity.js'
+import { EntityShared } from './entity_shared.js'
 import { Component } from './components/component.js'
 import { HasObject } from './components/has_object.js'
-import { FollowsTarget } from './components/follows_target.js'
+import { AnimatesPosition } from './components/animates_position.js'
+import { AnimatesScale } from './components/animates_scale.js'
 import { HasEmissiveMaterial } from './components/has_emissive_material.js'
 import { ReceivesPointer } from './receives_pointer.js'
-// import { NetworkSetsState } from './network_persistence.js'
+import { req } from './util.js'
+import { defineGoal } from './goals/goal.js'
 
 const { RingGeometry, Mesh, MeshStandardMaterial, DoubleSide, Color } = THREE
 
-const ACTIVE_COLOR = new Color(0xF380F4)
-const INACTIVE_COLOR = new Color(0x444444)
+const PORTAL_COLOR = new Color(0x444444)
+const PORTAL_RADIUS = 50
+
+
+function teleportToOtherRelm({ relm, x = null, y = null, z = null}) {
+  let url = window.location.origin + '/' + relm
+  if (x !== null && z !== null) {
+    url += `?x=${parseFloat(x)}&z=${parseFloat(z)}`
+  }
+  setTimeout(() => { window.location = url }, 200)
+}
+
 
 const Teleports = stampit(Component, {
-  props: {
-    target: null,
-    active: true,
-  },
-  
-  deepProps: {
-    state: {
-      radius: {
-        now: 150,
-        target: 150,
-      },
-      url: {
-        now: null,
-        target: null,
-      }
+  deepStatics: {
+    goalDefinitions: {
+      portal: defineGoal('prt', {
+        relm: null,
+        dx: 0.0,
+        dy: 0.0,
+        dz: 0.0,
+      })
     }
   },
 
-  init({
-    active = this.active,
-    target = this.target,
-    radius,
-    url
-  }) {
-    this.active = active
-    
-    if (target) {
-      this.target = target
-    } else {
-      console.error('Teleportal target cannot be null (did you mean to target the player?)')
-    }
-    
-    if (radius) {
-      this.state.radius.now = radius
-      this.state.radius.target = radius
-    }
-    
-    if (url) {
-      this.state.url.target = url
-    } else {
-      console.warn('Teleportal has no url', this.uuid)
-    }
-    
+  init({ target }) {
+    this.setTarget(target)
+
+    this.active = false
     this.oneTimeTrigger = false
   },
 
   methods: {
-    createTeleportalRing() {
+    _createTeleportalRing() {
       if (this.ring) {
         this.object.remove(this.ring)
       }
-      const radius = this.state.radius.now
-      console.log('createTeleportalRing', radius)
-      const geometry = new RingGeometry(0, radius + 5.0, 64, 6)
+      const geometry = new RingGeometry(0, PORTAL_RADIUS, 64, 6)
       const material = this.material = new MeshStandardMaterial({
-        // color: (this.active ? ACTIVE_COLOR : INACTIVE_COLOR),
-        color: INACTIVE_COLOR,
+        color: PORTAL_COLOR,
         side: DoubleSide,
       })
       this.ring = new Mesh(geometry, material)
@@ -80,64 +61,79 @@ const Teleports = stampit(Component, {
       this.object.add(this.ring)
     },
     
-    setRadius(r) {
-      this.state.radius.target = r
+    setTarget(target) {
+      this.target = target
+      
+      if (target) {
+        if (!target.setOpacity) { throw Error('Teleportal target must have .setOpacity') }
+        if (!target.addPosition) { throw Error('Teleportal target must have .addPosition') }
+      }
     },
     
     setActive() {
       this.active = true
-      if (this.material) {
-        // Don't show active state for now
-        // this.material.color = ACTIVE_COLOR
-      }
     },
 
     setInactive() {
       this.active = false
-      if (this.material) {
-        this.material.color = INACTIVE_COLOR
-      }
     },
-
-    setup() {
-      this.createTeleportalRing()
+    
+    _isLocalTeleport() {
+      return !this.goals.portal.get('relm')
     },
 
     update(delta) {
-      if (this.state.radius.now !== this.state.radius.target) {
-        this.state.radius.now = this.state.radius.target
-        this.createTeleportalRing()
+      // Default behavior of Teleportal is to track the player as the entity that can teleport.
+      // This is a bit of a workaround, implemented this way because the player and teleportals
+      // can load in any order. Therefore, we use the global 'stage' and if the player entity
+      // is set there, we use it.
+      if (!this.target && this.stage.player) {
+        this.setTarget(this.stage.player)
       }
       
-      if (this.state.url.now !== this.state.url.target) {
-        this.state.url.now = this.state.url.target
+      const portalGoal = this.goals.portal
+      if (!portalGoal.achieved) {
+        this._createTeleportalRing()
+        portalGoal.markAchieved()
       }
       
-      const radius = this.state.radius.now
-
+      // Skip processing if we don't have a target to which we can calculate distance
+      if (!this.target) {
+        return
+      }
+      
+      const radius = PORTAL_RADIUS * this.goals.scale.get('x')
       const distance = this.object.position.distanceTo(this.target.object.position)
-      if (distance < radius / 3) {
+      if (distance < 10) {
         if (this.active) {
-          const url = this.state.url.now
-          if (url && url.indexOf('http') === 0) {
-            if (!this.oneTimeTrigger) {
-              this.target.disableFollowsTarget()
-              this.oneTimeTrigger = true
-              setTimeout(() => {
-                // Teleport!
-                window.location = url
-              }, 200)
-            } else {
-              this.target.object.position.lerp(this.object.position, 0.3)
-              this.target.object.rotation.y += 0.5
-            }
+          if (this._isLocalTeleport()) {
+            this.target.setOpacity(1.0)
+            this.target.goals.position.update({
+              x: portalGoal.get('dx'),
+              y: portalGoal.get('dy'),
+              z: portalGoal.get('dz'),
+            })
+          } else {
+            teleportToOtherRelm({
+              relm: portalGoal.get('relm'),
+              x: portalGoal.get('dx'),
+              y: portalGoal.get('dy'),
+              z: portalGoal.get('dz'),
+            })
           }
         }
       } else if (distance < radius) {
         if (this.active) {
           this.target.setOpacity(distance / radius)
+          
+          const vectorToward = new THREE.Vector3()
+          vectorToward.copy(this.object.position)
+          vectorToward.sub(this.target.object.position)
+          
+          this.target.addPosition(vectorToward)
         }
       } else if (distance < radius + 20) {
+        // Enable portal when player is "outside" the portal
         this.target.setOpacity(1.0)
         this.setActive()
       }
@@ -146,13 +142,16 @@ const Teleports = stampit(Component, {
 })
 
 const Teleportal = stampit(
-  Entity,
+  EntityShared,
   HasObject,
-  FollowsTarget,
+  AnimatesPosition,
+  AnimatesScale,
   ReceivesPointer,
-  // NetworkSetsState,
   Teleports,
   HasEmissiveMaterial
-)
+).setType('teleportal')
 
-export { Teleportal }
+export {
+  Teleportal,
+  teleportToOtherRelm,
+}

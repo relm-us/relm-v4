@@ -6,7 +6,7 @@ const formatAttr = (attrType, key, value) => {
     default:
       if (typeof value === 'number') {
         return value.toFixed(2)
-      } else if (value.match && value.match(/^https?:/)) {
+      } else if (value && value.match && value.match(/^https?:/)) {
         return `<a href="${value}">${value}</a>`
       } else {
         return value

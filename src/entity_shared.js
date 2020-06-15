@@ -3,7 +3,6 @@ import stampit from 'stampit'
 import { uuidv4 } from './util.js'
 
 import { Component } from './components/component.js'
-import { GoalGroup } from './goals/goal_group.js'
 import { Entity } from './entity.js'
 import { network } from './config.js'
 

@@ -1,4 +1,5 @@
 import stampit from 'stampit'
+import EventEmittable from '@stamp/eventemittable'
 
 import { Component } from './components/component.js'
 import { Typed } from './typed.js'
@@ -15,7 +16,7 @@ import { stage, resources } from './config.js'
  * Example:
  *   let monster = Entity({ uuid: '123' }) // do more with monster
  */
-const Entity = stampit(Typed, Component, {
+const Entity = stampit(Typed, EventEmittable, Component, {
   name: 'Entity',
 
   // Static configuration. See https://stampit.js.org/api/configuration.
