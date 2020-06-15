@@ -104,7 +104,7 @@ const Teleports = stampit(Component, {
       
       const radius = PORTAL_RADIUS * this.goals.scale.get('x')
       const distance = this.object.position.distanceTo(this.target.object.position)
-      if (distance < 10) {
+      if (distance < 15) {
         if (this.active) {
           if (this._isLocalTeleport()) {
             this.target.setOpacity(1.0)
