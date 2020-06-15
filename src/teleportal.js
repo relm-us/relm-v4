@@ -10,7 +10,7 @@ import { ReceivesPointer } from './receives_pointer.js'
 import { req } from './util.js'
 import { defineGoal } from './goals/goal.js'
 
-const { RingGeometry, Mesh, MeshStandardMaterial, DoubleSide, Color } = THREE
+const { Mesh, MeshStandardMaterial, DoubleSide, Color } = THREE
 
 const PORTAL_COLOR = new Color(0x444444)
 const PORTAL_RADIUS = 50
@@ -45,20 +45,20 @@ const Teleports = stampit(Component, {
   },
 
   methods: {
-    _createTeleportalRing() {
-      if (this.ring) {
-        this.object.remove(this.ring)
+    _createTeleportalMesh() {
+      if (this.mesh) {
+        this.object.remove(this.mesh)
       }
-      const geometry = new RingGeometry(0, PORTAL_RADIUS, 64, 6)
+      const geometry = new THREE.CircleGeometry(PORTAL_RADIUS, 32)
       const material = this.material = new MeshStandardMaterial({
         color: PORTAL_COLOR,
         side: DoubleSide,
       })
-      this.ring = new Mesh(geometry, material)
-      this.ring.position.y = 1
-      this.ring.rotation.x = -Math.PI * 0.5
+      this.mesh = new Mesh(geometry, material)
+      this.mesh.position.y = 1
+      this.mesh.rotation.x = -Math.PI * 0.5
       
-      this.object.add(this.ring)
+      this.object.add(this.mesh)
     },
     
     setTarget(target) {
@@ -93,7 +93,7 @@ const Teleports = stampit(Component, {
       
       const portalGoal = this.goals.portal
       if (!portalGoal.achieved) {
-        this._createTeleportalRing()
+        this._createTeleportalMesh()
         portalGoal.markAchieved()
       }
       
