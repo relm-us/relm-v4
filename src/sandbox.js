@@ -1,29 +1,65 @@
 import stampit from 'stampit'
 import * as Y from 'yjs'
-import { Equality } from './goals/goal'
 
-const A = stampit({
-  conf: {
-    stage: null,
-    resources: null,
+const doc = new Y.Doc()
+
+const store = {
+  position: { x: 0, y: 0, z: 0},
+  rotation: { x: 0, y: 1, z: 0},
+}
+
+
+const installGetSetInterceptors = (map, keysToIntercept, { get, set }) => {
+  map.get = new Proxy(map.get, {
+    apply: (target, thisArg, argumentsList) => {
+      if (argumentsList.length == 1) {
+        const key = argumentsList[0]
+        if (keysToIntercept.includes(key)) {
+          return get(key)
+        }
+      }
+      // If not intercepted, call original `get` function:
+      return target.apply(thisArg, argumentsList)
+    }
+  })
+  
+  map.set = new Proxy(map.set, {
+    apply: (target, thisArg, argumentsList) => {
+      if (argumentsList.length == 2) {
+        const key = argumentsList[0]
+        if (keysToIntercept.includes(key)) {
+          const value = argumentsList[1]
+          set(key, value)
+          return value
+        }
+      }
+      // If not intercepted, call original `set` function:
+      return target.apply(thisArg, argumentsList)
+    }
+  })
+}
+
+const map = doc.getMap('objects')
+installGetSetInterceptors(map, ['position', 'rotation'], {
+  get: (key) => {
+    return store[key]
   },
-  init({}, { stamp }) {
-    this.stage = stamp.compose.configuration.stage
-    this.resources = stamp.compose.configuration.resources
-  },
-}).conf({ stage: 1, resources: 2 })
+  set: (key, value) => {
+    store[key] = value
+  }
+})
 
-const B = stampit({
-  conf: {
-    network: null
-  },
-  init({}, { stamp }) {
-    this.network = stamp.compose.configuration.network
-  },
-}).conf({ network: 3 })
+console.log('store before', JSON.stringify(store))
 
-const Together = stampit(A, B)
+console.log('map.get abc', map.get('abc'))
+console.log('map.get position', map.get('position'))
 
-const t = Together()
+console.log('map.set abc = 1', map.set('abc', 1))
+console.log('map.get abc', map.get('abc'))
 
-console.log(t.stage, t.resources, t.network)
+console.log('map.set position = { x: 3, y: 4, z: 5 }', map.set('position', {x:3,y:4,z:5}))
+console.log('map.get position', map.get('position'))
+
+console.log('store after', JSON.stringify(store))
+
+console.log('map.toJSON', map.toJSON())
