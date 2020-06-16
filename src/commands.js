@@ -415,14 +415,19 @@ const commands = {
       }, (count) => { showToast(`Changed material for ${numberOfObjects(count)}`) })
       
 
-      case 'order': return actionToEachObject((entity, env) => {
-        const layer = takeOne(args, `Shouldn't there be a layer number after '/object order'? e.g. 0, 1, ... 100`)
+      case 'layer': return actionToEachObject((entity, env) => {
+        const layer = takeOne(args, `Shouldn't there be a number after '/object layer'? e.g. 0, 1, ... 100`)
         const orderGoal = entity.goals.renderOrder
         if (orderGoal) {
           orderGoal.update({ v: parseFloat(layer) })
+          const posGoal = entity.goals.position
+          const y = posGoal.get('y')
+          if (y >= 0 && y < 1.0) {
+            posGoal.update({ y: layer / 100 })
+          }
           return true /* add to success count */
         }
-      }, (count) => { showToast(`Changed order for ${numberOfObjects(count)}`) })
+      }, (count) => { showToast(`Changed layer for ${numberOfObjects(count)}`) })
       
 
       case 'orient': return actionToEachObject((entity, env) => {
@@ -434,7 +439,9 @@ const commands = {
             break
           case 'down':
             entity.goals.rotation.update({ x: 90 * -THREE.Math.DEG2RAD, y: 0, z: 0 }, Date.now() + 2000)
-            entity.goals.renderOrder.update({ v: 0 })
+            const y = entity.goals.position.get('y')
+            let layer = (y >= 0 && y < 1.0) ? Math.floor(y * 100) : 100
+            entity.goals.renderOrder.update({ v: layer })
             break
           case 'left':
             entity.goals.rotation.update({ x: 0, y: -45 * -THREE.Math.DEG2RAD, z: 0 }, Date.now() + 2000)

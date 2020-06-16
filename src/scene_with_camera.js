@@ -54,9 +54,8 @@ const SceneWithCamera = stampit({
         this.camera = new PerspectiveCamera(
           this.perspectiveRatio,
           this.width / this.height,
-        // TODO: figure out what these magic numbers represent
-          1500,
-          12800 * this.isometry
+          4000, // near clipping
+          10000, // far clipping
         )
         this.camera.position.copy(this.cameraIdealPosition)
         this.camera.lookAt(0, 110, 0)
