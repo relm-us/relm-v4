@@ -268,12 +268,13 @@ const start = async () => {
     
     // Add the asset to the network so everyone can see it
     if (response.file.match(IMAGE_FILETYPE_RE)) {
+      const layer = Math.floor(Math.random() * 100)
       network.permanents.create({
         type: 'decoration',
         goals: {
           position: {
             x: player.object.position.x,
-            y: player.object.position.y,
+            y: player.object.position.y + (layer / 100),
             z: player.object.position.z,
           },
           asset: { url },
