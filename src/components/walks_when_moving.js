@@ -1,9 +1,6 @@
 import stampit from 'stampit'
 
 import { Component } from './component.js'
-// TODO: figure out why these dependencies can't be mentioned in stampit() constructor
-import { HasAnimationMixer } from './has_animation_mixer.js'
-import { FollowsTarget } from './follows_target.js'
 
 const DISTANCE_CLOSE_ENOUGH = 1.0
 
