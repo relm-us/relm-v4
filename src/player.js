@@ -64,6 +64,8 @@ const FollowsTarget2 = stampit(Component, {
     },
 
     update(delta) {
+      // TODO: can we reduce the frequency of this test?
+      
       this._goalPos.position.copy(this.goals.position.toJSON())
       
       // console.log('obj pos', this.object.position)

@@ -1,5 +1,5 @@
 import stampit from 'stampit'
-import { uuidv4 } from './util.js'
+import { getOrCreateLocalId } from './util.js'
 import * as base64 from 'base64-arraybuffer-es6'
 
 // see https://github.com/PeculiarVentures/webcrypto-docs/blob/master/ECDSA.md
@@ -25,11 +25,7 @@ const Security = stampit({
      */
     async getOrCreateId() {
       if (!this.secureId) {
-        this.secureId = localStorage.getItem('secureId')
-        if (!this.secureId) {
-          this.secureId = uuidv4()
-          localStorage.setItem('secureId', this.secureId)
-        }
+        this.secureId = getOrCreateLocalId('secureId')
       }
       return this.secureId
     },

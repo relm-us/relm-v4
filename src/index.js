@@ -21,7 +21,8 @@ import { KeyboardController } from './keyboard_controller.js'
 import { CameraController } from './camera_controller.js'
 import { FindIntersectionsFromScreenCoords } from './find_intersections_from_screen_coords.js'
 import { localstoreRestore } from './localstore_gets_state.js'
-import { uuidv4, randomPastelColor, domReady } from './util.js'
+import { installGetSetInterceptors } from './get_set_interceptors.js'
+import { uuidv4, getOrCreateLocalId, randomPastelColor, domReady } from './util.js'
 import { config, stage } from './config.js'
 import { network } from './network.js'
 import { PadController } from './pad_controller.js'
@@ -83,6 +84,7 @@ const entityOnStage = async ({ uuid, maxWait = 1000, condition = null }) => {
 
 const start = async () => {
   const playerId = await security.getOrCreateId()
+  const mouseId = getOrCreateLocalId('mouseId')
   
   // Initialize network first so that entities can send their initial state
   // even before we've connected to server (or eventually, peers)
@@ -132,7 +134,35 @@ const start = async () => {
     console.log("Not using crypto.subtle")
   }
   
-  network.connect(params)
+  network.connect({
+    params,
+    onTransientsSynced: () => {
+      // If we don't find ourselves in the transients document, we need to create ourselves
+      if (!network.transients.objects.has(playerId)) {
+        network.transients.create({
+          type: 'player',
+          uuid: playerId,
+          goals: {
+            label: { text: guestNameFromPlayerId(playerId), oz: 50 },
+            animationMesh: { v: avatarOptionFromPlayerId(playerId).avatarId },
+            animationSpeed: { v: 1.0 },
+            speed: { max: 250 },
+            color: randomPastelColor(),
+          },
+        })
+      }
+      
+      if (!network.transients.objects.has(mouseId)) {
+        network.transients.create({
+          type: 'mouse',
+          uuid: mouseId,
+          goals: {
+            color: randomPastelColor(),
+          }
+        })
+      }
+    }
+  })
   
   
 
@@ -178,29 +208,62 @@ const start = async () => {
   // player.videoBubble.object.on('mute', muteAudio)
   // player.videoBubble.object.on('unmute', unmuteAudio)
   
-  network.transients.create({
-    type: 'player',
-    uuid: playerId,
-    goals: {
-      label: { text: guestNameFromPlayerId(playerId), oz: 50 },
-      animationMesh: { v: 'fem-D-armature' },
-      animationSpeed: { v: 1.0 },
-      speed: { max: 250 },
-      color: randomPastelColor(),
-    },
-  })
+  const playerTransientState = {
+    position: { x: 0, y: 0, z: 0 },
+    rotation: { x: 0, y: 0, z: 0 },
+  }
   player = stage.player = await entityOnStage({ uuid: playerId })
   
-  const mouseId = uuidv4()
-  network.transients.create({
-    type: 'mouse',
-    uuid: mouseId,
-    goals: {
-      color: randomPastelColor(),
+  installGetSetInterceptors(player.goals.position._map, ['x', 'y', 'z'], {
+    has: (key) => {
+      return key in playerTransientState.position
+    },
+    get: (key) => {
+      return playerTransientState.position[key]
+    },
+    set: (key, value) => {
+      playerTransientState.position[key] = value
+    },
+    toJSON: (originalJson) => {
+      return Object.assign(originalJson, playerTransientState.position)
     }
   })
+
+  installGetSetInterceptors(player.goals.rotation._map, ['x', 'y', 'z'], {
+    has: (key) => {
+      return key in playerTransientState.rotation
+    },
+    get: (key) => {
+      return playerTransientState.rotation[key]
+    },
+    set: (key, value) => {
+      playerTransientState.rotation[key] = value
+    },
+    toJSON: (originalJson) => {
+      return Object.assign(originalJson, playerTransientState.rotation)
+    }
+  })
+  
+  const mouseTransientState = {
+    position: { x: 0, y: 0, z: 0 },
+  }
   mousePointer = stage.mouse = await entityOnStage({ uuid: mouseId })
   
+  installGetSetInterceptors(mousePointer.goals.position._map, ['x', 'y', 'z'], {
+    has: (key) => {
+      return key in mouseTransientState.position
+    },
+    get: (key) => {
+      return mouseTransientState.position[key]
+    },
+    set: (key, value) => {
+      mouseTransientState.position[key] = value
+      mousePointer.goals.position.achieved = false
+    },
+    toJSON: (originalJson) => {
+      return Object.assign(originalJson, mouseTransientState.position)
+    }
+  })
   
   // Perform several calculations once per game loop:
   // 1. (occasionally) Refresh videoBubble diameter
@@ -497,44 +560,6 @@ const start = async () => {
     dragLock = false
   })
 
-
-  // network.on('connect', (uuid, state) => {
-  //   const entity = stage.entities[uuid]
-  //   switch(state.type) {
-  //     case 'player':
-  //       entity.setOpacity(1.0)
-  //       // entity.showVideoBubble()
-  //       entity.showOffscreenIndicator()
-  //       break
-  //     case 'mouse':
-  //       entity.showSphere()
-  //       entity.showRing()
-  //       break
-  //     default:
-  //       console.warn('"connect" issued for unhandled type', uuid, state)
-  //   }
-  // })
-  
-  // network.on('disconnect', (uuid, state) => {
-  //   const entity = stage.entities[uuid]
-  //   switch(state.type) {
-  //     case 'player':
-  //       entity.setOpacity(0.2)
-  //       // entity.hideVideoBubble()
-  //       entity.setThought(null)
-  //       if (entity.hideOffscreenIndicator) {
-  //         entity.hideOffscreenIndicator()
-  //       }
-  //       break
-  //     case 'mouse':
-  //       entity.hideSphere()
-  //       entity.hideRing()
-  //       break
-  //     default:
-  //       console.warn('"disconnect" issued for unhandled type', uuid, state)
-  //   }
-  // })
-  
   
   const runCommand = (text, targetObjects = null) => {
     try {

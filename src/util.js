@@ -22,6 +22,20 @@ function uuidv4() {
 }
 
 /**
+ * Find a named UUID in local storage, or create one if not found.
+ * 
+ * @param {string} name - name of the local ID, e.g. 'secureId', or 'mouseId'
+ */
+const getOrCreateLocalId = (name) => {
+  let uuid = localStorage.getItem(name)
+  if (!uuid) {
+    uuid = uuidv4()
+    localStorage.setItem(name, uuid)
+  }
+  return uuid
+}
+
+/**
  * Converts a string's characters to numeric equivalents and sums their values.
  * 
  * @param {string} str String whose characters should be summed
@@ -150,6 +164,7 @@ function intersection(setA, setB) {
 
 export {
   uuidv4,
+  getOrCreateLocalId,
   sumString,
   getRandomInt,
   coinToss,

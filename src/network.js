@@ -16,6 +16,7 @@ const Document = stampit({
     this.emitter = emitter
     this.doc = new Y.Doc()
     this.objects = this.doc.getMap('objects')
+    this.provider = null
     
     this.addedObjects = {}
 
@@ -35,6 +36,13 @@ const Document = stampit({
   },
  
   methods: {
+    connectWebsocketProvider({ serverUrl, room, params = {}, onSync }) {
+      console.log(`Opening websocket to room '${room}'`, serverUrl, params)
+      this.provider = new WebsocketProvider(serverUrl, room, this.doc, { params })
+      if (onSync) { this.provider.on('sync', onSync) }
+      return this.provider 
+    },
+    
     create({ type, uuid = uuidv4(), goals = {} }) {
       const Type = Typed.getType(type)
       const ymap = new Y.Map()
@@ -64,15 +72,6 @@ const Document = stampit({
  * changes such as adding an object, or updating a property on an already existing object.
  */
 const Network = stampit(EventEmittable, {
-  props: {
-    ydoc: null,
-    entityStates: null,
-    invitations: null,
-    wsProvider: null,
-    idbProvider: null,
-    connected: false,
-  },
-
   init() {
     window.network = this
     
@@ -81,22 +80,25 @@ const Network = stampit(EventEmittable, {
     
     // Permanent Y document: holds game object state & everything that stays in each relm
     this.permanents = Document({ emitter: this })
-    
-    // Store connections to local or remote servers
-    this.providers = []
   },
   
   methods: {
-    async connect(params = {}) {
+    async connect({ params = {}, onTransientsSynced }) {
       const cfg = config(window.location)
       const serverUrl = cfg.SERVER_YJS_URL
       
-      {
-        const ydoc = this.permanents.doc
-        const room = cfg.ROOM
-        // await this.connectToLocal(ydoc, room)
-        await this.connectToServer(ydoc, serverUrl, room, params)
-      }
+      this.transients.connectWebsocketProvider({
+        serverUrl,
+        room: cfg.ROOM + '.t',
+        params,
+        onSync: onTransientsSynced,
+      })
+      
+      this.permanents.connectWebsocketProvider({
+        serverUrl,
+        room: cfg.ROOM,
+        params
+      })
     },
     
     async connectToLocal(ydoc, room) {
@@ -104,16 +106,9 @@ const Network = stampit(EventEmittable, {
       try {
         const provider = new IndexeddbPersistence(room, ydoc)
         await provider.whenSynced
-        this.providers.push(provider)
       } catch (err) {
         console.warn("Unable to open indexeddb:", err)
       }
-    },
-    
-    async connectToServer(ydoc, server, room, params) {
-      console.log('Opening remote websocket...', server, room, params)
-      const provider = new WebsocketProvider(server, room, ydoc, { params })
-      this.providers.push(provider)
     },
   }
 })
