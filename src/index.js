@@ -59,15 +59,22 @@ let mousePointer
 
 
 /**
+ * Wait for an entity to be added to the stage. Normally, it shouldn't take more then a few milliseconds.
  * 
- * @param {string} uuid 
+ * @param {string} uuid - the UUID of the entity to wait for
+ * @param {number} maxWait - the maximum number of milliseconds to wait
  * @param {Function} condition - an optional additional condition to be met
  */
-const entityOnStage = async (uuid, condition = null) => {
-  return new Promise((resolve) => {
-    setInterval(() => {
+const entityOnStage = async ({ uuid, maxWait = 1000, condition = null }) => {
+  const startTime = Date.now()
+  return new Promise((resolve, reject) => {
+    const intervalId = setInterval(() => {
       if (uuid in stage.entities && (condition === null || condition(stage.entities[uuid]))) {
+        clearInterval(intervalId)
         resolve(stage.entities[uuid])
+      } else if (Date.now() - startTime > maxWait) {
+        clearInterval(intervalId)
+        reject(`Unable to add entity to scene, waited ${maxWait} milliseconds (UUID: '${uuid}')`)
       }
     }, 10)
   })
@@ -182,7 +189,7 @@ const start = async () => {
       color: randomPastelColor(),
     },
   })
-  player = stage.player = await entityOnStage(playerId)
+  player = stage.player = await entityOnStage({ uuid: playerId })
   
   const mouseId = uuidv4()
   network.transients.create({
@@ -192,7 +199,7 @@ const start = async () => {
       color: randomPastelColor(),
     }
   })
-  mousePointer = stage.mouse = await entityOnStage(mouseId)
+  mousePointer = stage.mouse = await entityOnStage({ uuid: mouseId })
   
   
   // Perform several calculations once per game loop:
@@ -294,7 +301,7 @@ const start = async () => {
           asset: { url },
         },
       })
-      const thing3d = await entityOnStage(uuid, (entity) => entity.child)
+      const thing3d = await entityOnStage({ uuid, condition: (entity) => entity.child })
       
       // The `normalize` step happens just once after loading
       thing3d.normalize()
