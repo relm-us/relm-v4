@@ -55,9 +55,10 @@ const UsesAssetAsImage = stampit(Component, {
       const h = texture.image.height
       const fold = this.goals.fold.get('v')
       const flip = this.goals.flip
+      const materialType = this.goals.material.get('type')
       
       const geometry = this._createFoldingPlaneBufferGeometry(w, h, flip.get('x'), flip.get('y'), fold)
-      const material = this._createMaterial(texture)
+      const material = this._createMaterialWithDefaults(texture, materialType)
       const mesh = new THREE.Mesh(geometry, material)
     
       this._setMesh(mesh)
@@ -116,8 +117,8 @@ const UsesAssetAsImage = stampit(Component, {
       return geometry
     },
 
-    _createMaterial(texture) {
-      switch (this.goals.material.get('type')) {
+    _createMaterial(texture, materialType) {
+      switch (materialType) {
         case 'photo':
           return PhotoMaterial({ texture })
         case 'add':
@@ -128,13 +129,20 @@ const UsesAssetAsImage = stampit(Component, {
           return PhotoMaterial({ texture, blending: THREE.MultiplyBlending })
         default:
           return new THREE.MeshStandardMaterial({
-            color: IMAGE_DEFAULT_COLOR,
-            alphaTest: IMAGE_DEFAULT_ALPHA_TEST,
-            transparent: true,
-            side: THREE.DoubleSide,
             map: texture,
+            side: THREE.DoubleSide,
           })
       }
+    },
+    
+    _createMaterialWithDefaults(texture, materialType) {
+      const material = this._createMaterial(texture, materialType)
+
+      material.alphaTest = IMAGE_DEFAULT_ALPHA_TEST
+      material.premultipliedAlpha = true
+      material.transparent = true
+      
+      return material
     },
 
     _setMesh(mesh) {

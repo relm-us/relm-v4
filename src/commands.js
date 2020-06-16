@@ -415,20 +415,34 @@ const commands = {
       }, (count) => { showToast(`Changed material for ${numberOfObjects(count)}`) })
       
 
+      case 'order': return actionToEachObject((entity, env) => {
+        const layer = takeOne(args, `Shouldn't there be a layer number after '/object order'? e.g. 0, 1, ... 100`)
+        const orderGoal = entity.goals.renderOrder
+        if (orderGoal) {
+          orderGoal.update({ v: parseFloat(layer) })
+          return true /* add to success count */
+        }
+      }, (count) => { showToast(`Changed order for ${numberOfObjects(count)}`) })
+      
+
       case 'orient': return actionToEachObject((entity, env) => {
         const subCommand = takeOne(args, `Shouldn't there be a subcommand after '/object orient'? e.g. 'up' or 'down'`)
         switch (subCommand) {
           case 'up':
             entity.goals.rotation.update({ x: 0, y: 0, z: 0 }, Date.now() + 2000)
+            entity.goals.renderOrder.update({ v: 100 })
             break
           case 'down':
             entity.goals.rotation.update({ x: 90 * -THREE.Math.DEG2RAD, y: 0, z: 0 }, Date.now() + 2000)
+            entity.goals.renderOrder.update({ v: 0 })
             break
           case 'left':
             entity.goals.rotation.update({ x: 0, y: -45 * -THREE.Math.DEG2RAD, z: 0 }, Date.now() + 2000)
+            entity.goals.renderOrder.update({ v: 100 })
             break
           case 'right':
             entity.goals.rotation.update({ x: 0, y: 45 * -THREE.Math.DEG2RAD, z: 0 }, Date.now() + 2000)
+            entity.goals.renderOrder.update({ v: 100 })
             break
           default:
             throw Error(`Is ${subCommand} an '/orient' subcommand?`)

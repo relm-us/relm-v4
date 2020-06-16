@@ -6,7 +6,8 @@ import { Equality, defineGoal } from '../goals/goal.js'
 const AnimatesPosition = stampit(Component, {
   deepStatics: {
     goalDefinitions: {
-      position: defineGoal('p', { x: 0, y: 0, z: 0 }, Equality.Distance(0.01))
+      position: defineGoal('p', { x: 0, y: 0, z: 0 }, Equality.Distance(0.01)),
+      renderOrder: defineGoal('ro', { v: 100 }),
     }
   },
   
@@ -20,6 +21,11 @@ const AnimatesPosition = stampit(Component, {
     },
 
     update(delta) {
+      const rendGoal = this.goals.renderOrder
+      if (!rendGoal.achieved && this.object.children.length > 0) {
+        this.object.traverse(o => o.renderOrder = rendGoal.get('v'))
+        rendGoal.markAchieved()
+      }
       const positionGoal = this.goals.position
       if (!positionGoal.achieved) {
         if (positionGoal.isPastDue()) {

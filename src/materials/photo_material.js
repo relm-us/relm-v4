@@ -34,7 +34,7 @@ const PhotoMaterial = ({ texture, blending = THREE.NormalBlending }) => {
     fragmentShader,
     side: THREE.DoubleSide,
     blending,
-    transparent: true
+    transparent: true,
   })
 }
 

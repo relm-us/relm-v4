@@ -17,6 +17,8 @@ function createGround (scene, groundSize) {
   
   const material = new MeshPhongMaterial({
     color: 0xAAAAAA,
+    depthWrite: false,
+    transparent: false,
   })
 
   const ground = new Mesh(geometry, material)
