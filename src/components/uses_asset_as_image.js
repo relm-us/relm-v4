@@ -12,7 +12,8 @@ const UsesAssetAsImage = stampit(Component, {
     goalDefinitions: {
       fold: defineGoal('pvt', { v: 0 }),
       flip: defineGoal('flp', { x: false, y: false }),
-      material: defineGoal('mat', { type: 'default' })
+      material: defineGoal('mat', { type: 'default' }),
+      renderOrder: defineGoal('ro', { v: 100 }),
     }
   },
   
@@ -53,8 +54,8 @@ const UsesAssetAsImage = stampit(Component, {
     _createImageMeshFromLoadedTexture(texture) {
       const w = texture.image.width
       const h = texture.image.height
-      const fold = this.goals.fold.get('v')
       const flip = this.goals.flip
+      const fold = this.goals.fold.get('v')
       const materialType = this.goals.material.get('type')
       
       const geometry = this._createFoldingPlaneBufferGeometry(w, h, flip.get('x'), flip.get('y'), fold)
@@ -141,6 +142,7 @@ const UsesAssetAsImage = stampit(Component, {
       material.alphaTest = IMAGE_DEFAULT_ALPHA_TEST
       material.premultipliedAlpha = true
       material.transparent = true
+      material.needsUpdate = true
       
       return material
     },
@@ -156,11 +158,14 @@ const UsesAssetAsImage = stampit(Component, {
       const foldGoal = this.goals.fold
       const flipGoal = this.goals.flip
       const materialGoal = this.goals.material
-      if (this.texture && (!foldGoal.achieved || !flipGoal.achieved || !materialGoal.achieved)) {
+      const orderGoal = this.goals.renderOrder
+      if (this.texture && (!foldGoal.achieved || !flipGoal.achieved || !materialGoal.achieved || (!orderGoal.achieved && this.object.children.length > 0))) {
         this._createImageMeshFromLoadedTexture(this.texture)
+        this.object.traverse(o => o.renderOrder = orderGoal.get('v'))
         foldGoal.markAchieved()
         flipGoal.markAchieved()
         materialGoal.markAchieved()
+        orderGoal.markAchieved()
       }
     }
   }
