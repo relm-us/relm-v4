@@ -266,7 +266,7 @@ const start = async () => {
     // Finalize player centroid calculation
     playersCentroid.divideScalar(playerCount)
     
-    network.transients.sendState()
+    network.transients.sendState([playerId, mouseId])
   })
     
   // Mouse wheel zooms in and out

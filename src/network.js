@@ -89,6 +89,8 @@ const TransientDocument = stampit(Document, {
 
   methods: {
     installInterceptors(entity) {
+      // add 'spd' with its 'max' value?
+      // add 'ans' with its 'v' value?
       ['p', 'r'].forEach(goalAbbrev => {
         if (entity.goals.has(goalAbbrev)) {
           installGetSetInterceptors(entity.goals.get(goalAbbrev)._map, ['@due', 'x', 'y', 'z'], {
@@ -154,10 +156,12 @@ const TransientDocument = stampit(Document, {
       this._bufferedAwarenessState[uuid][goalAbbrev][key] = value
     },
 
-    sendState() {
+    sendState(uuids) {
       // if (this.counter++ % 50 === 0)
       //   console.log('sendState', JSON.stringify(this._bufferedAwarenessState))
-      this.provider.awareness.setLocalState(this._bufferedAwarenessState)
+      uuids.forEach(uuid => {
+        this.provider.awareness.setLocalStateField(uuid, this._bufferedAwarenessState[uuid])
+      })
     },
     
     receiveState({ added, updated, removed }) {
@@ -166,7 +170,8 @@ const TransientDocument = stampit(Document, {
         const state = states.get(clientID)
         for (const [uuid, valuesObject] of Object.entries(state)) {
           this._bufferedAwarenessState[uuid] = valuesObject
-          // console.log('receive state', uuid, valuesObject)
+          if (this.counter++ % 50 === 0)
+            console.log('receive state', uuid, valuesObject)
           this.emitter.emit('transient-receive', uuid, valuesObject)
         }
       } 
