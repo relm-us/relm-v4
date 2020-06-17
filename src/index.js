@@ -21,7 +21,6 @@ import { KeyboardController } from './keyboard_controller.js'
 import { CameraController } from './camera_controller.js'
 import { FindIntersectionsFromScreenCoords } from './find_intersections_from_screen_coords.js'
 import { localstoreRestore } from './localstore_gets_state.js'
-import { installGetSetInterceptors } from './get_set_interceptors.js'
 import { uuidv4, getOrCreateLocalId, randomPastelColor, domReady } from './util.js'
 import { config, stage } from './config.js'
 import { network } from './network.js'
@@ -88,7 +87,7 @@ const start = async () => {
   
   // Initialize network first so that entities can send their initial state
   // even before we've connected to server (or eventually, peers)
-  network.on('add', async (goalGroupMap) => {
+  network.on('add', async (goalGroupMap, isTransient) => {
     console.log('network.on add', goalGroupMap.toJSON())
     
     // Get the stamp that has registered itself as a named, matching type
@@ -100,6 +99,11 @@ const start = async () => {
     }
     
     const entity = Type(params)
+    
+    if (isTransient) {
+      network.transients.installInterceptors(entity)
+    }
+    
     stage.add(entity)
   })
   
@@ -208,60 +212,26 @@ const start = async () => {
   // player.videoBubble.object.on('mute', muteAudio)
   // player.videoBubble.object.on('unmute', unmuteAudio)
   
-  const playerTransientState = {
-    position: { x: 0, y: 0, z: 0 },
-    rotation: { x: 0, y: 0, z: 0 },
-  }
   player = stage.player = await entityOnStage({ uuid: playerId })
   
-  installGetSetInterceptors(player.goals.position._map, ['x', 'y', 'z'], {
-    has: (key) => {
-      return key in playerTransientState.position
-    },
-    get: (key) => {
-      return playerTransientState.position[key]
-    },
-    set: (key, value) => {
-      playerTransientState.position[key] = value
-    },
-    toJSON: (originalJson) => {
-      return Object.assign(originalJson, playerTransientState.position)
-    }
-  })
-
-  installGetSetInterceptors(player.goals.rotation._map, ['x', 'y', 'z'], {
-    has: (key) => {
-      return key in playerTransientState.rotation
-    },
-    get: (key) => {
-      return playerTransientState.rotation[key]
-    },
-    set: (key, value) => {
-      playerTransientState.rotation[key] = value
-    },
-    toJSON: (originalJson) => {
-      return Object.assign(originalJson, playerTransientState.rotation)
-    }
-  })
-  
-  const mouseTransientState = {
-    position: { x: 0, y: 0, z: 0 },
-  }
   mousePointer = stage.mouse = await entityOnStage({ uuid: mouseId })
   
-  installGetSetInterceptors(mousePointer.goals.position._map, ['x', 'y', 'z'], {
-    has: (key) => {
-      return key in mouseTransientState.position
-    },
-    get: (key) => {
-      return mouseTransientState.position[key]
-    },
-    set: (key, value) => {
-      mouseTransientState.position[key] = value
-      mousePointer.goals.position.achieved = false
-    },
-    toJSON: (originalJson) => {
-      return Object.assign(originalJson, mouseTransientState.position)
+  network.on('transient-receive', (uuid, state) => {
+    if (uuid !== mouseId && uuid !== playerId) {
+      const entity = stage.entities[uuid]
+      if (entity) {
+        for (const [goalAbbrev, goalState] of Object.entries(state)) {
+          const goal = entity.goals.get(goalAbbrev)
+          if ('@due' in goalState) {
+            goal.due = goalState['@due']
+          }
+          for (const [k, v] of Object.entries(goalState)) {
+            if (k.slice(0,1) !== '@') {
+              goal._map.set(k, v)
+            }
+          }
+        }
+      }
     }
   })
   
@@ -295,6 +265,8 @@ const start = async () => {
     
     // Finalize player centroid calculation
     playersCentroid.divideScalar(playerCount)
+    
+    network.transients.sendState()
   })
     
   // Mouse wheel zooms in and out

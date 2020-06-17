@@ -103,10 +103,15 @@ const GoalGroup = stampit({
      * @returns {Goal}
      */
     get(abbrev) {
-      if (!this._goals[abbrev]) {
-        this.initGoal(abbrev)
+      if (!this.has(abbrev)) {
+        console.trace('goal not defined', abbrev, this._goals)
+        return
       }
       return this._goals[abbrev]
+    },
+    
+    has(abbrev) {
+      return abbrev in this._goals
     },
 
     definitionKeys() {
