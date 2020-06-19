@@ -168,11 +168,16 @@ function objectScale(entity, { x, y, z }) {
 function objectMove(entity, { x, y, z }) {
   const posGoal = entity.goals.position
   if (posGoal) {
-    posGoal.update({
-      x: posGoal.get('x') + (x || 0),
-      y: posGoal.get('y') + (y || 0),
-      z: posGoal.get('z') + (z || 0),
-    }, Date.now() + 2000)
+    const newX = parseFloat(posGoal.get('x'))
+    const newY = parseFloat(posGoal.get('y'))
+    const newZ = parseFloat(posGoal.get('z'))
+    const newPos = {
+      x: newX + (x === undefined || x === null ? 0 : x),
+      y: newY + (y === undefined || y === null ? 0 : y),
+      z: newZ + (z === undefined || z === null ? 0 : z),
+    }
+    console.log('objectMove', newPos)
+    posGoal.update(newPos, Date.now() + 2000)
     return true /* add to success count */
   } else {
     showToast(`This object can't be moved`)
@@ -470,7 +475,6 @@ const commands = {
         if (object.uiLock) {
           object.uiLock()
           env.stage.selection.select([object], '-')
-          network.setEntity(object)
           return true /* add to success count */
         }
       }, (count) => { showToast(`Locked ${numberOfObjects(count)}`) })
@@ -479,7 +483,6 @@ const commands = {
         if (object.uiUnlock) {
           object.uiUnlock()
           env.stage.selection.select([object], '-')
-          network.setEntity(object)
           return true /* add to success count */
         }
       }, (count) => { showToast(`Unlocked ${numberOfObjects(count)}`) })
@@ -586,12 +589,14 @@ const commands = {
       
       
       case 'to': return actionToEachObject((entity, env) => {
-        const x = takeOne(args, 'Requires [X] [Y] [Z]')
-        const y = takeOne(args, 'Requires [X] [Y] [Z]')
-        const z = takeOne(args, 'Requires [X] [Y] [Z]')
+        const x = parseFloat(takeOne(args, 'Requires [X] [Y] [Z]'))
+        const y = parseFloat(takeOne(args, 'Requires [X] [Y] [Z]'))
+        const z = parseFloat(takeOne(args, 'Requires [X] [Y] [Z]'))
         const posGoal = entity.goals.position
         if (posGoal) {
-          posGoal.update({ x, y, z }, Date.now() + 2000)
+          const newPos = { x, y, z }
+          console.log('to', newPos)
+          posGoal.update(newPos, Date.now() + 2000)
           return true /* add to success count */
         } else {
           showToast(`This object can't be moved`)
