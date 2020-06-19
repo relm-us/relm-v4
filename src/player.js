@@ -170,7 +170,7 @@ const Player = stampit(
     },
 
     init() {
-      this.videoBubble.offset = new THREE.Vector3(0, 190, 0)
+      this.videoBubble.offset = new THREE.Vector3(0, 200, 0)
     }
   })
 ).setType('player')
