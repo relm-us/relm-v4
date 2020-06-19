@@ -217,11 +217,20 @@ const start = async () => {
   // player.videoBubble.object.on('mute', muteAudio)
   // player.videoBubble.object.on('unmute', unmuteAudio)
   
+  
+  
   player = stage.player = await entityOnStage({ uuid: playerId })
   player.autonomous = false
   player.labelObj.setOnLabelChanged((text) => {
     player.goals.label.update({ text })
   })
+  
+  const playerJSON = localstoreRestore(playerId)
+  if (playerJSON) {
+    network.transients.fromJSON(playerJSON, true)
+  } else {
+    console.log('New Player!', playerId)
+  }
   
   mousePointer = stage.mouse = await entityOnStage({ uuid: mouseId })
   

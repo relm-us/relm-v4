@@ -73,7 +73,7 @@ const Document = stampit({
       console.log('created', type, uuid, 'goals', goals, 'definitions', Type.goalDefinitions, 'ymap', ymap.toJSON())
     },
 
-    fromJSON(json) {
+    fromJSON(json, instantaneous = false) {
       const uuid = json['@id']
       if (!uuid) { throw Error(`Can't import json, no '@id'`) }
       const type = json['@type']
@@ -102,7 +102,7 @@ const Document = stampit({
             }
             for (const [k, v] of Object.entries(goalState)) {
               if (k === '@due') {
-                ymapState.set('@due', Date.now() + 2000)
+                ymapState.set('@due', instantaneous ? 0 : Date.now() + 2000)
               } else {
                 ymapState.set(k, v)
               }
