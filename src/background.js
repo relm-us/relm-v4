@@ -24,6 +24,7 @@ const HasPlane = stampit(Component, {
       this.mesh = new THREE.Mesh(geometry, material)
       
       this.object.rotation.x = -Math.PI/2
+      this.object.position.y = -5.0
       this.object.add(this.mesh)
     },
 
