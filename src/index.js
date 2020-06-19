@@ -94,11 +94,9 @@ const start = async () => {
     const typeName = goalGroupMap.get('@type')
     const Type = Typed.getType(typeName)
     
-    const params = {
-      goals: GoalGroup({ goalDefinitions: Type.goalDefinitions, goalGroupMap })
-    }
+    const goals = GoalGroup({ goalDefinitions: Type.goalDefinitions, goalGroupMap })
     
-    const entity = Type(params)
+    const entity = Type({ goals })
     
     if (isTransient) {
       network.transients.installInterceptors(entity)
@@ -213,6 +211,7 @@ const start = async () => {
   // player.videoBubble.object.on('unmute', unmuteAudio)
   
   player = stage.player = await entityOnStage({ uuid: playerId })
+  player.autonomous = false
   
   mousePointer = stage.mouse = await entityOnStage({ uuid: mouseId })
   
@@ -222,11 +221,8 @@ const start = async () => {
       if (entity) {
         for (const [goalAbbrev, goalState] of Object.entries(state)) {
           const goal = entity.goals.get(goalAbbrev)
-          if ('@due' in goalState) {
-            goal.due = goalState['@due']
-          }
           for (const [k, v] of Object.entries(goalState)) {
-            if (k.slice(0,1) !== '@') {
+            if (goal._map.get(k) !== v) {
               goal._map.set(k, v)
             }
           }

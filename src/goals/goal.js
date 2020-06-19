@@ -34,7 +34,6 @@ const Equality = {
   Map: () => {
     return (map1, map2) => {
       let keys = new Set([...map1.keys(), ...map2.keys()])
-      console.log('Equality.Map', map1, map2, keys)
       for (let k of keys.values()) {
         if (k.slice(0, 1) === '@') continue
         if (!map1.has(k) || !map2.has(k)) return false
@@ -45,7 +44,7 @@ const Equality = {
   }
 }
 
-function defineGoal(abbrev, defaults, equality = Equality.Map) {
+function defineGoal(abbrev, defaults, equality = Equality.Map()) {
   return { abbrev, defaults, equality }
 }
 
@@ -109,7 +108,6 @@ const Goal = stampit(EventEmittable, {
     })
     
     // Set default values, as long as they don't overwrite existing values
-    this._due = 0
     for (const [k, v] of Object.entries(defaults)) {
       if (!this._map.has(k)) {
         this._map.set(k, v)

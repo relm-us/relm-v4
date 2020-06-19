@@ -46,6 +46,7 @@ const FollowsTarget2 = stampit(Component, {
   init() {
     this._addVector = new THREE.Vector3()   
     this._followsTargetDebug = false
+    this.autonomous = true
 
     this._createTargetObjects()
   },
@@ -95,6 +96,7 @@ const FollowsTarget2 = stampit(Component, {
     },
 
     update(delta) {
+      if (this.autonomous) return
       // TODO: can we reduce the frequency of this test?
 
       // Fastest way to copy from position goal is to `get` attributes

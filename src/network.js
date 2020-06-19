@@ -83,27 +83,32 @@ const Document = stampit({
 
 const TransientDocument = stampit(Document, {
   init() {
-    this._bufferedAwarenessState = {}
+    this._cachedAwarenessState = {}
+    // Set changed state to true so that initial values are broadcast
+    this._cachedAwarenessStateChanged = true
     this.counter = 0
   },
 
   methods: {
-    installInterceptors(entity) {
-      // add 'spd' with its 'max' value?
-      // add 'ans' with its 'v' value?
-      ['p', 'r'].forEach(goalAbbrev => {
+    installInterceptors(entity, abbrevs = ['p', 'r', 'spd', 'ans']) {
+      this._cachedAwarenessState[entity.uuid] = {}
+      abbrevs.forEach(goalAbbrev => {
         if (entity.goals.has(goalAbbrev)) {
-          installGetSetInterceptors(entity.goals.get(goalAbbrev)._map, ['@due', 'x', 'y', 'z'], {
+          const internalMap = entity.goals.get(goalAbbrev)._map
+          const keys = Array.from(internalMap.keys())
+          // Set default values
+          this._cachedAwarenessState[entity.uuid][goalAbbrev] = internalMap.toJSON()
+          installGetSetInterceptors(internalMap, keys, {
             has: (key) => { return this.hasState(entity.uuid, goalAbbrev, key) },
             get: (key) => { return this.getState(entity.uuid, goalAbbrev, key) },
             set: (key, value) => {
-              this.setState(entity.uuid, goalAbbrev, key, value)
-              entity.goals.get(goalAbbrev).achieved = false
+              if (this.setState(entity.uuid, goalAbbrev, key, value)) {
+                entity.goals.get(goalAbbrev).achieved = false
+              }
             },
             toJSON: (originalJson) => {
-              const state = this.getAllState(entity.uuid, goalAbbrev)
+              const state = this.getAllState(entity.uuid, goalAbbrev) || {}
               const json = Object.assign(originalJson, state)
-              // console.log('mouse json', json)
               return json
             }
           })
@@ -114,20 +119,18 @@ const TransientDocument = stampit(Document, {
     _addObject(key) {
       const added = this.objects.get(key)
       this.addedObjects[key] = added
+      // Make sure to send 'true' for isTransient bool
       this.emitter.emit('add', added, true)
     },
     
     _ensureStatePath(uuid, goalAbbrev, key) {
-      if (!(uuid in this._bufferedAwarenessState)) {
-        this._bufferedAwarenessState[uuid] = {
+      if (!(uuid in this._cachedAwarenessState)) {
+        this._cachedAwarenessState[uuid] = {
           [goalAbbrev]: {}
         }
       }
-      if (!(goalAbbrev in this._bufferedAwarenessState[uuid])) {
-        this._bufferedAwarenessState[uuid][goalAbbrev] = {}
-      }
-      if (key !== undefined && !(key in this._bufferedAwarenessState[uuid][goalAbbrev])) {
-        this._bufferedAwarenessState[uuid][goalAbbrev][key] = 0.0
+      if (!(goalAbbrev in this._cachedAwarenessState[uuid])) {
+        this._cachedAwarenessState[uuid][goalAbbrev] = {}
       }
     },
     
@@ -137,41 +140,52 @@ const TransientDocument = stampit(Document, {
     },
     
     hasState(uuid, goalAbbrev, key) {
-      this._ensureStatePath(uuid, goalAbbrev, key)
-      return key in this._bufferedAwarenessState[uuid][goalAbbrev]
+      try {
+        return key in this._cachedAwarenessState[uuid][goalAbbrev]
+      } catch (e) {
+        return false
+      }
     },
 
     getState(uuid, goalAbbrev, key) {
-      this._ensureStatePath(uuid, goalAbbrev, key)
-      return this._bufferedAwarenessState[uuid][goalAbbrev][key]
+      try {
+        return this._cachedAwarenessState[uuid][goalAbbrev][key]
+      } catch (e) {}
     },
     
     getAllState(uuid, goalAbbrev) {
-      this._ensureStatePath(uuid, goalAbbrev)
-      return this._bufferedAwarenessState[uuid][goalAbbrev]
+      try {
+        return this._cachedAwarenessState[uuid][goalAbbrev]
+      } catch (e) {}
     },
 
     setState(uuid, goalAbbrev, key, value) {
-      this._ensureStatePath(uuid, goalAbbrev)
-      this._bufferedAwarenessState[uuid][goalAbbrev][key] = value
+      if (this._cachedAwarenessState[uuid][goalAbbrev][key] !== value) {
+        this._cachedAwarenessState[uuid][goalAbbrev][key] = value
+        this._cachedAwarenessStateChanged = true
+        return true
+      } else {
+        return false
+      }
     },
 
     sendState(uuids) {
-      // if (this.counter++ % 50 === 0)
-      //   console.log('sendState', JSON.stringify(this._bufferedAwarenessState))
-      uuids.forEach(uuid => {
-        this.provider.awareness.setLocalStateField(uuid, this._bufferedAwarenessState[uuid])
-      })
+      if (this._cachedAwarenessStateChanged) {
+        this._cachedAwarenessStateChanged = false
+        uuids.forEach(uuid => {
+          if (this._cachedAwarenessState[uuid]) {
+            this.provider.awareness.setLocalStateField(uuid, this._cachedAwarenessState[uuid])
+          }
+        })
+      }
     },
     
     receiveState({ added, updated, removed }) {
       const states = this.provider.awareness.getStates()
+      this.counter++
       for (const clientID of updated) {
         const state = states.get(clientID)
         for (const [uuid, valuesObject] of Object.entries(state)) {
-          this._bufferedAwarenessState[uuid] = valuesObject
-          if (this.counter++ % 50 === 0)
-            console.log('receive state', uuid, valuesObject)
           this.emitter.emit('transient-receive', uuid, valuesObject)
         }
       } 

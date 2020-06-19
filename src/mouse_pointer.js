@@ -85,6 +85,7 @@ const MousePointer = stampit(
     init() {
       this._finder = 
         FindIntersectionsFromScreenCoords({ stage: this.stage })
+      this._screenCoords = new Map()
     },
 
     methods: {
@@ -92,13 +93,18 @@ const MousePointer = stampit(
         const point = this._finder.getFirstIntersectionPoint(x, y)
         
         if (point) {
-          // As long as mouse intersected with something (even the ground), set the new goal
-          // console.log('setting p', this.uuid)
-          this.goals.position.update({
-            x: point.x - 3,
-            y: point.y + 10,
-            z: point.z + 10,
-          })
+          this._screenCoords.set('x', point.x - 3)
+          this._screenCoords.set('y', point.y + 10)
+          this._screenCoords.set('z', point.z + 10)
+
+          if (!this.goals.position.equals(this._screenCoords)) {
+            // As long as mouse intersected with something (even the ground), set the new goal
+            this.goals.position.update({
+              x: this._screenCoords.get('x'),
+              y: this._screenCoords.get('y'),
+              z: this._screenCoords.get('z'),
+            })
+          }
         }
       },
       
