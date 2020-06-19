@@ -8,8 +8,17 @@ import { showToast } from './lib/Toast.js'
 import { showInfoAboutObject } from './show_info_about_object.js'
 import "toastify-js/src/toastify.css"
 
-// Register each type of shared entity
+
+// The `Typed` stamp allows Entities and SharedEntities to be registered
 import { Typed } from './typed.js'
+
+// Register each type of Entity
+import { Background } from './background.js'
+import { KeyboardController } from './keyboard_controller.js'
+import { CameraController } from './camera_controller.js'
+import { PadController } from './pad_controller.js'
+
+// Register each type of SharedEntity
 import { Player } from './player.js'
 import { MousePointer } from './mouse_pointer.js'
 import { Decoration } from './decoration.js'
@@ -17,10 +26,6 @@ import { Thing3D } from './thing3d.js'
 import { Teleportal } from './teleportal.js'
 import { Ground } from './ground.js'
 
-import { Background } from './background.js'
-import { KeyboardController } from './keyboard_controller.js'
-import { CameraController } from './camera_controller.js'
-import { PadController } from './pad_controller.js'
 
 // Misc. other imports
 import { FindIntersectionsFromScreenCoords } from './find_intersections_from_screen_coords.js'
@@ -33,6 +38,7 @@ import { GoalGroup } from './goals/goal_group.js'
 import { addManifestTo } from './manifest_loaders.js'
 import { parseCommand } from './commands.js'
 import { recordCoords } from './record_coords.js'
+import { IMAGE_FILETYPE_RE, GLTF_FILETYPE_RE } from './components/loads_asset.js'
 
 import {
   KEY_UP, KEY_DOWN, KEY_LEFT, KEY_RIGHT,
@@ -41,9 +47,6 @@ import {
   KEY_BACK_SLASH, KEY_SLASH,
   KEY_BACK_SPACE, KEY_DELETE
 } from 'keycode-js'
-
-const IMAGE_FILETYPE_RE = /\.(png|gif|jpg|jpeg|webp)$/
-const GLTF_FILETYPE_RE = /\.(gltf|glb)$/
 
 const cfg = config(window.location)
 const intersectionFinder = FindIntersectionsFromScreenCoords({ stage })
@@ -483,15 +486,7 @@ const start = async () => {
   window.addEventListener('mouseup', (event) => {
     if (event.target.id !== 'game' && event.target.id !== 'glcanvas') { return }
     
-    if (dragLock) {
-      if (stage.selection.hasAtLeast(1)) {
-        // If we disabled FollowsTarget during drag/drop, re-enable it
-        // stage.selection.forEach((entity) => {
-          // entity.enableFollowsTarget()
-        // })
-      }
-    } else {
-    
+    if (!dragLock) {
       // Did player click on something with an onClick callback?
       let clickedEntities = intersectionFinder.getAllIntersectionsOnStage().map((isect) => isect.entity)
       clickedEntities.forEach((entity) => {
@@ -581,8 +576,6 @@ const start = async () => {
       event.preventDefault()
     })
   }
-  
-
   
   
   // Import/Export HTML Events
@@ -742,15 +735,11 @@ const start = async () => {
   })
   kbController.on('doublePressed', (action) => {
     player.setSpeed(500)
-    // player.setAnimationSpeed(3)
     player.goals.animationSpeed.update({ v: 3.0 })
-    // network.setEntity(player)
   })
   kbController.on('released', (action) => {
     player.setSpeed(250)
-    // player.setAnimationSpeed(1.5)
     player.goals.animationSpeed.update({ v: 1.5 })
-    // network.setEntity(player)
   })
 
   const camController = stage.create('camcon', {

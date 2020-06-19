@@ -7,6 +7,10 @@ import { defineGoal } from '../goals/goal.js'
 import { GLTFLoader } from '../lib/GLTFLoader.js'
 
 
+const IMAGE_FILETYPE_RE = /\.(png|gif|jpg|jpeg|webp)$/
+const GLTF_FILETYPE_RE = /\.(gltf|glb)$/
+
+
 // Loader for regular GLTFs and GLBs
 const regularGLTFLoader = new GLTFLoader()
 
@@ -16,9 +20,9 @@ const textureLoader = new THREE.TextureLoader()
 
 const getLoaderFromUrl = (url) => {
   if (!url.match) { console.error('URL is is not a string', url) }
-  if (url.match(/\.(png|jpg|jpeg|webp)$/)) {
+  if (url.match(IMAGE_FILETYPE_RE)) {
     return textureLoader
-  } else if (url.match(/\.(glb|gltf)/)) {
+  } else if (url.match(GLTF_FILETYPE_RE)) {
     return regularGLTFLoader
   } else {
     throw Error(`Can't match loader for asset at URL '${url}'`)
@@ -59,4 +63,8 @@ const LoadsAsset = stampit(Component, EventEmittable, {
   }
 })
 
-export { LoadsAsset }
+export {
+  LoadsAsset,
+  IMAGE_FILETYPE_RE,
+  GLTF_FILETYPE_RE,
+}
