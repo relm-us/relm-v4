@@ -51,11 +51,11 @@ function diamondCreate(message) {
 function diamondUpdate({ message, label }) {
   return actionToEachObject((entity, env) => {
     let updated = false
-    if (entity.goals.diamond) {
+    if (message && entity.goals.diamond) {
       entity.goals.diamond.update({ text: message })
       updated = true
     }
-    if (entity.goals.label) {
+    if (label && entity.goals.label) {
       entity.goals.label.update({
         text: label,
         ox: 0,
