@@ -227,7 +227,11 @@ const start = async () => {
   
   const playerJSON = localstoreRestore(playerId)
   if (playerJSON) {
-    network.transients.fromJSON(playerJSON, true)
+    try {
+      network.transients.fromJSON(playerJSON, true)
+    } catch (e) {
+      console.warn("Unable to restore player json", e)
+    }
   } else {
     console.log('New Player!', playerId)
   }
