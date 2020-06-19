@@ -1,10 +1,6 @@
 import stampit from 'stampit'
 
 const CanProject = stampit({
-  props: {
-    domElement: null
-  },
-  
   init() {
     this.vector = new THREE.Vector3()
     this.domElement = null
@@ -32,12 +28,26 @@ const CanProject = stampit({
 })
 
 const WithLabel = stampit({
-  init({ body = document.body, onLabelChanged }) {
+  init({ body = document.body }) {
     this.domElement = document.createElement('div')
     this.domElement.classList.add('entity-label')
     
-    // If an onLabelChanged function is passed in, labels can be edited by the user
-    if (onLabelChanged) {
+    this.documentBody = body
+    this.documentBody.appendChild(this.domElement)
+  },
+
+  methods: {
+    show() {
+      if (!this.domElement) { return }
+      this.domElement.style.display = ""
+    },
+
+    hide() {
+      if (!this.domElement) { return }
+      this.domElement.style.display = "none"
+    },
+    
+    setOnLabelChanged(onLabelChanged) {
       this.onLabelChanged = onLabelChanged
       
       this.domElement.setAttribute('contenteditable', 'true')
@@ -57,21 +67,6 @@ const WithLabel = stampit({
         this.onLabelChanged(this.domElement.textContent)
         this.domElement.classList.remove('editing')
       })
-    }
-    
-    this.documentBody = body
-    this.documentBody.appendChild(this.domElement)
-  },
-
-  methods: {
-    show() {
-      if (!this.domElement) { return }
-      this.domElement.style.display = ""
-    },
-
-    hide() {
-      if (!this.domElement) { return }
-      this.domElement.style.display = "none"
     },
 
     setText(text) {

@@ -219,6 +219,9 @@ const start = async () => {
   
   player = stage.player = await entityOnStage({ uuid: playerId })
   player.autonomous = false
+  player.labelObj.setOnLabelChanged((text) => {
+    player.goals.label.update({ text })
+  })
   
   mousePointer = stage.mouse = await entityOnStage({ uuid: mouseId })
   
@@ -589,7 +592,7 @@ const start = async () => {
     const data = JSON.parse(text.value)
     const objectCount = importRelm(network, data)
     importExport.classList.add('hide')
-    showToast(`Imported ${objectCount} objects into this relm.`)
+    showToast(`Imported ${objectCount} objects into this arelm.`)
   })
   importExportCloseButton.addEventListener('mouseup', (event) => {
     importExport.classList.add('hide')

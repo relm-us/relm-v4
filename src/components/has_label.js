@@ -21,12 +21,11 @@ const HasLabel = stampit(Component, {
   },
 
   init({
-    labelColor = this.labelColor,
-    onLabelChanged
+    labelColor = this.labelColor
   }) {
     this.labelPosition = new Vector3()
     this.labelColor = labelColor || new Color()
-    this.labelObj = new Label({ onLabelChanged })
+    this.labelObj = new Label()
     this.labelOffset = new Vector3()
     
     this.setLabelColor(labelColor)
