@@ -71,6 +71,9 @@ function groundCreate(textureUrl) {
     env.network.permanents.create({
       type: 'ground',
       goals: {
+        ground: {
+          seed: Math.floor(Math.random() * 10000) + 100
+        },
         position: {
           x: env.position.x,
           y: env.position.y,
@@ -84,13 +87,14 @@ function groundCreate(textureUrl) {
   }
 }
 
-function groundUpdate({ type, size, repeat }) {
+function groundUpdate({ type, size, repeat, seed }) {
   return actionToEachObject((entity, env) => {
     if (entity.type === 'ground') {
       entity.goals.ground.update({
           type: type || entity.goals.ground.get('type'),
           size: size || entity.goals.ground.get('size'),
           repeat: repeat || entity.goals.ground.get('repeat'),
+          seed: seed || entity.goals.ground.get('seed'),
       })
       return true /* add to success count */
     }
@@ -298,6 +302,7 @@ const commands = {
       case 'size': return groundUpdate({ size: parseFloat(takeOne(args, `Need a [SIZE]`)) })
       case 'type': return groundUpdate({ type: takeOne(args, `Need a [SIZE]`) })
       case 'repeat': return groundUpdate({ repeat: parseFloat(takeOne(args, `Need a [REPEAT]`)) })
+      case 'random': return groundUpdate({ type: 'rough', seed: Math.floor(Math.random() * 10000) + 100 })
       default: throw Error(`Is ${subCommand} a '/ground' subcommand?`)
     }
   },

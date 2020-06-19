@@ -8,11 +8,12 @@ import { ReceivesPointer } from './receives_pointer.js'
 import { LoadsAsset } from './components/loads_asset.js'
 import { AnimatesPosition } from './components/animates_position.js'
 import { defineGoal } from './goals/goal.js'
+import { RoughCircleBufferGeometry } from './geometries/rough_circle_geometry.js'
 
 const UsesAssetAsGround = stampit(Component, {
   deepStatics: {
     goalDefinitions: {
-      ground: defineGoal('ground', { type: 'circle', size: 1000, repeat: 2 }),
+      ground: defineGoal('ground', { type: 'circle', size: 1000, repeat: 2, seed: 111 }),
     }
   },
   
@@ -47,8 +48,10 @@ const UsesAssetAsGround = stampit(Component, {
     
     _createGeometry() {
       const groundSize = this.goals.ground.get('size')
+      const randomSeed = this.goals.ground.get('seed')
       switch (this.goals.ground.get('type')) {
         case 'circle': return new THREE.CircleBufferGeometry(groundSize / 2, 60)
+        case 'rough': return new RoughCircleBufferGeometry(groundSize / 2, 60, groundSize / 20, randomSeed)
         case 'square': return new THREE.PlaneBufferGeometry(groundSize, groundSize)
         default:
           return new THREE.PlaneBufferGeometry(groundSize, groundSize)
