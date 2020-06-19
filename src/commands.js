@@ -90,17 +90,27 @@ function groundCreate(textureUrl) {
   }
 }
 
-function groundUpdate({ type, size, repeat, seed }) {
+function groundUpdate({ url, color, type, size, repeat, seed }) {
   return actionToEachObject((entity, env) => {
+    let updated = false
     if (entity.type === 'ground') {
-      entity.goals.ground.update({
-          type: type || entity.goals.ground.get('type'),
-          size: size || entity.goals.ground.get('size'),
-          repeat: repeat || entity.goals.ground.get('repeat'),
-          seed: seed || entity.goals.ground.get('seed'),
-      })
-      return true /* add to success count */
+      if (type || color || size || repeat || seed) {
+        const grg = entity.goals.ground
+        entity.goals.ground.update({
+            type:     type || grg.get('type'),
+            color:   color || grg.get('color'),
+            size:     size || grg.get('size'),
+            repeat: repeat || grg.get('repeat'),
+            seed:     seed || grg.get('seed'),
+        })
+        updated = true
+      }
+      if (url !== undefined) {
+        entity.goals.asset.update({ url })
+        updated = true
+      }
     }
+    return updated /* add to success count */
   })
 }
 
@@ -311,10 +321,20 @@ const commands = {
     const subCommand = takeOne(args, `Shouldn't there be a subcommand after '/ground'? e.g. 'create', 'size', 'type'`)
     switch (subCommand) {
       case 'create': return groundCreate(takeOne(args, `Need a [TEXTURE]`))
+      case 'color': return groundUpdate({ color: takeOne(args, `Need a [COLOR] (hex format, e.g. #facc28)`) })
+      case 'url':
+        let url
+        try { url = takeOne(args) }
+        catch (e) { url = null }
+        return groundUpdate({ url })
       case 'size': return groundUpdate({ size: parseFloat(takeOne(args, `Need a [SIZE]`)) })
-      case 'type': return groundUpdate({ type: takeOne(args, `Need a [SIZE]`) })
-      case 'repeat': return groundUpdate({ repeat: parseFloat(takeOne(args, `Need a [REPEAT]`)) })
-      case 'random': return groundUpdate({ type: 'rough', seed: Math.floor(Math.random() * 10000) + 100 })
+      case 'type': return groundUpdate({ type: takeOne(args, `Need a [TYPE] (e.g. 'circle', 'square', 'rough')` ) })
+      case 'repeat': return groundUpdate({ repeat: parseFloat(takeOne(args, `Need a [REPEAT] (number, e.g. 2.0)`)) })
+      case 'random':
+        let seed
+        try { seed = parseFloat(takeOne(args)) }
+        catch (e) { seed = Math.floor(Math.random() * 10000) + 100 }
+        return groundUpdate({ type: 'rough', seed })
       default: throw Error(`Is ${subCommand} a '/ground' subcommand?`)
     }
   },

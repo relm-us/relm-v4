@@ -13,7 +13,7 @@ import { RoughCircleBufferGeometry } from './geometries/rough_circle_geometry.js
 const UsesAssetAsGround = stampit(Component, {
   deepStatics: {
     goalDefinitions: {
-      ground: defineGoal('ground', { type: 'circle', size: 1000, repeat: 2, seed: 111 }),
+      ground: defineGoal('ground', { type: 'circle', size: 1000, repeat: 2, seed: 111, color: 0xFFFFFF }),
     }
   },
   
@@ -61,14 +61,16 @@ const UsesAssetAsGround = stampit(Component, {
     _createGroundMeshFromLoadedTexture(texture) {
       const geometry = this._createGeometry()
 
-      const groundSize = this.goals.ground.get('size')
-      const repeat = (groundSize / texture.image.width) / this.goals.ground.get('repeat')
-      this.texture.repeat.set(repeat, repeat)
+      if (texture) {
+        const groundSize = this.goals.ground.get('size')
+        const repeat = (groundSize / texture.image.width) / this.goals.ground.get('repeat')
+        texture.repeat.set(repeat, repeat)
+      }
       
       const material = new THREE.MeshStandardMaterial({
         map: texture,
         side: THREE.DoubleSide,
-        color: 0xAAAAAA,
+        color: this.goals.ground.get('color'),
         depthWrite: true,
         transparent: false,
       })
@@ -88,7 +90,7 @@ const UsesAssetAsGround = stampit(Component, {
     
     update(_delta) {
       const groundGoal = this.goals.ground
-      if (this.texture && !groundGoal.achieved) {
+      if (!groundGoal.achieved) {
         this._createGroundMeshFromLoadedTexture(this.texture)
         groundGoal.markAchieved()
       }
