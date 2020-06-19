@@ -157,7 +157,6 @@ const Player = stampit(
   AnimatesRotation,
   HasAnimationMixer,
   WalksWhenMoving,
-  // UpdatesLabelToUniqueColor,
   HasMaxSpeed,
   FollowsTarget2,
   HasOffscreenIndicator,
@@ -171,6 +170,7 @@ const Player = stampit(
 
     init() {
       this.videoBubble.offset = new THREE.Vector3(0, 200, 0)
+      this.thoughtBubbleOffset = { x: 60, y: 110 }
     },
 
     methods: {

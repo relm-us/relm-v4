@@ -4,22 +4,15 @@ import EventEmittable from '@stamp/eventemittable'
 import { Entity } from '../entity.js'
 import { Component } from './component.js'
 import { ThoughtBubble } from '../thought_bubble.js'
+import { defineGoal } from '../goals/goal.js'
 
 const HasThoughtBubble = stampit(Entity, Component, EventEmittable, {
-  props: {
-    thoughtBubble: null,
-    thoughtBubbleOffset: null,
-  },
-
-  deepProps: {
-    state: {
-      thought: {
-        now: null,
-        target: null
-      }
+  deepStatics: {
+    goalDefinitions: {
+      thought: defineGoal('th', { text: null })
     }
   },
-  
+
   init({ thoughtBubbleOffset }) {
     this.thoughtBubbleOffset = thoughtBubbleOffset || {x: 0, y: 0}
     
@@ -30,28 +23,25 @@ const HasThoughtBubble = stampit(Entity, Component, EventEmittable, {
 
   methods: {
     setThought(text) {
-      if (text === "") {
-        this.state.thought.target = null
-      } else {
-        this.state.thought.target = text
-      }
+      this.goals.thought.update({ text: text === "" ? null : text })
     },
 
     getThought() {
-      return this.state.thought.now
+      return this.goals.thought.get('text')
     },
 
     hasThought() {
       if (!this.thoughtBubble) {
         return false
       }
-      return !!this.state.thought.now
+      return !!this.getThought()
     },
 
     update(delta) {
-      if (this.state.thought.now !== this.state.thought.target) {
-        this.state.thought.now = this.state.thought.target
-        this.thoughtBubble.setText(this.state.thought.now)
+      const thGoal = this.goals.thought
+      if (!thGoal.achieved) {
+        this.thoughtBubble.setText(this.goals.thought.get('text'))
+        thGoal.markAchieved()
       }
       
       let bounceMotion = 0
