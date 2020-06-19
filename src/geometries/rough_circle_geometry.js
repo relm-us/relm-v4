@@ -54,7 +54,6 @@ function RoughCircleBufferGeometry( radius, segments, borderRadiusVariance, rand
 	thetaStart = thetaStart !== undefined ? thetaStart : 0;
 	thetaLength = thetaLength !== undefined ? thetaLength : Math.PI * 2;
 
-  var prng = create(randomSeed)
 	// buffers
 
 	var indices = [];
@@ -74,14 +73,26 @@ function RoughCircleBufferGeometry( radius, segments, borderRadiusVariance, rand
 	normals.push( 0, 0, 1 );
 	uvs.push( 0.5, 0.5 );
 
+	var variance;
+  var prng = create(randomSeed);
+  var rnd = real53(prng) - 0.5;
+  var firstRnd = rnd;
+	
 	for ( s = 0, i = 3; s <= segments; s ++, i += 3 ) {
 
 		var segment = thetaStart + s / segments * thetaLength;
 
-		// vertex
+		// Use the same radius for first and last vertices
 
-    const rnd = real53(prng) - 0.5
-    const variance = (rnd * borderRadiusVariance)
+		if (s < segments) {
+	    variance = rnd * borderRadiusVariance;
+		} else {
+			variance = firstRnd * borderRadiusVariance;
+		}
+		rnd = real53(prng) - 0.5;
+		
+		// vertex
+		
 		vertex.x = (radius + variance) * Math.cos( segment );
 		vertex.y = (radius + variance) * Math.sin( segment );
 
