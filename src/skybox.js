@@ -12,7 +12,8 @@ const UsesAssetAsSkybox = stampit(Component, {
     
     this.texture = null
     
-    this.on('asset-loaded', this._setTexture)
+    this.on('asset-loaded', this._setTexture.bind(this))
+    this.stage.on('resize', this._resize.bind(this))
   },
 
   methods: {
@@ -20,15 +21,7 @@ const UsesAssetAsSkybox = stampit(Component, {
       if (texture) {
         this.texture = texture.clone()
         
-        const canvasAspect = this.stage.width / this.stage.height
-        const imageAspect = this.texture.image.width / this.texture.image.height
-        const aspect = imageAspect / canvasAspect;
-
-        this.texture.offset.x = aspect > 1 ? (1 - 1 / aspect) / 2 : 0
-        this.texture.repeat.x = aspect > 1 ? 1 / aspect : 1
-
-        this.texture.offset.y = aspect > 1 ? 0 : (1 - aspect) / 2
-        this.texture.repeat.y = aspect > 1 ? 1 : aspect
+        this._resize()
         
         // Since we're using a clone, and updating its properties, we need to set this flag or risk being ignored
         this.texture.needsUpdate = true
@@ -38,6 +31,18 @@ const UsesAssetAsSkybox = stampit(Component, {
         this.texture = null
       }
     },
+    
+    _resize() {
+      const canvasAspect = this.stage.width / this.stage.height
+      const imageAspect = this.texture.image.width / this.texture.image.height
+      const aspect = imageAspect / canvasAspect;
+
+      this.texture.offset.x = aspect > 1 ? (1 - 1 / aspect) / 2 : 0
+      this.texture.repeat.x = aspect > 1 ? 1 / aspect : 1
+
+      this.texture.offset.y = aspect > 1 ? 0 : (1 - aspect) / 2
+      this.texture.repeat.y = aspect > 1 ? 1 : aspect
+    }
   }
 })
 

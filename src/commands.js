@@ -115,34 +115,6 @@ function groundUpdate({ url, color, type, size, repeat, seed }) {
 }
 
 
-function skyboxCreate(textureUrl) {
-  return (env) => {
-    env.network.permanents.create({
-      type: 'skybox',
-      goals: {
-        asset: {
-          url: textureUrl
-        }
-      }
-    })    
-  }
-}
-
-function skyboxUpdate(textureUrl) {
-  return (env) => {
-    let updated = false
-    // skybox can't be selected like other objects, so we iterate all and hope to find the one skybox
-    env.stage.forEachEntityOfType('skybox', (entity) => {
-      entity.goals.asset.update({ url: textureUrl })
-      updated = true
-    })
-    if (!updated) {
-      showToast(`Skybox wasn't updated, create it first?`)
-    }
-  }
-}
-
-
 function portalCreate({ relm, x = null, y = null, z = null }) {
   return (env) => {
     env.network.permanents.create({
@@ -673,11 +645,21 @@ const commands = {
     }
   },
   skybox: (args) => {
-    const subCommand = takeOne(args, `Shouldn't there be a subcommand after '/skybox'? e.g. 'create', 'label', 'message'`)
-    switch (subCommand) {
-      case 'create': return skyboxCreate(takeOne(args, `Requires [URL]`))
-      case 'url': return skyboxUpdate(takeOne(args, `Requires [URL]`))
-      default: throw Error(`Is ${subCommand} a '/skybox' subcommand?`)
+    const url = takeOne(args, `Shouldn't there be a [URL] after '/skybox'?`)
+    return (env) => {
+      let updated = false
+      // A skybox can't be selected like other objects, so we iterate all and hope to find the one skybox
+      env.stage.forEachEntityOfType('skybox', (entity) => {
+        entity.goals.asset.update({ url })
+        updated = true
+      })
+      // If not found, then we need to create it
+      if (!updated) {
+        env.network.permanents.create({
+          type: 'skybox',
+          goals: { asset: { url } }
+        })    
+      }
     }
   },
   snap: (args) => {
