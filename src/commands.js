@@ -309,11 +309,14 @@ const commands = {
   },
   ground: (args) => {
     const subCommand = takeOne(args, `Shouldn't there be a subcommand after '/ground'? e.g. 'create', 'size', 'type'`)
+    let url
     switch (subCommand) {
-      case 'create': return groundCreate(takeOne(args, `Need a [TEXTURE]`))
+      case 'create':
+        try { url = takeOne(args) }
+        catch (e) { url = null }
+        return groundCreate(url)
       case 'color': return groundUpdate({ color: takeOne(args, `Need a [COLOR] (hex format, e.g. #facc28)`) })
       case 'url':
-        let url
         try { url = takeOne(args) }
         catch (e) { url = null }
         return groundUpdate({ url })
