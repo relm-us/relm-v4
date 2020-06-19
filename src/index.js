@@ -25,6 +25,7 @@ import { Decoration } from './decoration.js'
 import { Thing3D } from './thing3d.js'
 import { Teleportal } from './teleportal.js'
 import { Ground } from './ground.js'
+import { DiamondIndicator } from './diamond_indicator.js'
 
 
 // Misc. other imports

@@ -1,8 +1,6 @@
-import { uuidv4 } from "./util"
 import { showToast } from './lib/Toast.js'
 import { showInfoAboutObject } from './show_info_about_object.js'
 
-import { InteractionDiamond } from './interaction_diamond.js'
 import { relmExport } from './lib/relmExport.js'
 import { muteAudio, unmuteAudio } from './avchat.js'
 import { avatarOptionsOfGender } from './avatars.js'
@@ -26,42 +24,47 @@ import {
  * @property {THREE.Vector3} position The position to act at
  */
 
-function signCreate(message) {
+function diamondCreate(message) {
   return (env) => {
     const position = new THREE.Vector3()
     position.copy(env.position)
     // Make it about head-height by default
     position.y += 130
     
-    const diamond = InteractionDiamond({
-      uuid: uuidv4(),
+    env.network.permanents.create({
       type: 'diamond',
-      // TODO: `link` should be renamed to something like `message`
-      link: message,
-      position,
+      goals: {
+        diamond: {
+          text: message,
+          open: true,
+        },
+        position: {
+          x: position.x,
+          y: position.y,
+          z: position.z,
+        }
+      }
     })
-    diamond.object.position.copy(position)
-    env.network.setEntity(diamond)
   }
 }
 
-function signSetLabel(label) {
-  return actionToEachObject((object, env) => {
-    if (object.setLabel) {
-      object.setLabel(label)
-      env.network.setEntity(object)
-      return true /* add to success count */
+function diamondUpdate({ message, label }) {
+  return actionToEachObject((entity, env) => {
+    let updated = false
+    if (entity.goals.diamond) {
+      entity.goals.diamond.update({ text: message })
+      updated = true
     }
-  })
-}
-
-function signSetMessage(message) {
-  return actionToEachObject((object, env) => {
-    if (object.setMessage) {
-      object.setMessage(message)
-      env.network.setEntity(object)
-      return true /* add to success count */
+    if (entity.goals.label) {
+      entity.goals.label.update({
+        text: label,
+        ox: 0,
+        oy: -60,
+        oz: 0,
+      })
+      updated = true
     }
+    return updated /* add to success count */
   })
 }
 
@@ -226,6 +229,15 @@ const commands = {
       }
     }
   },
+  diamond: (args) => {
+    const subCommand = takeOne(args, `Shouldn't there be a subcommand after '/diamond'? e.g. 'create', 'label', 'message'`)
+    switch (subCommand) {
+      case 'create': return diamondCreate(joinAll(args))
+      case 'label': return diamondUpdate({ label: joinAll(args) })
+      case 'message': return diamondUpdate({ message: joinAll(args) })
+      default: throw Error(`Is ${subCommand} a '/diamond' subcommand?`)
+    }
+  },
   export: (args) => {
     return (env) => {
       const importExport = document.getElementById('import-export')
@@ -309,7 +321,6 @@ const commands = {
   mode: (args) => {
     const mode = takeOne(args, `There are a couple of modes: 'normal' and 'editor'`)
     return (env) => {
-    console.log('env', env)
       switch (mode) {
         case 'e':
         case 'edit':
@@ -606,15 +617,6 @@ const commands = {
       case 'none': return conditionallySelectAll('-', (entity) => !entity.isEffectivelyUiLocked())
       case 'locked': return conditionallySelectAll('+', (entity) => entity.isUiLocked())
       case 'unlocked': return conditionallySelectAll('+', (entity) => !entity.isUiLocked())
-      default: throw Error(`Is ${subCommand} a '/sign' subcommand?`)
-    }
-  },
-  sign: (args) => {
-    const subCommand = takeOne(args, `Shouldn't there be a subcommand after '/sign'? e.g. 'create', 'label', 'message'`)
-    switch (subCommand) {
-      case 'create': return signCreate(joinAll(args))
-      case 'label': return signSetLabel(joinAll(args))
-      case 'message': return signSetMessage(joinAll(args))
       default: throw Error(`Is ${subCommand} a '/sign' subcommand?`)
     }
   },

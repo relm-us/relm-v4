@@ -1,37 +1,26 @@
 import stampit from 'stampit'
 
-import { Entity } from './entity.js'
+import { EntityShared } from './entity_shared.js'
 import { Component } from './components/component.js'
 import { HasObject } from './components/has_object.js'
+import { AnimatesPosition } from './components/animates_position.js'
 import { ReceivesPointer } from './receives_pointer.js'
-// import { NetworkSetsState } from './network_persistence.js'
 import { GlowMaterial } from './materials/glow_material.js'
 import { HasEmissiveMaterial } from './components/has_emissive_material.js'
 import { HasLabel } from './components/has_label.js'
 import { HasThoughtBubble } from './components/has_thought_bubble.js'
+import { defineGoal } from './goals/goal.js'
 
-/*
-*/
 const HasGlowingDiamond = stampit(Component, {
-  deepProps: {
-    state: {
-      link: {
-        now: null,
-        target: null
-      }
-    }
-  },
-
-  init({ link }) {
-    if (link) {
-      this.state.link.now = this.state.link.target = link
+  deepStatics: {
+    goalDefinitions: {
+      diamond: defineGoal('di', { open: true, text: null })
     }
   },
 
   methods: {
-    createDiamond() {
+    _createDiamond() {
       const gltf = this.resources.get('interact')
-      console.log('interact gltf', gltf)
       this.material = new THREE.MeshStandardMaterial({
         color: 0xFF6600,
         transparent: true
@@ -43,7 +32,7 @@ const HasGlowingDiamond = stampit(Component, {
       this.object.add(this.diamond)
     },
 
-    createGlow() {
+    _createGlow() {
       const material = GlowMaterial
       const geometry = new THREE.SphereGeometry(2, 3, 2)
 
@@ -52,40 +41,34 @@ const HasGlowingDiamond = stampit(Component, {
       this.object.add(this.glow)
     },
     
-    createLight() {
+    _createLight() {
       let light
-      
-      // light = new THREE.PointLight(0xffffff, 0.8, 4000, 2)
-      // light.position.y = 20
-      // this.object.add(light)
       
       light = new THREE.SpotLight(0xffff99, 0.2, 0, Math.PI/18)
       this.object.add(light)
       this.object.add(light.target)
     },
-
-    setMessage(text) {
-      this.state.link.target = text
-    },
     
-    onClick() {
+    _setBoxStyles() {
       // Disable circle form of ThoughtBubble
       this.thoughtBubble.enableCircle = false
       // Disable dot..dot little circles of ThoughtBubble
       this.thoughtBubble.enableDots = false
       this.thoughtBubble.alignCenter = true
-      
-      if (this.hasThought()) {
-        this.setThought(null)
-      } else {
-        this.setThought(this.state.link.now)
-      }
+    },
+
+    setMessage(text) {
+      this.goals.diamond.set('text', text)
+    },
+    
+    onClick() {
+      this.goals.diamond.update({ open: !this.goals.diamond.get('open') })
     },
     
     setup() {
-      this.createDiamond()
-      this.createGlow()
-      this.createLight()
+      this._createDiamond()
+      this._createGlow()
+      this._createLight()
       
       this.object.scale.set(5, 15, 5)
       this.orbit = 0
@@ -98,30 +81,36 @@ const HasGlowingDiamond = stampit(Component, {
       this.diamond.scale.y = 1.0 + Math.sin(this.orbit) * 0.2
       // this.object.rotation.y += Math.PI/2 * delta
 
-      if (this.state.link.now != this.state.link.target) {
-        this.state.link.now = this.state.link.target
+      const diamondGoal = this.goals.diamond
+      if (!diamondGoal.achieved) {
+        this._setBoxStyles()
+        if (diamondGoal.get('open')) {
+          this.setThought(diamondGoal.get('text'))
+        } else {
+          this.setThought(null)
+        }
+        diamondGoal.markAchieved()
       }
     }
   }
 })
 
-const InteractionDiamond = stampit(
-  Entity,
+const DiamondIndicator = stampit(
+  EntityShared,
   HasObject,
+  AnimatesPosition,
   HasGlowingDiamond,
   HasEmissiveMaterial,
   ReceivesPointer,
-  // NetworkSetsState,
   HasLabel,
   HasThoughtBubble,
   stampit({
     init() {
-      this.labelOffset = { x: 0, y: -70, z: 0 }
       this.thoughtBubbleOffset = { x: 0, y: 50 }
       this.thoughtBubble.enableCloseIcon = false
       this.thoughtBubble.enableActionIcon = false
     }
   })
-)
+).setType('diamond')
 
-export { InteractionDiamond }
+export { DiamondIndicator }
