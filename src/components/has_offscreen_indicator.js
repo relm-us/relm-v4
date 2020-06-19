@@ -9,9 +9,8 @@ const HasOffscreenIndicator = stampit(Component, {
     this.offscreenIndicatorHidden = false
     this.offscreenIndicatorText = ""
     this.offscreenIndicatorLabel = new Label()
-    this.offscreenIndicatorLabel.domElement.style.opacity = '0.6'
-    this.offscreenIndicatorLabel.domElement.style.color = '#444'
-    this.offscreenIndicatorLabel.domElement.style.textShadow = '0px 0px 3px #fff'
+    
+    this.offscreenIndicatorLabel.domElement.classList.add('offscreen-indicator-label')
   },
 
   methods: {
@@ -44,10 +43,12 @@ const HasOffscreenIndicator = stampit(Component, {
         const x = (this.onScreenVector.x + 1) * width / 2 + left
         const y = -(this.onScreenVector.y - 1) * height / 2 - bottom
         
+        const labelText = this.goals.label.get('text')
+        
         this.offscreenIndicatorLabel.vector.copy({x, y, z: 0})
-        if (this.offscreenIndicatorText !== this.state.label.target) {
-          this.offscreenIndicatorLabel.setText(this.state.label.target)
-          this.offscreenIndicatorText = this.state.label.target
+        if (this.offscreenIndicatorText !== labelText) {
+          this.offscreenIndicatorLabel.setText(labelText)
+          this.offscreenIndicatorText = labelText
         }
         this.offscreenIndicatorLabel.updateDomElement()
         this.offscreenIndicatorLabel.show()

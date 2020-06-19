@@ -160,7 +160,7 @@ const Player = stampit(
   // UpdatesLabelToUniqueColor,
   HasMaxSpeed,
   FollowsTarget2,
-  // HasOffscreenIndicator,
+  HasOffscreenIndicator,
   LocalstoreGetsState,
   stampit(Component, {
     deepStatics: {
