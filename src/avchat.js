@@ -281,30 +281,31 @@ async function initJitsiMeet(callbacks, playerId, room) {
     console.error(err.message)
   }
   
-  for (let track of localTracks) {
-    const type = track.getType()
-    const id = `${type}-local`
-    
-    switch (type) {
-      case 'video':
-        const videoElement = callbacks.createVideoElement(playerId)
-        videoElement.id = id
-        // videoElement.autoplay = true
-        videoElement.classList.add('local')
-        track.attach(videoElement)
-        break
-      case 'audio':
-        const audioElement = document.createElement('audio')
-        audioElement.id = id
-        document.body.appendChild(audioElement)
-        track.attach(audioElement)
-        break
-      default:
-        console.error("Don't know how to handle track of type", type)
-        return
-    }
-    
-    console.log('attached', type)
+  if (localTracks) {
+    for (let track of localTracks) {
+      const type = track.getType()
+      const id = `${type}-local`
+      
+      switch (type) {
+        case 'video':
+          const videoElement = callbacks.createVideoElement(playerId)
+          videoElement.id = id
+          // videoElement.autoplay = true
+          videoElement.classList.add('local')
+          track.attach(videoElement)
+          break
+        case 'audio':
+          const audioElement = document.createElement('audio')
+          audioElement.id = id
+          document.body.appendChild(audioElement)
+          track.attach(audioElement)
+          break
+        default:
+          console.error("Don't know how to handle track of type", type)
+          return
+      }
+      console.log(`attached localTrack (${type})`)
+    }  
   }
 }
 
