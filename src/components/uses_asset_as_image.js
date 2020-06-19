@@ -41,6 +41,7 @@ const UsesAssetAsImage = stampit(Component, {
         this.texture.minFilter = THREE.LinearFilter
         this.texture.wrapS = THREE.ClampToEdgeWrapping
         this.texture.wrapT = THREE.ClampToEdgeWrapping
+        this.texture.encoding = THREE.sRGBEncoding
         
         // Since we're using a clone, and updating its properties, we need to set this flag or risk being ignored
         this.texture.needsUpdate = true
