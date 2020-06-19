@@ -571,6 +571,20 @@ const commands = {
         return objectScale(entity, { z: scale })
       })
       
+      
+      case 'to': return actionToEachObject((entity, env) => {
+        const x = takeOne(args, 'Requires [X] [Y] [Z]')
+        const y = takeOne(args, 'Requires [X] [Y] [Z]')
+        const z = takeOne(args, 'Requires [X] [Y] [Z]')
+        const posGoal = entity.goals.position
+        if (posGoal) {
+          posGoal.update({ x, y, z }, Date.now() + 2000)
+          return true /* add to success count */
+        } else {
+          showToast(`This object can't be moved`)
+        }
+      })
+      
 
       case 'x': return actionToEachObject((entity, env) => {
         const delta = parseFloat(takeOne(args, `Shouldn't there be an [X] value after '/object x'?`))
