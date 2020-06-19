@@ -76,6 +76,7 @@
     */
     .thought-bubble.centered {
       transform: translate(-50%, -100%);
+      justify-content: center;
     }
     .thought-bubble.centered .speech-text {
       /* TODO: separate this into attribute other than `centered` */
@@ -84,6 +85,7 @@
       border: 2px solid white;
     }
     .thought-bubble {
+      display: flex;
       position: absolute;
       transform: translate(0,-100%);
       z-index: 1;
@@ -119,6 +121,7 @@
       background-color: white;
       font: 14px sans-serif;
       opacity: 0.9;
+      flex-shrink: 0;
     }
     .thought-bubble.centered .speech-text a,
     .thought-bubble.centered .speech-text:visited {
