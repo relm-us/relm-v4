@@ -7,7 +7,6 @@ import { Typed } from './typed.js'
 import { HasScene } from './has_scene.js'
 import { SceneWithCamera } from './scene_with_camera.js'
 import { SceneWithRenderer } from './scene_with_renderer.js'
-import { SceneWithGround } from './scene_with_ground.js'
 import { Selection } from './selection.js'
 import { uuidv4 } from './util.js'
 
@@ -15,7 +14,6 @@ const Stage = stampit(
   HasScene,
   SceneWithCamera,
   SceneWithRenderer,
-  SceneWithGround,
   EventEmittable,
 {
   name: 'Stage',

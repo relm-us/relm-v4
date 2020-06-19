@@ -34,19 +34,6 @@ const HasScene = stampit({
     this.ambientLight = new AmbientLight(LIGHT_AMBIENT_COLOR, LIGHT_AMBIENT_FACTOR)
     this.directionalLight = new DirectionalLight(LIGHT_DIRECTIONAL_COLOR, LIGHT_DIRECTIONAL_FACTOR)
 
-    // const d = 1000
-    // this.directionalLight.position.set(0, 200, 0)
-    // this.directionalLight.castShadow = true
-    // this.directionalLight.shadow.camera.left = -d
-    // this.directionalLight.shadow.camera.right = d
-    // this.directionalLight.shadow.camera.top = d
-    // this.directionalLight.shadow.camera.bottom = -d
-    // this.directionalLight.shadow.camera.near = 0.001
-    // this.directionalLight.shadow.camera.far = d
-
-    // this.directionalLightHelper = new THREE.CameraHelper( this.directionalLight.shadow.camera )
-    // scene.add(this.directionalLightHelper)
-
     scene.fog = new Fog(new Color(this.fog.color), this.fog.near, this.fog.far)
     scene.add(this.ambientLight)
     scene.add(this.directionalLight)

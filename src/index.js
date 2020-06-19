@@ -15,16 +15,19 @@ import { MousePointer } from './mouse_pointer.js'
 import { Decoration } from './decoration.js'
 import { Thing3D } from './thing3d.js'
 import { Teleportal } from './teleportal.js'
+import { Ground } from './ground.js'
 
-// Misc. other imports
+import { Background } from './background.js'
 import { KeyboardController } from './keyboard_controller.js'
 import { CameraController } from './camera_controller.js'
+import { PadController } from './pad_controller.js'
+
+// Misc. other imports
 import { FindIntersectionsFromScreenCoords } from './find_intersections_from_screen_coords.js'
 import { localstoreRestore } from './localstore_gets_state.js'
 import { uuidv4, getOrCreateLocalId, randomPastelColor, domReady } from './util.js'
 import { config, stage } from './config.js'
 import { network } from './network.js'
-import { PadController } from './pad_controller.js'
 import { relmImport } from './lib/relmExport.js'
 import { GoalGroup } from './goals/goal_group.js'
 import { addManifestTo } from './manifest_loaders.js'
@@ -177,7 +180,6 @@ const start = async () => {
   resources.enqueue(['people', 'interact', 'sparkle', 'marble'])
   await resources.load()
 
-  stage.setGroundTexture(resources.get('marble'))
   window.addEventListener('resize', _ => stage.windowResized(window.innerWidth, window.innerHeight))
   stage.start()
 
@@ -214,6 +216,10 @@ const start = async () => {
   player.autonomous = false
   
   mousePointer = stage.mouse = await entityOnStage({ uuid: mouseId })
+  
+  // Create the stable but invisible "ground" layer that acts as a plane
+  // that can always be clicked on by the mouse.
+  stage.background = stage.create('background')
   
   network.on('transient-receive', (uuid, state) => {
     if (uuid !== mouseId && uuid !== playerId) {
@@ -394,7 +400,7 @@ const start = async () => {
     
     // If mouse has moved a certain distance since clicking, then turn into a "drag"
     if (dragStart && !dragLock) {
-      const intersection = intersectionFinder.getOneIntersection(stage.ground)
+      const intersection = intersectionFinder.getOneIntersection(stage.background.object)
       if (intersection) {
         const mousePos = intersection.point
         if (mousePos.distanceTo(dragStartPos) > 10) {
@@ -404,7 +410,7 @@ const start = async () => {
     }
     
     if (dragLock) {
-      const intersection = intersectionFinder.getOneIntersection(stage.ground)
+      const intersection = intersectionFinder.getOneIntersection(stage.background.object)
       if (intersection && stage.selection.hasAtLeast(1)) {
         stage.selection.forEach((entity) => {
           dragDelta.copy(intersection.point)
@@ -442,7 +448,7 @@ const start = async () => {
     
     // This might be the beginning of a drag & drop sequence, so prep for that possibility
     if (stage.selection.hasAtLeast(2)) {
-      const intersection = intersectionFinder.getOneIntersection(stage.ground)
+      const intersection = intersectionFinder.getOneIntersection(stage.background.object)
       if (intersection) {
         dragStart = true
         dragStartPos = intersection.point
@@ -453,7 +459,7 @@ const start = async () => {
         if (!stage.editorMode) {
           intersections = intersections.filter((isect) => !isect.entity.isUiLocked())
         }
-        const groundIntersection = intersectionFinder.getOneIntersection(stage.ground)
+        const groundIntersection = intersectionFinder.getOneIntersection(stage.background.object)
         // Don't allow selecting locked objects
         if (intersections.length > 0 && groundIntersection) {
           const isect = intersections[0]

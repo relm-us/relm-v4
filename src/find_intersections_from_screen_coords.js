@@ -62,7 +62,7 @@ const FindIntersectionsFromScreenCoords = stampit({
       if (intersects.length > 0) {
         return intersects[0].point
       } else {
-        intersects = this.getOneIntersection(this.stage.ground)
+        intersects = this.getOneIntersection(this.stage.background.object)
         if (intersects) {
           return intersects.point
         }

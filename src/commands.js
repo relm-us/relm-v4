@@ -65,15 +65,47 @@ function signSetMessage(message) {
   })
 }
 
+
+function groundCreate(textureUrl) {
+  return (env) => {
+    env.network.permanents.create({
+      type: 'ground',
+      goals: {
+        position: {
+          x: env.position.x,
+          y: env.position.y,
+          z: env.position.z,
+        },
+        asset: {
+          url: textureUrl
+        }
+      }
+    })    
+  }
+}
+
+function groundUpdate({ type, size, repeat }) {
+  return actionToEachObject((entity, env) => {
+    if (entity.type === 'ground') {
+      entity.goals.ground.update({
+          type: type || entity.goals.ground.get('type'),
+          size: size || entity.goals.ground.get('size'),
+          repeat: repeat || entity.goals.ground.get('repeat'),
+      })
+      return true /* add to success count */
+    }
+  })
+}
+
 function portalCreate({ relm, x = null, y = null, z = null }) {
   return (env) => {
     env.network.permanents.create({
       type: 'teleportal',
       goals: {
         position: {
-          x: env.player.object.position.x,
-          y: env.player.object.position.y,
-          z: env.player.object.position.z,
+          x: env.position.x,
+          y: env.position.y,
+          z: env.position.z,
         },
         portal: {
           relm: relm,
@@ -180,6 +212,16 @@ const commands = {
       }
     }
   },
+  destroy: (args) => {
+    const iAmSure = takeOne(args, `Are you sure?`)
+    if (iAmSure === 'iamsure') {
+      return (env) => {
+        network.entitiesMap.forEach((_, uuid) => {
+          network.permanents.remove(uuid)
+        })
+      }
+    }
+  },
   export: (args) => {
     return (env) => {
       const importExport = document.getElementById('import-export')
@@ -249,6 +291,16 @@ const commands = {
       env.player.goals.position.update(coords)
     }
   },
+  ground: (args) => {
+    const subCommand = takeOne(args, `Shouldn't there be a subcommand after '/ground'? e.g. 'create', 'size', 'type'`)
+    switch (subCommand) {
+      case 'create': return groundCreate(takeOne(args, `Need a [TEXTURE]`))
+      case 'size': return groundUpdate({ size: parseFloat(takeOne(args, `Need a [SIZE]`)) })
+      case 'type': return groundUpdate({ type: takeOne(args, `Need a [SIZE]`) })
+      case 'repeat': return groundUpdate({ repeat: parseFloat(takeOne(args, `Need a [REPEAT]`)) })
+      default: throw Error(`Is ${subCommand} a '/ground' subcommand?`)
+    }
+  },
   mode: (args) => {
     const mode = takeOne(args, `There are a couple of modes: 'normal' and 'editor'`)
     return (env) => {
@@ -309,9 +361,9 @@ const commands = {
       case 'f':
       case 'fetch': return actionToEachObject((entity, env) => {
         entity.goals.position.update({
-          x: env.player.object.position.x,
+          x: env.position.x,
           y: entity.goals.position.get('y'),
-          z: env.player.object.position.z,
+          z: env.position.z,
         }, Date.now() + 4000)
         return true /* add to success count */
       })
@@ -571,16 +623,6 @@ const commands = {
       }
     }
   },
-  destroy: (args) => {
-    const iAmSure = takeOne(args, `Are you sure?`)
-    if (iAmSure === 'iamsure') {
-      return (env) => {
-        network.entitiesMap.forEach((_, uuid) => {
-          network.permanents.remove(uuid)
-        })
-      }
-    }
-  },
   stop: (args) => {
     return (env) => {
       env.stage.continueRendering = false
@@ -637,7 +679,7 @@ const commands = {
   },
   whereami: (args) => {
     return (env) => {
-      const pos = env.player.object.position
+      const pos = env.position
       showToast(`You are at x: ${parseInt(pos.x, 10)}, y: ${parseInt(pos.y, 10)}, z: ${parseInt(pos.z, 10)}`)
     }
   }
