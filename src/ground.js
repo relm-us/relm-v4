@@ -12,7 +12,7 @@ import { defineGoal } from './goals/goal.js'
 const UsesAssetAsGround = stampit(Component, {
   deepStatics: {
     goalDefinitions: {
-      ground: defineGoal('ground', { type: 'circle', size: 1000, repeat: 20 }),
+      ground: defineGoal('ground', { type: 'circle', size: 1000, repeat: 2 }),
     }
   },
   
