@@ -114,6 +114,35 @@ function groundUpdate({ url, color, type, size, repeat, seed }) {
   })
 }
 
+
+function skyboxCreate(textureUrl) {
+  return (env) => {
+    env.network.permanents.create({
+      type: 'skybox',
+      goals: {
+        asset: {
+          url: textureUrl
+        }
+      }
+    })    
+  }
+}
+
+function skyboxUpdate(textureUrl) {
+  return (env) => {
+    let updated = false
+    // skybox can't be selected like other objects, so we iterate all and hope to find the one skybox
+    env.stage.forEachEntityOfType('skybox', (entity) => {
+      entity.goals.asset.update({ url: textureUrl })
+      updated = true
+    })
+    if (!updated) {
+      showToast(`Skybox wasn't updated, create it first?`)
+    }
+  }
+}
+
+
 function portalCreate({ relm, x = null, y = null, z = null }) {
   return (env) => {
     env.network.permanents.create({
@@ -149,17 +178,6 @@ function portalUpdate({ relm, x = null, y = null, z = null }) {
   })
 }
 
-function portalSetRadius(radius) {
-  const r = parseInt(radius, 10)
-  if (r < 15) throw Error(`Portal radius needs to be at least 15`)
-  return actionToEachObject((object, env) => {
-    if (object.setRadius) {
-      object.setRadius(r)
-      env.network.setEntity(object)
-      return true /* add to success count */
-    }
-  })
-}
 
 function objectScale(entity, { x, y, z }) {
   const scaleGoal = entity.goals.scale
@@ -652,6 +670,14 @@ const commands = {
       case 'locked': return conditionallySelectAll('+', (entity) => entity.isUiLocked())
       case 'unlocked': return conditionallySelectAll('+', (entity) => !entity.isUiLocked())
       default: throw Error(`Is ${subCommand} a '/sign' subcommand?`)
+    }
+  },
+  skybox: (args) => {
+    const subCommand = takeOne(args, `Shouldn't there be a subcommand after '/skybox'? e.g. 'create', 'label', 'message'`)
+    switch (subCommand) {
+      case 'create': return skyboxCreate(takeOne(args, `Requires [URL]`))
+      case 'url': return skyboxUpdate(takeOne(args, `Requires [URL]`))
+      default: throw Error(`Is ${subCommand} a '/skybox' subcommand?`)
     }
   },
   snap: (args) => {
