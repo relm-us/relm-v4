@@ -147,6 +147,7 @@ const start = async () => {
   network.connect({
     params,
     onTransientsSynced: () => {
+      const color = randomPastelColor()      
       // If we don't find ourselves in the transients document, we need to create ourselves
       if (!network.transients.objects.has(playerId)) {
         network.transients.create({
@@ -157,7 +158,7 @@ const start = async () => {
             animationMesh: { v: avatarOptionFromPlayerId(playerId).avatarId },
             animationSpeed: { v: 1.0 },
             speed: { max: 250 },
-            color: randomPastelColor(),
+            color: color,
           },
         })
       }
@@ -167,7 +168,7 @@ const start = async () => {
           type: 'mouse',
           uuid: mouseId,
           goals: {
-            color: randomPastelColor(),
+            color: color,
           }
         })
       }
@@ -237,6 +238,10 @@ const start = async () => {
   }
   
   mousePointer = stage.mouse = await entityOnStage({ uuid: mouseId })
+  {
+    const c = player.goals.color
+    mousePointer.goals.color.update({ r: c.get('r'), g: c.get('g'), b: c.get('b') })
+  }
   
   // Create the stable but invisible "ground" layer that acts as a plane
   // that can always be clicked on by the mouse.

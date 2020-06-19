@@ -171,6 +171,22 @@ const Player = stampit(
 
     init() {
       this.videoBubble.offset = new THREE.Vector3(0, 200, 0)
+    },
+
+    methods: {
+      update(_delta) {
+        const colorGoal = this.goals.color
+        if (!colorGoal.achieved) {
+          console.log("set colorGoal", colorGoal.toJSON())
+          const color = new THREE.Color(
+            colorGoal.get('r'),
+            colorGoal.get('g'),
+            colorGoal.get('b')
+          )
+          this.setLabelUnderlineColor(color)
+          colorGoal.markAchieved()
+        }
+      }
     }
   })
 ).setType('player')
