@@ -72,6 +72,45 @@ const Document = stampit({
       })
       console.log('created', type, uuid, 'goals', goals, 'definitions', Type.goalDefinitions, 'ymap', ymap.toJSON())
     },
+
+    fromJSON(json) {
+      const uuid = json['@id']
+      if (!uuid) { throw Error(`Can't import json, no '@id'`) }
+      const type = json['@type']
+      if (!type) { throw Error(`Can't import json, no '@type'`)}
+      
+      this.doc.transact(() => {
+        let ymap
+        if (this.objects.has(uuid)) {
+          ymap = this.objects.get(uuid)
+        } else {
+          ymap = new Y.Map()
+          this.objects.set(uuid, ymap)
+        }
+        
+        ymap.set('@id', uuid)
+        ymap.set('@type', type)
+        
+        for (const [goalAbbrev, goalState] of Object.entries(json)) {
+          if (goalAbbrev.slice(0,1) !== '@') {
+            let ymapState
+            if (ymap.has(goalAbbrev)) {
+              ymapState = ymap.get(goalAbbrev)
+            } else {
+              ymapState = new Y.Map()
+              ymap.set(goalAbbrev, ymapState)
+            }
+            for (const [k, v] of Object.entries(goalState)) {
+              if (k === '@due') {
+                ymapState.set('@due', Date.now() + 2000)
+              } else {
+                ymapState.set(k, v)
+              }
+            }
+          }
+        }
+      })
+    },
     
     remove(uuid) {
       this.objects.delete(uuid)

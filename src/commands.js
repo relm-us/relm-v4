@@ -1,7 +1,7 @@
 import { showToast } from './lib/Toast.js'
 import { showInfoAboutObject } from './show_info_about_object.js'
 
-import { relmExport } from './lib/relmExport.js'
+import { exportRelm } from './export.js'
 import { muteAudio, unmuteAudio } from './avchat.js'
 import { avatarOptionsOfGender } from './avatars.js'
 import { teleportToOtherRelm } from './teleportal.js'
@@ -255,7 +255,7 @@ const commands = {
       checkboxWrapper.classList.remove('hide')
       
       const exportToTextarea = (selectedOnly) => {
-        const data = relmExport(env.stage, env.network, selectedOnly)
+        const data = exportRelm(env.stage, env.network, selectedOnly, env.cfg.ROOM)
         textarea.value = JSON.stringify(data, null, 2)
       }
       

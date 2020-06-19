@@ -35,7 +35,7 @@ import { localstoreRestore } from './localstore_gets_state.js'
 import { uuidv4, getOrCreateLocalId, randomPastelColor, domReady } from './util.js'
 import { config, stage } from './config.js'
 import { network } from './network.js'
-import { relmImport } from './lib/relmExport.js'
+import { importRelm } from './export.js'
 import { GoalGroup } from './goals/goal_group.js'
 import { addManifestTo } from './manifest_loaders.js'
 import { parseCommand } from './commands.js'
@@ -538,7 +538,7 @@ const start = async () => {
       const objects = targetObjects || stage.selection.getAllEntities()
       const position = player.object.position
       if (command) {
-        command({ network, stage, player, objects, position })
+        command({ network, stage, player, objects, position, cfg })
       } else {
         showToast('Should there be a command after the `/`?')
       }
@@ -587,7 +587,7 @@ const start = async () => {
   importButton.addEventListener('click', (event) => {
     const text = document.getElementById('import-export-data')
     const data = JSON.parse(text.value)
-    const objectCount = relmImport(network, data)
+    const objectCount = importRelm(network, data)
     importExport.classList.add('hide')
     showToast(`Imported ${objectCount} objects into this relm.`)
   })
