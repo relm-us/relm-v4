@@ -44,17 +44,48 @@ const FOLLOW_TARGET_SUFFICIENT_TIME = 2000.0
 
 const FollowsTarget2 = stampit(Component, {
   init() {
-    // this.addGoal('p', { x: 0.0, y: 0.0, z: 0.0 })
+    this._addVector = new THREE.Vector3()   
+    this._followsTargetDebug = false
 
-    this.closeEnough = 1.0
-    this._source = new THREE.Object3D()
-    this._target = new THREE.Object3D()
-    this._goalPos = new THREE.Object3D()
+    this._createTargetObjects()
   },
 
   methods: {
+    setFollowsTargetDebug(value) {
+      this._followsTargetDebug = value
+      this._createTargetObjects()
+    },
+
+    _createTargetObjects() {
+      if (this._source) { this.stage.scene.remove(this._source) }
+      if (this._sourceBox) { this.object.remove(this._sourceBox) }
+      if (this._target) { this.stage.scene.remove(this._target) }
+      if (this._goalPos) { this.stage.scene.remove(this._goalPos) }
+    
+      if (this._followsTargetDebug) {
+        const sphere1 = new THREE.SphereBufferGeometry(10)
+        this._source = new THREE.Mesh( sphere1, new THREE.MeshBasicMaterial({ color: 0xff7700}) )
+        this.stage.scene.add(this._source)
+        
+        this._sourceBox = new THREE.BoxHelper( this._source, 0xffffff )
+        this.object.add( this._sourceBox )
+
+        const sphere2 = new THREE.SphereBufferGeometry(10)
+        this._target = new THREE.Mesh( sphere2, new THREE.MeshBasicMaterial({ color: 0x0000aa }) )
+        this.stage.scene.add(this._target)
+        
+        const box1 = new THREE.BoxBufferGeometry(10, 10, 10)
+        this._goalPos = new THREE.Mesh( box1, new THREE.MeshBasicMaterial({ color: 0xff0000 }) )
+        this.stage.scene.add(this._goalPos)
+      } else {
+        this._source = new THREE.Object3D()
+        this._target = new THREE.Object3D()
+        this._goalPos = new THREE.Object3D()
+      }
+    },
+    
     addPosition(vector) {
-      this._target.position.add(vector)
+      this._addVector.add(vector)
     },
     
     getDistanceToTarget() {
@@ -65,17 +96,24 @@ const FollowsTarget2 = stampit(Component, {
 
     update(delta) {
       // TODO: can we reduce the frequency of this test?
+
+      // Fastest way to copy from position goal is to `get` attributes
+      this._goalPos.position.x = this.goals.position.get('x')
+      this._goalPos.position.y = this.goals.position.get('y')
+      this._goalPos.position.z = this.goals.position.get('z')
       
-      this._goalPos.position.copy(this.goals.position.toJSON())
+      // Fastest way to copy from rotation goal is to `get` attributes
+      this._goalPos.rotation.x = this.goals.rotation.get('x')
+      this._goalPos.rotation.y = this.goals.rotation.get('y')
+      this._goalPos.rotation.z = this.goals.rotation.get('z')
+
+      // Normalize the target so that pursuit is of an even speed in all directions
+      this._addVector.normalize()
+      this._addVector.multiplyScalar(FOLLOW_TARGET_DISTANCE_AHEAD)
+      this._target.position.copy(this.object.position)
+      this._target.position.add(this._addVector)
       
-      // console.log('obj pos', this.object.position)
-      this._source.position.copy(this.object.position)
-      this._source.rotation.copy(this.object.rotation)
-      
-      this._target.position.normalize()
-      this._target.position.multiplyScalar(FOLLOW_TARGET_DISTANCE_AHEAD)
-      this._target.position.add(this._source.position)
-      
+      // See if we need to update the position as the target is followed
       const dueAt = Date.now() + FOLLOW_TARGET_SUFFICIENT_TIME
       const goalToTargetDist = this._goalPos.position.distanceTo(this._target.position)
       if (goalToTargetDist > FOLLOW_TARGET_DISTANCE_AHEAD/2) {
@@ -84,12 +122,14 @@ const FollowsTarget2 = stampit(Component, {
           y: this._target.position.y,
           z: this._target.position.z,
         }, dueAt)
-        
       }
       
+      // See if we need to update the rotation angle as the target is followed
+      this._source.position.copy(this.object.position)
       this._source.lookAt(this._target.position)
-      const dist = this._source.position.distanceTo(this._target.position)
-      if (dist > this.closeEnough) {
+      const sourceToTargetDist = this._source.position.distanceTo(this._target.position)
+      const angle = this._goalPos.quaternion.angleTo(this._source.quaternion)
+      if (sourceToTargetDist > 1.0 && angle > 0.01) {
         this.goals.rotation.update({
           x: this._source.rotation.x,
           y: this._source.rotation.y,
@@ -97,7 +137,8 @@ const FollowsTarget2 = stampit(Component, {
         }, dueAt)
       }
       
-      this._target.position.set(0, 0, 0)
+      // Reset the addVector so that the next frame's calls to addPosition will start from origin
+      this._addVector.set(0, 0, 0)
     }
   }
 })
