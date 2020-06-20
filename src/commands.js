@@ -140,7 +140,7 @@ function groundUpdate({ url, color, type, size, repeat, seed }) {
 }
 
 
-function portalCreate({ relm, x = null, y = null, z = null }) {
+function portalCreate({ relm, x = null, y = null, z = null } = { x:0, y:0, z:0 }) {
   return (env) => {
     env.network.permanents.create({
       type: 'teleportal',
