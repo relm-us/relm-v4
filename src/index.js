@@ -74,7 +74,7 @@ let mousePointer
  * @param {number} maxWait - the maximum number of milliseconds to wait
  * @param {Function} condition - an optional additional condition to be met
  */
-const entityOnStage = async ({ uuid, maxWait = 1000, condition = null }) => {
+const entityOnStage = async ({ uuid, maxWait = 10000, condition = null }) => {
   const startTime = Date.now()
   return new Promise((resolve, reject) => {
     const intervalId = setInterval(() => {

@@ -3,6 +3,8 @@ const path = require('path')
 const express = require('express')
 const fileupload = require('express-fileupload')
 const cors = require('cors')
+const sharp = require('sharp')
+const md5File = require('md5-file')
 
 const config = require('./config.js')
 const uuidv4 = require('./util.js').uuidv4
@@ -49,6 +51,24 @@ function fileUploadSuccess(res, assetId, filename) {
   }))
 }
 
+function getFilesizeInBytes(filename) {
+  const stats = fs.statSync(filename);
+  const fileSizeInBytes = stats.size;
+  return fileSizeInBytes;
+}
+
+function renameFile(oldPath, newPath) {
+  return new Promise((resolve, reject) => {
+    fs.rename(oldPath, newPath, (err) => {
+      if (err) {
+        reject(err)
+      } else {
+        resolve()
+      }
+    })
+  })
+}
+
 // Upload images and 3D assets
 app.post('/asset', cors(), async (req, res) => {
   const asset = req.files.file
@@ -69,15 +89,44 @@ app.post('/asset', cors(), async (req, res) => {
     console.log('Asset upload skipped (already exists)', moveTo, asset.name)
   } catch (accessError) {
     if (accessError.code === 'ENOENT') {
-      console.log('Asset uploaded to', moveTo, asset.name)
-      asset.mv(moveTo, (err) => {
+      console.log(`Asset uploaded to '${moveTo}' (${asset.name})`)
+      asset.mv(moveTo, async (err) => {
         if (err) { return fail(res, err) }
+        
+        // Continue processing
+        if (extension === '.webp') {
+          // Already in WebP format, we're done
+          console.log("Image already in webp format, keeping as-is")
+          return fileUploadSuccess(res, assetId, newName)
+        } else if (extension === '.glb' || extension === '.gltf') {
+          console.log("Asset is glb or gltf, keeping as-is")
+          return fileUploadSuccess(res, assetId, newName)
+        } else {
+          // Convert to WebP format
+          try {
+            const convertTo = config.ASSET_DIR + '/' + assetId + '.webp'
+            console.log(`Converting image '${moveTo}' to webp`)
+            
+            const converted = await sharp(moveTo).toFile(convertTo)
+            const hash = await md5File(convertTo)
+            const fileSize = getFilesizeInBytes(convertTo)
+            
+            console.log(`Saving converted image '${moveTo}' to '${newConvertTo}'`)
+            const newAssetId = hash + '-' + fileSize
+            const newConvertTo = config.ASSET_DIR + '/' + newAssetId + '.webp'
+            await renameFile(convertTo, newConvertTo)
+            
+            return fileUploadSuccess(res, newAssetId, newAssetId + '.webp')
+          } catch (e) {
+            return fail(res, e)
+          }
+        }
       })
     } else {
       throw err
     }
   }
-  return fileUploadSuccess(res, assetId, newName)
+  
 })
 
 module.exports = app
