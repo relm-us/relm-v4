@@ -14,6 +14,7 @@ backups/
 dist/
 server/relm-db/
 server/assets/
+server/tmp/
 node_modules/
 statebus/
 design/*.afdesign
