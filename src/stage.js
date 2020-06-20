@@ -9,6 +9,7 @@ import { SceneWithCamera } from './scene_with_camera.js'
 import { SceneWithRenderer } from './scene_with_renderer.js'
 import { Selection } from './selection.js'
 import { uuidv4 } from './util.js'
+import { FindIntersectionsFromScreenCoords } from './find_intersections_from_screen_coords.js'
 
 const Stage = stampit(
   HasScene,
@@ -55,6 +56,7 @@ const Stage = stampit(
     this.updateFns = new Map()
     this.postrenderFns = new Map()
     this.gridSnap = null
+    this.intersectionFinder = FindIntersectionsFromScreenCoords({ stage: this })
 
     if (!width || !height) {
       throw new Error('State requires width and height')
@@ -102,6 +104,8 @@ const Stage = stampit(
       if (typeof entity.teardown === 'function') {
         entity.teardown()
       }
+      this.selection.select([entity], '-')
+      this.intersectionFinder.clear()
       delete this.entities[entity.uuid]
     },
 

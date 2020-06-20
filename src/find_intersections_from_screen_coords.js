@@ -11,6 +11,11 @@ const FindIntersectionsFromScreenCoords = stampit({
   },
 
   methods: {
+    clear() {
+      this._intersectsMany.length = 0
+      this._intersectsOne.length = 0
+    },
+    
     setScreenCoords(x, y) {
       this._screenCoords = {x, y}
     },

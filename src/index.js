@@ -31,7 +31,6 @@ import { TriggerPlate } from './trigger_plate.js'
 
 
 // Misc. other imports
-import { FindIntersectionsFromScreenCoords } from './find_intersections_from_screen_coords.js'
 import { localstoreRestore } from './localstore_gets_state.js'
 import { uuidv4, getOrCreateLocalId, randomPastelColor, domReady } from './util.js'
 import { config, stage } from './config.js'
@@ -52,7 +51,6 @@ import {
 } from 'keycode-js'
 
 const cfg = config(window.location)
-const intersectionFinder = FindIntersectionsFromScreenCoords({ stage })
 let previousMousedownIndex = 0
 
 // Don't look for 'dropzone' in HTML tags
@@ -432,11 +430,11 @@ const start = async () => {
   window.addEventListener('mousemove', (event) => {
     // Show mouse pointer
     mousePointer.setScreenCoords(event.clientX, event.clientY)
-    intersectionFinder.setScreenCoords(event.clientX, event.clientY)
+    stage.intersectionFinder.setScreenCoords(event.clientX, event.clientY)
     
     // If mouse has moved a certain distance since clicking, then turn into a "drag"
     if (dragStart && !dragLock) {
-      const intersection = intersectionFinder.getOneIntersection(stage.background.object)
+      const intersection = stage.intersectionFinder.getOneIntersection(stage.background.object)
       if (intersection) {
         const mousePos = intersection.point
         if (mousePos.distanceTo(dragStartPos) > 10) {
@@ -446,7 +444,7 @@ const start = async () => {
     }
     
     if (dragLock) {
-      const intersection = intersectionFinder.getOneIntersection(stage.background.object)
+      const intersection = stage.intersectionFinder.getOneIntersection(stage.background.object)
       if (intersection && stage.selection.hasAtLeast(1)) {
         stage.selection.forEach((entity) => {
           dragDelta.copy(intersection.point)
@@ -480,22 +478,22 @@ const start = async () => {
     // must be left-click
     if (event.button !== 0) { return }
     
-    intersectionFinder.setScreenCoords(event.clientX, event.clientY)
+    stage.intersectionFinder.setScreenCoords(event.clientX, event.clientY)
     
     // This might be the beginning of a drag & drop sequence, so prep for that possibility
     if (stage.selection.hasAtLeast(2)) {
-      const intersection = intersectionFinder.getOneIntersection(stage.background.object)
+      const intersection = stage.intersectionFinder.getOneIntersection(stage.background.object)
       if (intersection) {
         dragStart = true
         dragStartPos = intersection.point
         stage.selection.savePositions('drag')
       }
     } else if (!event.shiftKey && !event.ctrlKey) {
-        let intersections = intersectionFinder.getAllIntersectionsOnStage()
+        let intersections = stage.intersectionFinder.getAllIntersectionsOnStage()
         if (!stage.editorMode) {
           intersections = intersections.filter((isect) => !isect.entity.isUiLocked())
         }
-        const groundIntersection = intersectionFinder.getOneIntersection(stage.background.object)
+        const groundIntersection = stage.intersectionFinder.getOneIntersection(stage.background.object)
         // Don't allow selecting locked objects
         if (intersections.length > 0 && groundIntersection) {
           const isect = intersections[0]
@@ -521,7 +519,7 @@ const start = async () => {
     
     if (!dragLock) {
       // Did player click on something with an onClick callback?
-      let clickedEntities = intersectionFinder.getAllIntersectionsOnStage().map((isect) => isect.entity)
+      let clickedEntities = stage.intersectionFinder.getAllIntersectionsOnStage().map((isect) => isect.entity)
       clickedEntities.forEach((entity) => {
         if (entity.onClick) {
           entity.onClick()
@@ -538,7 +536,7 @@ const start = async () => {
          */
         const operation = event.shiftKey ? '+' : (event.ctrlKey ? '-' : '=')
         // Select whatever the most recent 'mousemove' event got us closest to
-        let selected = intersectionFinder.getAllIntersectionsOnStage().map((isect) => isect.entity)
+        let selected = stage.intersectionFinder.getAllIntersectionsOnStage().map((isect) => isect.entity)
         if (!stage.editorMode) {
           // Don't allow selecting locked objects
           selected = selected.filter((entity) => !entity.isUiLocked())
@@ -556,6 +554,7 @@ const start = async () => {
         }
         
         stage.selection.select(selected, operation)
+        console.log(stage.selection)
       })
     }
     dragStart = false
@@ -696,7 +695,7 @@ const start = async () => {
   })
   
   document.addEventListener('contextmenu', (event) => {
-    let intersections = intersectionFinder.getAllIntersectionsOnStage()
+    let intersections = stage.intersectionFinder.getAllIntersectionsOnStage()
     if (intersections.length > 0) {
       const clickedEntity = intersections[0].entity
       showInfoAboutObject(clickedEntity)
