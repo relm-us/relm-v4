@@ -24,12 +24,14 @@ const AnimatesPosition = stampit(Component, {
       if (!positionGoal.achieved) {
         if (positionGoal.isPastDue()) {
           this.object.position.copy(positionGoal.toJSON())
+          this.emit('position-changed')
           positionGoal.markAchieved()
         } else {
           this._position.copy(positionGoal.toJSON())
           const distance = this.object.position.distanceTo(this._position)
           const alpha = this._getPositionLerpAlpha(distance, delta)
           this.object.position.lerp(this._position, alpha)
+          this.emit('position-changed')
           if (isNaN(this.object.position.x)) {
             // safeguard because NaN will cause whole render process to fail
             throw Error('Position has NaN value')
