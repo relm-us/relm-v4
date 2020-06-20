@@ -1,10 +1,8 @@
 import stampit from 'stampit'
 
-import { uuidv4 } from './util.js'
-
 import { Component } from './components/component.js'
 import { Entity } from './entity.js'
-import { network } from './config.js'
+import { network } from './network.js'
 
 /**
  * An EntityShared is an Entity with the ability to share its goals over the network.

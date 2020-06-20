@@ -27,6 +27,7 @@ import { Teleportal } from './teleportal.js'
 import { Ground } from './ground.js'
 import { DiamondIndicator } from './diamond_indicator.js'
 import { Skybox } from './skybox.js'
+import { TriggerPlate } from './trigger_plate.js'
 
 
 // Misc. other imports

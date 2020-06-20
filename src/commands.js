@@ -24,6 +24,31 @@ import {
  * @property {THREE.Vector3} position The position to act at
  */
 
+function triggerCreate(json) {
+  return (env) => {
+    env.network.permanents.create({
+      type: 'trigger',
+      goals: {
+        trigger: { json },
+        position: {
+          x: env.position.x,
+          y: env.position.y,
+          z: env.position.z,
+        }
+      }
+    })
+  }
+}
+
+function triggerUpdate(json) {
+  return actionToEachObject((entity, env) => {
+    if (json && entity.goals.trigger) {
+      entity.goals.trigger.update({ json })
+      return true /* add to success count */
+    }
+  })
+}
+
 function diamondCreate(message) {
   return (env) => {
     const position = new THREE.Vector3()
@@ -683,6 +708,14 @@ const commands = {
   stop: (args) => {
     return (env) => {
       env.stage.continueRendering = false
+    }
+  },
+  trigger: (args) => {
+    const subCommand = takeOne(args, `Shouldn't there be a subcommand after '/trigger'? e.g. 'create', 'update'`)
+    switch (subCommand) {
+      case 'create': return triggerCreate(joinAll(args))
+      case 'update': return triggerUpdate(joinAll(args))
+      default: throw Error(`Is ${subCommand} a '/trigger' subcommand?`)
     }
   },
   portal: (args) => {

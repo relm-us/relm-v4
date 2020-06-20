@@ -21,15 +21,6 @@ const exportRelm = (stage, network, selectedOnly, room) => {
 
 const importRelm1_0 = (network, data) => {
   throw Error(`This version is no longer supported`)
-  
-  const objects = data.objects
-  let importCount = 0
-  for (let uuid in objects) {
-    const object = objects[uuid]
-    importCount++
-    network.setState(uuid, object)
-  }
-  return importCount
 }
 
 const importRelm2_0 = (network, data) => {

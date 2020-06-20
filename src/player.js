@@ -177,7 +177,6 @@ const Player = stampit(
       update(_delta) {
         const colorGoal = this.goals.color
         if (!colorGoal.achieved) {
-          console.log("set colorGoal", colorGoal.toJSON())
           const color = new THREE.Color(
             colorGoal.get('r'),
             colorGoal.get('g'),

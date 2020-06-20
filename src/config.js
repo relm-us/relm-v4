@@ -1,7 +1,6 @@
 import { ShowLoadingProgress } from './show_loading_progress.js'
 import { ResourceLoader } from './resource_loader.js'
 import { Stage } from './stage.js'
-import { Network } from './network.js'
 
 /**
  * Uses the window.location as a way to distinguish which server environment we are in.
