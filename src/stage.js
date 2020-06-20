@@ -83,7 +83,7 @@ const Stage = stampit(
         console.warn(`Entity already on stage, skipping 'add'`, entity)
         return entity
       }
-      console.log(`Adding entity '${entity.type}' to stage`, entity)
+      console.log(`Adding entity '${entity.type}' [${entity.uuid}] to stage`, entity)
       this.entities[entity.uuid] = entity
       if (typeof entity.setup === 'function') {
         entity.setup()
@@ -100,13 +100,24 @@ const Stage = stampit(
       }
     },
     
-    remove(entity) {
+    /**
+     * 
+     * @param {UUID} uuid 
+     * @param {Entity} entity 
+     */
+    remove(uuid, entity) {
       if (typeof entity.teardown === 'function') {
         entity.teardown()
       }
       this.selection.select([entity], '-')
       this.intersectionFinder.clear()
-      delete this.entities[entity.uuid]
+      /**
+       * NOTE: We must use `uuid` here and not `entity.uuid` because at this point, the entity's goals
+       *       (a Y.Map) has been removed from its document (a Y.Doc), and in this state, it no longer
+       *       has access to its data. Since entity.uuid does a lookup on goals._map.get('@id') for its
+       *       UUID, it is undefined. Therefore we require the `uuid` to be passed in to `remove`.
+       */
+      delete this.entities[uuid]
     },
 
     forEachEntity(fn) {

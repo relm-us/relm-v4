@@ -115,7 +115,7 @@ const start = async () => {
   network.on('remove', (uuid) => {
     const entity = stage.entities[uuid]
     if (entity) {
-      stage.remove(entity)
+      stage.remove(uuid, entity)
     }
   })
   
