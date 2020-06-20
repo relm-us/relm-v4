@@ -5,11 +5,11 @@ import * as Y from 'yjs'
 import { WebsocketProvider } from 'y-websocket'
 import { IndexeddbPersistence } from 'y-indexeddb'
 
+import { ServerDate } from './lib/ServerDate.js'
 import { GoalGroup } from './goals/goal_group.js'
 import { Typed } from './typed.js'
 import { uuidv4 } from './util.js'
 import { installGetSetInterceptors } from './get_set_interceptors.js'
-
 
 const Document = stampit({
   init({ emitter }) {
@@ -101,7 +101,7 @@ const Document = stampit({
             }
             for (const [k, v] of Object.entries(goalState)) {
               if (k === '@due') {
-                ymapState.set('@due', instantaneous ? 0 : Date.now() + 2000)
+                ymapState.set('@due', instantaneous ? 0 : ServerDate.now() + 2000)
               } else {
                 ymapState.set(k, v)
               }

@@ -3,7 +3,8 @@ import EventEmittable from '@stamp/eventemittable'
 
 import * as Y from 'yjs'
 
-import { req, mapToObject } from '../util.js'
+import { ServerDate } from '../lib/ServerDate.js'
+import { req } from '../util.js'
 
 const Equality = {
   Distance: (threshold) => {
@@ -145,11 +146,11 @@ const Goal = stampit(EventEmittable, {
      * 
      * @param {number} now - the time in milliseconds to consider as "now" when comparing what is past
      */
-    isPastDue(now = Date.now()) {
+    isPastDue(now = ServerDate.now()) {
       return this.due < now
     },
     
-    update(object, due = Date.now()) {
+    update(object, due = ServerDate.now()) {
       this.due = due
       this._map.doc.transact(() => {
         for (const [k, v] of Object.entries(object)) {

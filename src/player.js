@@ -1,5 +1,7 @@
 import stampit from 'stampit'
 
+import { ServerDate } from './lib/ServerDate.js'
+
 import { EntityShared } from './entity_shared.js'
 import { Component } from './components/component.js'
 import { HasObject } from './components/has_object.js'
@@ -40,7 +42,7 @@ const HasMaxSpeed = stampit(Component, {
 })
 
 const FOLLOW_TARGET_DISTANCE_AHEAD = 100.0
-const FOLLOW_TARGET_SUFFICIENT_TIME = 2000.0
+const FOLLOW_TARGET_SUFFICIENT_TIME = 5000.0
 
 const FollowsTarget2 = stampit(Component, {
   init() {
@@ -116,7 +118,7 @@ const FollowsTarget2 = stampit(Component, {
       this._target.position.add(this._addVector)
       
       // See if we need to update the position as the target is followed
-      const dueAt = Date.now() + FOLLOW_TARGET_SUFFICIENT_TIME
+      const dueAt = ServerDate.now() + FOLLOW_TARGET_SUFFICIENT_TIME
       const goalToTargetDist = this._goalPos.position.distanceTo(this._target.position)
       if (goalToTargetDist > FOLLOW_TARGET_DISTANCE_AHEAD/2) {
         this.goals.position.update({
