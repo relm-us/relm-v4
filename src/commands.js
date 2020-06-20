@@ -387,18 +387,20 @@ const commands = {
   object: (args) => {
     const subCommand = takeOne(args, `Shouldn't there be a subcommand after '/object'? e.g. 'clone', 'delete', 'scale'`)
     switch (subCommand) {
-      case 'clone': return actionToEachObject((entity, env) => {
+      case 'clone': {
         let count
         try { count = parseInt(takeOne(args), 10) }
         catch (e) { count = 1 }
-        const goalsDesc = entity.goals.toDesc()
-        for (let i = 0; i < count; i++) {
-          goalsDesc.position.x += 25
-          goalsDesc.position.z += 25
-          network.permanents.create({ type: entity.goals.type, goals: goalsDesc })
-        }
-        return true /* add to success count */
-      })
+        return actionToEachObject((entity, env) => {
+          const goalsDesc = entity.goals.toDesc()
+          for (let i = 0; i < count; i++) {
+            goalsDesc.position.x += 25
+            goalsDesc.position.z += 25
+            network.permanents.create({ type: entity.goals.type, goals: goalsDesc })
+          }
+          return true /* add to success count */
+        })
+      }
       
 
       case 'delete': return actionToEachObject((entity, env) => {
@@ -418,37 +420,40 @@ const commands = {
       })
       
       
-      case 'flip': return actionToEachObject((entity, env) => {
+      case 'flip': {
         let axis = 'x'
         try { axis = (takeOne(args) == 'y' ? 'y' : 'x') }
         catch (e) { }
-        
-        const flipGoal = entity.goals.flip
-        if (flipGoal) {
-          flipGoal.update({
-            x: axis === 'x' ? (!flipGoal.get('x')) : flipGoal.get('x'),
-            y: axis === 'y' ? (!flipGoal.get('y')) : flipGoal.get('y'),
-          }, Date.now() + 2000)
-          return true /* add to success count */
-        } else {
-          throw Error(`This object isn't flippable`)
-        }
-      })
+        return actionToEachObject((entity, env) => {
+          const flipGoal = entity.goals.flip
+          if (flipGoal) {
+            flipGoal.update({
+              x: axis === 'x' ? (!flipGoal.get('x')) : flipGoal.get('x'),
+              y: axis === 'y' ? (!flipGoal.get('y')) : flipGoal.get('y'),
+            }, Date.now() + 2000)
+            return true /* add to success count */
+          } else {
+            throw Error(`This object isn't flippable`)
+          }
+        })
+      }
       
       
-      case 'fold': return actionToEachObject((entity, env) => {
+      case 'fold': {
         const value = parseFloat(takeOne(args, `Shouldn't there be a [FOLD] value after '/object fold'?`))
         if (value < 0 || value > 1) {
           throw Error('The fold value should be between 0 and 1')
         }
-        const foldGoal = entity.goals.fold
-        if (foldGoal) {
-          foldGoal.update({ v: value }, Date.now() + 2000)
-          return true /* add to success count */
-        } else {
-          throw Error(`This object isn't foldable`)
-        }
-      })
+        return actionToEachObject((entity, env) => {
+          const foldGoal = entity.goals.fold
+          if (foldGoal) {
+            foldGoal.update({ v: value }, Date.now() + 2000)
+            return true /* add to success count */
+          } else {
+            throw Error(`This object isn't foldable`)
+          }
+        })
+      }
       
       
       case 'i':
@@ -476,135 +481,164 @@ const commands = {
       
 
       case 'mat':
-      case 'material': return actionToEachObject((entity, env) => {
+      case 'material': {
         const newType = takeOne(args, `Shouldn't there be a material type after '/object material'? e.g. 'default' or 'photo'`)
-        const matGoal = entity.goals.material
-        if (matGoal && matGoal.get('type') !== newType) {
-          matGoal.update({ type: newType })
-          return true /* add to success count */
-        }
-      }, (count) => { showToast(`Changed material for ${numberOfObjects(count)}`) })
+        return actionToEachObject((entity, env) => {
+          const matGoal = entity.goals.material
+          if (matGoal && matGoal.get('type') !== newType) {
+            matGoal.update({ type: newType })
+            return true /* add to success count */
+          }
+        }, (count) => { showToast(`Changed material for ${numberOfObjects(count)}`) })
+      }
       
 
-      case 'layer': return actionToEachObject((entity, env) => {
+      case 'layer': {
         const layer = takeOne(args, `Shouldn't there be a number after '/object layer'? e.g. 0, 1, ... 100`)
-        const orderGoal = entity.goals.renderOrder
-        if (orderGoal) {
-          orderGoal.update({ v: parseFloat(layer) })
-          const posGoal = entity.goals.position
-          const y = posGoal.get('y')
-          if (y >= 0 && y < 1.0) {
-            posGoal.update({ y: layer / 100 })
+        return actionToEachObject((entity, env) => {
+          const orderGoal = entity.goals.renderOrder
+          if (orderGoal) {
+            orderGoal.update({ v: parseFloat(layer) })
+            const posGoal = entity.goals.position
+            const y = posGoal.get('y')
+            if (y >= 0 && y < 1.0) {
+              posGoal.update({ y: layer / 100 })
+            }
+            return true /* add to success count */
+          }
+        }, (count) => { showToast(`Changed layer for ${numberOfObjects(count)}`) })
+      }
+      
+
+      case 'orient': {
+        const subCommand = takeOne(args, `Shouldn't there be a subcommand after '/object orient'? e.g. 'up' or 'down'`)
+        return actionToEachObject((entity, env) => {
+          switch (subCommand) {
+            case 'up':
+              entity.goals.rotation.update({ x: 0, y: 0, z: 0 }, Date.now() + 2000)
+              entity.goals.renderOrder.update({ v: 100 })
+              break
+            case 'down':
+              entity.goals.rotation.update({ x: 90 * -THREE.Math.DEG2RAD, y: 0, z: 0 }, Date.now() + 2000)
+              const y = entity.goals.position.get('y')
+              let layer = (y >= 0 && y < 1.0) ? Math.floor(y * 100) : 100
+              entity.goals.renderOrder.update({ v: layer })
+              break
+            case 'left':
+              entity.goals.rotation.update({ x: 0, y: -45 * -THREE.Math.DEG2RAD, z: 0 }, Date.now() + 2000)
+              entity.goals.renderOrder.update({ v: 100 })
+              break
+            case 'right':
+              entity.goals.rotation.update({ x: 0, y: 45 * -THREE.Math.DEG2RAD, z: 0 }, Date.now() + 2000)
+              entity.goals.renderOrder.update({ v: 100 })
+              break
+            default:
+              throw Error(`Is ${subCommand} an '/orient' subcommand?`)
           }
           return true /* add to success count */
-        }
-      }, (count) => { showToast(`Changed layer for ${numberOfObjects(count)}`) })
-      
-
-      case 'orient': return actionToEachObject((entity, env) => {
-        const subCommand = takeOne(args, `Shouldn't there be a subcommand after '/object orient'? e.g. 'up' or 'down'`)
-        switch (subCommand) {
-          case 'up':
-            entity.goals.rotation.update({ x: 0, y: 0, z: 0 }, Date.now() + 2000)
-            entity.goals.renderOrder.update({ v: 100 })
-            break
-          case 'down':
-            entity.goals.rotation.update({ x: 90 * -THREE.Math.DEG2RAD, y: 0, z: 0 }, Date.now() + 2000)
-            const y = entity.goals.position.get('y')
-            let layer = (y >= 0 && y < 1.0) ? Math.floor(y * 100) : 100
-            entity.goals.renderOrder.update({ v: layer })
-            break
-          case 'left':
-            entity.goals.rotation.update({ x: 0, y: -45 * -THREE.Math.DEG2RAD, z: 0 }, Date.now() + 2000)
-            entity.goals.renderOrder.update({ v: 100 })
-            break
-          case 'right':
-            entity.goals.rotation.update({ x: 0, y: 45 * -THREE.Math.DEG2RAD, z: 0 }, Date.now() + 2000)
-            entity.goals.renderOrder.update({ v: 100 })
-            break
-          default:
-            throw Error(`Is ${subCommand} an '/orient' subcommand?`)
-        }
-        return true /* add to success count */
-      })
+        })
+      }
       
 
       case 'rx':
-      case 'rotatex': return actionToEachObject((entity, env) => {
+      case 'rotatex': {
         const degrees = parseFloat(takeOne(args, `Shouldn't there be a [DEG] value after '/object rotatex'?`))
-        return objectRotate(entity, { x: degrees })
-      })
+        return actionToEachObject((entity, env) => {
+          return objectRotate(entity, { x: degrees })
+        })
+      }
       
+      case 'r':
       case 'ry':
       case 'rotate': // for backwards compat
-      case 'rotatey': return actionToEachObject((entity, env) => {
+      case 'rotatey': {
         const degrees = parseFloat(takeOne(args, `Shouldn't there be a [DEG] value after '/object rotatey'?`))
-        return objectRotate(entity, { y: degrees })
-      })
+        return actionToEachObject((entity, env) => {
+          return objectRotate(entity, { y: degrees })
+        })
+      }
       
       case 'rz':
-      case 'rotatez': return actionToEachObject((entity, env) => {
+      case 'rotatez': {
         const degrees = parseFloat(takeOne(args, `Shouldn't there be a [DEG] value after '/object rotatez'?`))
-        return objectRotate(entity, { z: degrees })
-      })
+        return actionToEachObject((entity, env) => {
+          return objectRotate(entity, { z: degrees })
+        })
+      }
       
       
 
       case 's':
-      case 'scale': return actionToEachObject((entity, env) => {
+      case 'scale': {
         const scale = parseFloat(takeOne(args, `Shouldn't there be a [SCALE] value after '/object scale'?`))
-        return objectScale(entity, { x: scale, y: scale, z: scale })
-      })
+        return actionToEachObject((entity, env) => {
+          return objectScale(entity, { x: scale, y: scale, z: scale })
+        })
+      }
       
       case 'sx':
-      case 'scalex': return actionToEachObject((entity, env) => {
+      case 'scalex': {
         const scale = parseFloat(takeOne(args, `Shouldn't there be a [SCALE] value after '/object scalex'?`))
-        return objectScale(entity, { x: scale })
-      })
+        return actionToEachObject((entity, env) => {
+          return objectScale(entity, { x: scale })
+        })
+      }
       
       case 'sy':
-      case 'scaley': return actionToEachObject((entity, env) => {
+      case 'scaley': {
         const scale = parseFloat(takeOne(args, `Shouldn't there be a [SCALE] value after '/object scaley'?`))
-        return objectScale(entity, { y: scale })
-      })
+        return actionToEachObject((entity, env) => {
+          return objectScale(entity, { y: scale })
+        })
+      }
       
       case 'sz':
-      case 'scalez': return actionToEachObject((entity, env) => {
+      case 'scalez': {
         const scale = parseFloat(takeOne(args, `Shouldn't there be a [SCALE] value after '/object scalez'?`))
-        return objectScale(entity, { z: scale })
-      })
+        return actionToEachObject((entity, env) => {
+          return objectScale(entity, { z: scale })
+        })
+      }
       
       
-      case 'to': return actionToEachObject((entity, env) => {
+      case 'to': {
         const x = parseFloat(takeOne(args, 'Requires [X] [Y] [Z]'))
         const y = parseFloat(takeOne(args, 'Requires [X] [Y] [Z]'))
         const z = parseFloat(takeOne(args, 'Requires [X] [Y] [Z]'))
-        const posGoal = entity.goals.position
-        if (posGoal) {
-          const newPos = { x, y, z }
-          console.log('to', newPos)
-          posGoal.update(newPos, Date.now() + 2000)
-          return true /* add to success count */
-        } else {
-          showToast(`This object can't be moved`)
-        }
-      })
+        return actionToEachObject((entity, env) => {
+          const posGoal = entity.goals.position
+          if (posGoal) {
+            const newPos = { x, y, z }
+            console.log('to', newPos)
+            posGoal.update(newPos, Date.now() + 2000)
+            return true /* add to success count */
+          } else {
+            showToast(`This object can't be moved`)
+          }
+        })
+      }
       
 
-      case 'x': return actionToEachObject((entity, env) => {
+      case 'x': {
         const delta = parseFloat(takeOne(args, `Shouldn't there be an [X] value after '/object x'?`))
-        return objectMove(entity, { x: delta })
-      })
+        return actionToEachObject((entity, env) => {
+          return objectMove(entity, { x: delta })
+        })
+      }
       
-      case 'y': return actionToEachObject((entity, env) => {
+      case 'y': {
         const delta = parseFloat(takeOne(args, `Shouldn't there be a [Y] value after '/object y'?`))
-        return objectMove(entity, { y: delta })
-      })
+        return actionToEachObject((entity, env) => {
+          return objectMove(entity, { y: delta })
+        })
+      }
       
-      case 'z': return actionToEachObject((entity, env) => {
+      case 'z': {
         const delta = parseFloat(takeOne(args, `Shouldn't there be a [Z] value after '/object z'?`))
-        return objectMove(entity, { z: delta })
-      })
+        return actionToEachObject((entity, env) => {
+          return objectMove(entity, { z: delta })
+        })
+      }
       
 
       default: throw Error(`Is ${subCommand} a '/object' subcommand?`)
