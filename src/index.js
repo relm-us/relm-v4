@@ -147,6 +147,9 @@ const start = async () => {
   
   network.connect({
     params,
+    room: cfg.ROOM,
+    serverUrl: cfg.SERVER_YJS_URL,
+    connectTransients: !cfg.SINGLE_PLAYER_MODE,
     onTransientsSynced: () => {
       const color = randomPastelColor()      
       // If we don't find ourselves in the transients document, we need to create ourselves
@@ -772,7 +775,7 @@ const start = async () => {
   })
   
 
-  initializeAVChat(player.uuid, 'relm-' + cfg.ROOM, {
+  initializeAVChat(player.uuid, 'relm-' + cfg.ROOM + (cfg.SINGLE_PLAYER_MODE ? `-${playerId}` : ''), {
     onMuteChanged: (track, playerId) => {
       const muted = track.isMuted()
       const otherPlayer = stage.entities[playerId]

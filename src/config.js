@@ -26,9 +26,6 @@ function config(location) {
   const roomParam = params.get('room')
   const roomPath = location.pathname.split('/')[1]
   
-  // TODO: Move this out of config
-  window.history.pushState("", "", `/${roomPath}`)
-
   let ROOM
   if (roomParam) {
     ROOM = roomParam
@@ -48,11 +45,14 @@ function config(location) {
     }
   }
   
+  let SINGLE_PLAYER_MODE = (location.hash === '#1')
+  
   window.config = {
     SERVER_YJS_URL,
     SERVER_UPLOAD_URL,
     ROOM,
-    LANDING_COORDS
+    LANDING_COORDS,
+    SINGLE_PLAYER_MODE,
   }
   
   return window.config

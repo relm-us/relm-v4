@@ -8,7 +8,6 @@ import { IndexeddbPersistence } from 'y-indexeddb'
 import { GoalGroup } from './goals/goal_group.js'
 import { Typed } from './typed.js'
 import { uuidv4 } from './util.js'
-import { config } from './config.js'
 import { installGetSetInterceptors } from './get_set_interceptors.js'
 
 
@@ -209,6 +208,7 @@ const TransientDocument = stampit(Document, {
     },
 
     sendState(uuids) {
+      if (!this.provider) return
       if (this._cachedAwarenessStateChanged) {
         this._cachedAwarenessStateChanged = false
         uuids.forEach(uuid => {
@@ -250,20 +250,21 @@ const Network = stampit(EventEmittable, {
   },
   
   methods: {
-    async connect({ params = {}, onTransientsSynced }) {
-      const cfg = config(window.location)
-      const serverUrl = cfg.SERVER_YJS_URL
-      
-      this.transients.connect({
-        serverUrl,
-        room: cfg.ROOM + '.t',
-        params,
-        onSync: onTransientsSynced,
-      })
+    async connect({ params = {}, serverUrl, room, connectTransients, onTransientsSynced }) {
+      if (connectTransients) {
+        this.transients.connect({
+          serverUrl,
+          room: room + '.t',
+          params,
+          onSync: onTransientsSynced,
+        })
+      } else {
+        onTransientsSynced()
+      }
       
       this.permanents.connect({
         serverUrl,
-        room: cfg.ROOM,
+        room,
         params
       })
     },
