@@ -249,16 +249,6 @@ const commands = {
       }
     }
   },
-  destroy: (args) => {
-    const iAmSure = takeOne(args, `Are you sure?`)
-    if (iAmSure === 'iamsure') {
-      return (env) => {
-        network.entitiesMap.forEach((_, uuid) => {
-          network.permanents.remove(uuid)
-        })
-      }
-    }
-  },
   diamond: (args) => {
     const subCommand = takeOne(args, `Shouldn't there be a subcommand after '/diamond'? e.g. 'create', 'label', 'message'`)
     switch (subCommand) {
@@ -346,7 +336,7 @@ const commands = {
         catch (e) { url = null }
         return groundCreate(url)
       case 'color': return groundUpdate({ color: takeOne(args, `Need a [COLOR] (hex format, e.g. #facc28)`) })
-      case 'url':
+      case 'texture':
         try { url = takeOne(args) }
         catch (e) { url = null }
         return groundUpdate({ url })
@@ -468,34 +458,6 @@ const commands = {
       })
       
 
-      case 'locktoggle': 
-        let lockCount = 0
-        let unlockCount = 0
-        return actionToEachObject((object, env) => {
-          if (object.isUiLocked) {
-            if (object.isUiLocked()) {
-              object.uiUnlock()
-              unlockCount++
-              env.stage.selection.select([object], '-')
-              network.setEntity(object)
-            } else {
-              object.uiLock()
-              lockCount++
-              env.stage.selection.select([object], '-')
-              network.setEntity(object)
-            }
-            return true
-          }
-        }, () => {
-          if (lockCount > 0 && unlockCount > 0) {
-            showToast(`Locked ${numberOfObjects(lockCount)} and unlocked ${numberOfObjects(unlockCount)}`)
-          } else if (lockCount > 0) {
-            showToast(`Locked ${numberOfObjects(lockCount)}`)
-          } else if (unlockCount > 0) {
-            showToast(`Unlocked ${numberOfObjects(unlockCount)}`)
-          }
-        })
-      
       case 'lock': return actionToEachObject((object, env) => {
         if (object.uiLock) {
           object.uiLock()

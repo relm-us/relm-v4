@@ -461,6 +461,7 @@
     #right-panel {
       position: fixed;
       top: 20px;
+      bottom: 0;
       right: 20px;
       z-index: 3;
       
@@ -478,15 +479,28 @@
     
 
     #help-panel {
-      width: 280px;
-      height: 400px;
       overflow-y: auto;
+      max-width: 600px;
+    }
+    #help-panel h2 {
+      margin-top: 45px;
+    }
+    #help-panel div {
+      margin-bottom: 45px;
+    }
+    #help-panel p {
+      margin-top: 5px;
+      margin-bottom: 5px;
     }
     #help-panel pre {
       font-size: 16px;
       background-color: #e0e0e0;
       padding: 3px 5px;
-      margin-bottom: 25px;
+      margin-left: 30px;
+    }
+    #help-panel pre.inline {
+      margin-left: 0px !important;
+      display: inline;
     }
     
     .panel-button {
@@ -705,50 +719,186 @@
     <div id="help-button" class="panel-button button">Help</div>
 
     <div id="help-panel" class="panel-subpanel">
-      <strong>Welcome!</strong>
+      <h2>Welcome!</h2>
       <p>We're under construction, but if you want to kick the tires here are some advanced commands you can use:</p>
-      <strong>Set Your Name</strong>
-      <p><pre>/name [YOURNAME]</pre></p>
-      <strong>Choose a Character</strong>
-      <p><pre>/character [GENDER] [AVATAR]</pre>
-        Where <pre style="display:inline">[GENDER]</pre> is 
-        <pre style="display:inline">f</pre> (female) or 
-        <pre style="display:inline">m</pre> (male), and 
-        <pre style="display:inline">[AVATAR]</pre> is a number from 0-8</p>
-      <strong>Objects</strong>
+      
+      <h2>General Stuff with Objects</h2>
       <p>First, click an object so it shines bright yellow, then try one of these:</p>
-      <p>Delete an object<pre>/object delete</pre></p>
-      <p>Grow or shrink an object (N should be between about 0.5 and 2):<pre>/object scale [N]</pre></p>
-      <p>Change flat object orientation:<pre>/object [ORIENTATION]</pre>
-        Where <pre style="display:inline">[ORIENTATION]</pre> is 
-        <pre style="display:inline">up</pre>, 
-        <pre style="display:inline">down</pre>, 
-        <pre style="display:inline">left</pre>, 
-        <pre style="display:inline">right</pre></p>
-      <p>Rotate an object:<pre>/object rotate [DEGREES]</pre></p>
-      <p>Bring object to you:<pre>/object fetch</pre></p>
-      <p>Move object left/right:<pre>/object x [UNITS]</pre></p>
-      <p>Move object up/down (into sky/into ground):<pre>/object y [UNITS]</pre></p>
-      <p>Move object up/down (into screen/out of screen):<pre>/object z [UNITS]</pre></p>
-      <p>Move object to absolute position:<pre>/object moveTo [X] [Y] [Z]</pre></p>
-      <p>Clone (duplicate) an object:<pre>/object clone [COUNT]</pre>(<pre style="display:inline">[COUNT]</pre> is optional, default is 1)</p>
-      <strong>Portals</strong>
-      <p>Create a portal:<pre>/portal create https://[URL] <br> [RADIUS]</pre>(<pre style="display:inline">[RADIUS]</pre> is optional, default is 150)</p>
-      <strong>Signs</strong>
-      <p>Create a sign:<pre>/sign create [MESSAGE]</pre></p>
-      <p>Set a message for the selected sign:<pre>/sign message [MESSAGE]</pre></p>
-      <p>Set a label for the selected sign:<pre>/sign label [LABEL]</pre></p>
-      <strong>Misc.</strong>
-      <p>Find out what your coordinates are:<pre>/whereami</pre></p>
-      <p>Reset everything about your character (clears localStorage):<pre>/reset</pre></p>
-      <p>Snap to grid:<pre>/snap [SIZE]</pre>(If <pre style="display:inline">[SIZE]</pre> is left blank, turns off snap-to-grid)</p>
-      <p>Export current relm:<pre>/export</pre></p>
-      <p>Import into current relm:<pre>/import</pre></p>
-      <p>Set max zoom range:<pre>/zoomrange [ZOOMPRESET]</pre>
-        Where <pre style="display:inline">[ZOOMPRESET]</pre> is
-        <pre style="display:inline">max</pre> or
-        <pre style="display:inline">default</pre>
-      </p>
+      <p>Move it with the mouse: this moves the object in the X/Z directions</p>
+
+      <div>
+        <p>Get information about an object:<pre>/object info</pre> (Note that you can also right-click an object to get the same info).</p>
+      </div>
+      
+      <h3>Scaling & Rotating</h3>
+      
+      <div>
+        <p>Grow or shrink an object (N should be between about 0.5 and 2):<pre>/object scale [N]</pre></p>
+        <p>You can also scale in just one dimension:<pre>/object scalex|scaley|scalez [N]</pre></p>
+      </div>
+      
+      <div>
+        <p>Change flat object orientation:<pre>/object orient up|down|left|right</pre></p>
+      </div>
+      
+      <div>
+        <p>Rotate an object:<pre>/object rotatex|rotatey|rotatez [DEGREES]</pre></p>
+      </div>
+      
+      <h3>Moving Objects</h3>
+      
+      <div>
+        <p>Bring object to you:<pre>/object fetch</pre></p>
+      </div>
+
+      <div>
+        <p>Move an along an axis:<pre>/object x|y|z [UNITS]</pre></p>
+      </div>
+
+      <div>
+        <p>You can also move an object to absolute position:<pre>/object to [X] [Y] [Z]</pre></p>
+      </div>
+      
+      <h3>Misc. Object Capabilities</h3>
+      
+      <div>
+        <p>Delete an object<pre>/object delete</pre></p>
+      </div>
+      
+      <div>
+        <p>Clone (duplicate) an object:<pre>/object clone [COUNT]</pre>(<pre class="inline">[COUNT]</pre> is optional, default is 1)</p>
+      </div>
+      
+      <div>
+        <p>Flip the texture on an object:<pre>/object flip x|y</pre></p>
+      </div>
+      
+      <div>
+        <p>Fold a flat object so that part of it is on the ground:<pre>/object fold [PERCENT]</pre>(<pre class="inline">[PERCENT]</pre> is a number from 0 to 1)</p>
+      </div>
+      
+      <div>
+        <p>Lock or unlock and object:<pre>/object lock|unlock</pre></p>
+      </div>
+      
+      <div>
+        <p>Change the material type of a 2D object:<pre>/object material default|photo|add|subtract|multiply</pre></p>
+      </div>
+      
+      <div>
+        <p>Change the layer of a 2D object:<pre>/object layer [N]</pre>(<pre class="inline">[N]</pre> is a number between 0 and 100)</p>
+      </div>
+      
+      
+      <h2>Special Objects</h2>
+
+
+      <h3>Portals</h3>
+      
+      <div>
+        <p>Create a portal:<pre>/portal create [RELM] [X] [Z]</pre>(<pre class="inline">[RELM]</pre> is optional and is the name of a relm, e.g. 'welcome' would teleport to https://relm.us/welcome). <pre class="inline">[X]</pre> and <pre class="inline">[Z]</pre> are optional as well.</p>
+      </div>
+      
+      <div>
+        <p>Update a selected portal:<pre>/portal update [RELM] [X] [Z]</pre></p>
+      </div>
+      
+      
+      <h3>Trigger Plates</h3>
+      
+      <div>
+        <p>Create a trigger:<pre>/trigger create [JSON]</pre>(<pre class="inline">[JSON]</pre> is exported JSON. See the <pre class="inline">/export</pre> command.</p>
+      </div>
+      
+      <div>
+        <p>Update a trigger:<pre>/trigger update [JSON]</pre></p>
+      </div>
+      
+
+      <h3>Diamond Indicators</h3>
+      
+      <div>
+        <p>Create a diamond:<pre>/diamond create [MESSAGE]</pre></p>
+      </div>
+      
+      <div>
+        <p>Set a message on a selected diamond:<pre>/diamond message [MESSAGE]</pre></p>
+      </div>
+      
+      <div>
+        <p>Set a label on a selected diamond:<pre>/diamond label [LABEL]</pre></p>
+      </div>
+      
+
+      <h3>Ground</h3>
+      
+      <div>
+        <p>Create a section of ground:<pre>/ground create [TEXTURE_URL]</pre>(<pre class="inline">[TEXTURE_URL]</pre> is an optional URL of an image that will be used for a repeating ground texture. It must begin with https://...)</p>
+      </div>
+      
+      <div>
+        <p>Change the size of a selected section of ground:<pre>/ground size [N]</pre></p>
+      </div>
+      
+      <div>
+        <p>Change the color of a selected section of ground:<pre>/ground color [HEX]</pre>(<pre class="inline">[HEX]</pre> is a CSS hex color, e.g. '#FFFFFF' for white)</p>
+        <p>Change the texture image of a selected section of ground:<pre>/ground texture [TEXTURE_URL]</pre></p>
+        <p>Change the texture's repeat frequency:<pre>/ground repeat [N]</pre></p>
+      </div>
+      
+      <div>
+        <p>Change the type of a selected section of ground:<pre>/ground type circle|square|rough</pre>(Note: <pre class="inline">rough</pre> means a 'roughly circular' shape.)</p>
+        <p>Change the 'roughly circular' random seed:<pre>/ground random [N]</pre>(<pre class="inline">[N]</pre> is optional)</p>
+      </div>
+      
+
+      <h3>Skybox</h3>
+      
+      <div>
+        <p>Change the skybox:<pre>/skybox [IMAGE_URL]</pre></p>
+      </div>
+
+      
+      <h2>Import / Export</h2>
+      
+      <div>
+        <p>Export the world, or just the selected objects:<pre>/export</pre>(Then copy the JSON)</p>
+        <p>Import into the world:<pre>/import</pre>(Then paste exported JSON in to the box)</p>
+      </div>
+      
+      
+      <h2>Selection</h2>
+
+      <div>
+        <p>Select all:<pre>/select all</pre>(Note: you can also use ctrl+A or cmd+A)</p>
+        <p>Select none:<pre>/select none</pre>(Note: you can also press ESC)</p>
+      </div>
+      
+      <div>
+        <p>Select locked:<pre>/select locked</pre>(Selects just the locked objects in the relm)</p>
+        <p>Select unlocked:<pre>/select unlocked</pre>(Selects just the unlocked objects in the relm)</p>
+      </div>
+
+
+      <h2>Misc.</h2>
+      
+      <div>
+        <p>Find out what your coordinates are:<pre>/whereami</pre></p>
+        <p>Go to specified coordinates:<pre>/go [RELM] [X] [Z]</pre>(If <pre class="inline">[RELM]</pre> is omitted, you will stay in the current relm)</p>
+      </div>
+      
+      <div>
+        <p>Change major mode:<pre>/mode editor|normal</pre></p>
+      </div>
+      
+      <div>
+        <p>Reset everything about your character (clears localStorage):<pre>/reset</pre></p>
+      </div>
+      
+      <div>
+        <p>Snap to grid:<pre>/snap [SIZE]</pre>(If <pre class="inline">[SIZE]</pre> is left blank, turns off snap-to-grid)</p>
+      </div>
+      
     </div>
   </div>
   
