@@ -88,14 +88,13 @@ const Triggers = stampit(Component, {
       
       const size = TRIGGER_SIZE * this.goals.scale.get('x')
       const distance = this.object.position.distanceTo(this.target.object.position)
-      if (distance < 15) {
+      if (distance < size) {
         if (this.active) {
           this._triggerAction()
           this.setInactive()
         }
-      } else if (distance < size + 20) {
+      } else if (!this.active && distance > size + 20) {
         // Enable trigger when player is "outside" the zone
-        this.target.setOpacity(1.0)
         this.setActive()
       }
     }
