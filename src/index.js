@@ -338,10 +338,12 @@ const start = async () => {
     // Close the upload box automatically
     previews.classList.remove('show')
     
-    const url = cfg.SERVER_UPLOAD_URL + '/' + response.file
     
+    console.log('response files', response.files)
     // Add the asset to the network so everyone can see it
-    if (response.file.match(IMAGE_FILETYPE_RE)) {
+    if ('png' in response.files || 'webp' in response.files) {
+      const webp = cfg.SERVER_UPLOAD_URL + '/' + response.files.webp
+      const png = cfg.SERVER_UPLOAD_URL + '/' + response.files.png
       const layer = Math.floor(Math.random() * 100)
       network.permanents.create({
         type: 'decoration',
@@ -351,10 +353,14 @@ const start = async () => {
             y: player.object.position.y + (layer / 100),
             z: player.object.position.z,
           },
-          asset: { url },
+          asset: {
+            url: webp,
+            alt: png,
+          },
         }
       })
-    } else if (response.file.match(GLTF_FILETYPE_RE)) {
+    } else if ('gltf' in response.files) {
+      const url = cfg.SERVER_UPLOAD_URL + '/' + response.files.gltf
       const uuid = uuidv4()
       network.permanents.create({
         type: 'thing3d',

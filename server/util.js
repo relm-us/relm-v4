@@ -1,3 +1,7 @@
+const fs = require('fs')
+const path = require('path')
+const md5File = require('md5-file')
+
 const URLSearchParams = require('url').URLSearchParams
 
 function getUrlParams(requestUrl) {
@@ -19,7 +23,30 @@ function uuidv4() {
   });
 }
 
+function getFileSizeInBytes(filename) {
+  const stats = fs.statSync(filename);
+  const fileSizeInBytes = stats.size;
+  return fileSizeInBytes;
+}
+
+async function getContentAddressableName(filepath, fallbackExtension = null) {
+  const hash = await md5File(filepath)
+  const fileSize = getFileSizeInBytes(filepath)
+  let extension = path.extname(filepath)
+  
+  if (extension === '') {
+    if (fallbackExtension) {
+      extension = fallbackExtension
+    } else {
+      throw Error(`File has no extension: '${filepath}'`)
+    }
+  }
+  
+  return `${hash}-${fileSize}${extension}`
+}
 module.exports = {
   getUrlParams,
   uuidv4,
+  getFileSizeInBytes,
+  getContentAddressableName,
 }
