@@ -111,9 +111,9 @@ app.post('/asset', cors(), async (req, res) => {
             const hash = await md5File(convertTo)
             const fileSize = getFilesizeInBytes(convertTo)
             
-            console.log(`Saving converted image '${moveTo}' to '${newConvertTo}'`)
             const newAssetId = hash + '-' + fileSize
             const newConvertTo = config.ASSET_DIR + '/' + newAssetId + '.webp'
+            console.log(`Saving converted image '${moveTo}' to '${newConvertTo}'`)
             await renameFile(convertTo, newConvertTo)
             
             return fileUploadSuccess(res, newAssetId, newAssetId + '.webp')
