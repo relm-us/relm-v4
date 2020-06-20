@@ -112,15 +112,20 @@ const UsesAssetAsGround = stampit(Component, {
     _keepSquareBounds(player, halfsize) {
       const dx = player.object.position.x - this.object.position.x
       const dz = player.object.position.z - this.object.position.z
-      if (dx > halfsize && dx < halfsize + GROUND_BOUNDS_BUFFER_SIZE) {
-        player.addPosition(new THREE.Vector3(-GROUND_ADD_POSITION, 0, 0))
-      } else if (dx < -halfsize && dx > -halfsize - GROUND_BOUNDS_BUFFER_SIZE) {
-        player.addPosition(new THREE.Vector3(GROUND_ADD_POSITION, 0, 0))
+      if (dz > -halfsize && dz < halfsize) {
+        if (dx > halfsize && dx < halfsize + GROUND_BOUNDS_BUFFER_SIZE) {
+          player.addPosition(new THREE.Vector3(-GROUND_ADD_POSITION, 0, 0))
+        } else if (dx < -halfsize && dx > -halfsize - GROUND_BOUNDS_BUFFER_SIZE) {
+          player.addPosition(new THREE.Vector3(GROUND_ADD_POSITION, 0, 0))
+        }
       }
-      if (dz > halfsize && dz < halfsize + GROUND_BOUNDS_BUFFER_SIZE) {
-        player.addPosition(new THREE.Vector3(0, 0, -GROUND_ADD_POSITION))
-      } else if (dz < -halfsize && dz > -halfsize - GROUND_BOUNDS_BUFFER_SIZE) {
-        player.addPosition(new THREE.Vector3(0, 0, GROUND_ADD_POSITION))
+      
+      if (dx > -halfsize && dx < halfsize) {
+        if (dz > halfsize && dz < halfsize + GROUND_BOUNDS_BUFFER_SIZE) {
+          player.addPosition(new THREE.Vector3(0, 0, -GROUND_ADD_POSITION))
+        } else if (dz < -halfsize && dz > -halfsize - GROUND_BOUNDS_BUFFER_SIZE) {
+          player.addPosition(new THREE.Vector3(0, 0, GROUND_ADD_POSITION))
+        }
       }
       
     },
