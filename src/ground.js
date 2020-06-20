@@ -112,18 +112,19 @@ const UsesAssetAsGround = stampit(Component, {
     _keepSquareBounds(player, halfsize) {
       const dx = player.object.position.x - this.object.position.x
       const dz = player.object.position.z - this.object.position.z
-      if (dz > -halfsize && dz < halfsize) {
-        if (dx > halfsize && dx < halfsize + GROUND_BOUNDS_BUFFER_SIZE) {
+      const bound = halfsize + GROUND_BOUNDS_BUFFER_SIZE
+      if (dz > -bound && dz < bound) {
+        if (dx > halfsize && dx < bound) {
           player.addPosition(new THREE.Vector3(-GROUND_ADD_POSITION, 0, 0))
-        } else if (dx < -halfsize && dx > -halfsize - GROUND_BOUNDS_BUFFER_SIZE) {
+        } else if (dx < -halfsize && dx > -bound) {
           player.addPosition(new THREE.Vector3(GROUND_ADD_POSITION, 0, 0))
         }
       }
       
-      if (dx > -halfsize && dx < halfsize) {
-        if (dz > halfsize && dz < halfsize + GROUND_BOUNDS_BUFFER_SIZE) {
+      if (dx > -bound && dx < bound) {
+        if (dz > halfsize && dz < bound) {
           player.addPosition(new THREE.Vector3(0, 0, -GROUND_ADD_POSITION))
-        } else if (dz < -halfsize && dz > -halfsize - GROUND_BOUNDS_BUFFER_SIZE) {
+        } else if (dz < -halfsize && dz > -bound) {
           player.addPosition(new THREE.Vector3(0, 0, GROUND_ADD_POSITION))
         }
       }
