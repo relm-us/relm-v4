@@ -114,7 +114,7 @@ const HasGlowingDiamond = stampit(Component, {
         }
         diamondGoal.markAchieved()
       }
-    }
+    },
   }
 })
 

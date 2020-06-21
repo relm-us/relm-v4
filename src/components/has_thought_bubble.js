@@ -55,6 +55,10 @@ const HasThoughtBubble = stampit(Entity, Component, EventEmittable, {
       this.thoughtBubble.position.x += this.thoughtBubbleOffset.x
       this.thoughtBubble.position.y += this.thoughtBubbleOffset.y + bounceMotion
       this.thoughtBubble.project(this.stage.width, this.stage.height)
+    },
+
+    teardown() {
+      this.thoughtBubble.clearText()
     }
   }
 
