@@ -285,8 +285,9 @@ const commands = {
         exportToTextarea(checkbox.checked)
       })
       
-      checkbox.checked = false
-      exportToTextarea(false)
+      // Automatically check the "selected objects only" box if there are selected objects
+      checkbox.checked = env.objects.length > 0 ? true : false
+      exportToTextarea(checkbox.checked)
     }
   },
   import: (args) => {
@@ -294,7 +295,6 @@ const commands = {
       const importExport = document.getElementById('import-export')
       const importButton = document.getElementById('import-button')
       const checkboxWrapper = document.getElementById('export-only-selected')
-      const checkbox = document.getElementById('export-only-selected-checkbox')
       const textarea = document.getElementById('import-export-data')
       textarea.value = ''
       importExport.classList.remove('hide')
