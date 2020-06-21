@@ -773,9 +773,9 @@ const commands = {
 
 
 // Shortcut commands
+commands.dia = commands.diamond
 commands.o = commands.obj = commands.object
 commands.p = commands.portal
-commands.s = commands.sign
 
 
 const parseCommand = (commandString) => {
