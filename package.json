@@ -41,7 +41,9 @@
     "parcel-plugin-asset-copier": "^1.0.0",
     "parcel-plugin-externals": "^0.3.3",
     "parcel-plugin-html-externals": "^0.2.0",
-    "standard": "^14.3.1"
+    "parcel-plugin-svelte": "^4.0.6",
+    "standard": "^14.3.1",
+    "svelte": "^3.23.2"
   },
   "externals": {
     "vendor/**/*": false

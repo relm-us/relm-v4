@@ -34,10 +34,6 @@ const PadDirection = stampit(Component, {
     },
 
     update() {
-      // this.controlDirection.set(0, 0, 0)
-      // this.controlDirection.add(this.padDirection)
-      // this.controlDirection.add(this.target.getPosition())
-      // console.log('pad update', this.padDirection, this.controlDirection)
       if (this.target.addPosition) {
         this.target.addPosition(this.padDirection)
       }

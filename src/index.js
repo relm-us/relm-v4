@@ -1,5 +1,4 @@
 // Import external libraries and helpers
-import Dropzone from 'dropzone'
 import { guestNameFromPlayerId, avatarOptionFromPlayerId, avatarOptionsOfGender } from './avatars.js'
 import { Security } from './security.js'
 import { initializeAVChat, muteAudio, unmuteAudio } from './avchat.js'
@@ -35,12 +34,13 @@ import { localstoreRestore } from './localstore_gets_state.js'
 import { uuidv4, getOrCreateLocalId, randomPastelColor, domReady } from './util.js'
 import { config, stage } from './config.js'
 import { network } from './network.js'
-import { importRelm } from './export.js'
 import { GoalGroup } from './goals/goal_group.js'
 import { addManifestTo } from './manifest_loaders.js'
-import { parseCommand } from './commands.js'
+import { runCommand, importExportState } from './commands.js'
 import { recordCoords } from './record_coords.js'
 import { IMAGE_FILETYPE_RE, GLTF_FILETYPE_RE } from './components/loads_asset.js'
+
+import { pressTabHelpState } from './svelte/stores.js'
 
 import {
   KEY_UP, KEY_DOWN, KEY_LEFT, KEY_RIGHT,
@@ -50,11 +50,10 @@ import {
   KEY_BACK_SPACE, KEY_DELETE
 } from 'keycode-js'
 
+import App from './svelte/App.svelte'
+
 const cfg = config(window.location)
 let previousMousedownIndex = 0
-
-// Don't look for 'dropzone' in HTML tags
-Dropzone.autoDiscover = false
 
 // Enable three.js cache for textures and meshes
 THREE.Cache.enabled = true
@@ -63,29 +62,6 @@ const security = Security()
 
 let player
 let mousePointer
-
-
-/**
- * Wait for an entity to be added to the stage. Normally, it shouldn't take more then a few milliseconds.
- * 
- * @param {string} uuid - the UUID of the entity to wait for
- * @param {number} maxWait - the maximum number of milliseconds to wait
- * @param {Function} condition - an optional additional condition to be met
- */
-const entityOnStage = async ({ uuid, maxWait = 10000, condition = null }) => {
-  const startTime = Date.now()
-  return new Promise((resolve, reject) => {
-    const intervalId = setInterval(() => {
-      if (uuid in stage.entities && (condition === null || condition(stage.entities[uuid]))) {
-        clearInterval(intervalId)
-        resolve(stage.entities[uuid])
-      } else if (Date.now() - startTime > maxWait) {
-        clearInterval(intervalId)
-        reject(`Unable to add entity to scene, waited ${maxWait} milliseconds (UUID: '${uuid}')`)
-      }
-    }, 10)
-  })
-}
 
 
 const start = async () => {
@@ -221,8 +197,7 @@ const start = async () => {
   // player.videoBubble.object.on('unmute', unmuteAudio)
   
   
-  
-  player = stage.player = await entityOnStage({ uuid: playerId })
+  player = stage.player = await stage.awaitEntity({ uuid: playerId })
   player.autonomous = false
   player.labelObj.setOnLabelChanged((text) => {
     player.goals.label.update({ text })
@@ -239,7 +214,7 @@ const start = async () => {
     console.log('New Player!', playerId)
   }
   
-  mousePointer = stage.mouse = await entityOnStage({ uuid: mouseId })
+  mousePointer = stage.mouse = await stage.awaitEntity({ uuid: mouseId })
   {
     const c = player.goals.color
     mousePointer.goals.color.update({ r: c.get('r'), g: c.get('g'), b: c.get('b') })
@@ -315,112 +290,8 @@ const start = async () => {
   // The stage is special in that it creates a domElement that must be added to our page
   document.getElementById('game').appendChild(stage.renderer.domElement)
   
-  document.getElementById('upload-button').addEventListener('mousedown', (event) => {
-    event.preventDefault()
-  })
-  const previews = document.getElementById('previews')
-  const dropzone = new Dropzone(document.body, {
-    url: cfg.SERVER_UPLOAD_URL,
-    clickable: '#upload-button',
-    previewsContainer: '#previews',
-    maxFiles: 1,
-  })
-  dropzone.on('addedfile', (file) => {
-    previews.classList.add('show')
-  })
-  dropzone.on('error', async (dz, error, xhr) => {
-    previews.classList.remove('show')
-    showToast(`Unable to upload: ${error.reason} (note: 2MB file size limit)`)
-  })
-  dropzone.on('success', async (dz, response) => {
-    // Close the upload box automatically
-    previews.classList.remove('show')
-    
-    
-    console.log('response files', response.files)
-    // Add the asset to the network so everyone can see it
-    if ('png' in response.files || 'webp' in response.files) {
-      const webp = cfg.SERVER_UPLOAD_URL + '/' + response.files.webp
-      const png = cfg.SERVER_UPLOAD_URL + '/' + response.files.png
-      const layer = Math.floor(Math.random() * 100)
-      network.permanents.create({
-        type: 'decoration',
-        goals: {
-          position: {
-            x: player.object.position.x,
-            y: player.object.position.y + (layer / 100),
-            z: player.object.position.z,
-          },
-          asset: {
-            url: webp,
-            alt: png,
-          },
-        }
-      })
-    } else if ('gltf' in response.files) {
-      const url = cfg.SERVER_UPLOAD_URL + '/' + response.files.gltf
-      const uuid = uuidv4()
-      network.permanents.create({
-        type: 'thing3d',
-        uuid: uuid,
-        goals: {
-          position: {
-            x: player.object.position.x,
-            y: player.object.position.y,
-            z: player.object.position.z,
-          },
-          asset: { url },
-        },
-      })
-      const thing3d = await entityOnStage({ uuid, condition: (entity) => entity.child })
-      
-      // The `normalize` step happens just once after loading
-      thing3d.normalize()
-        
-      // Select the thing that was just uploaded
-      stage.selection.select([thing3d])
-        
-      showToast(`Uploaded with scale normalized to ${parseInt(thing3d.goals.scale.get('x'), 10)}`)
-    } else {
-      const ext = /(?:\.([^.]+))?$/.exec(response.file)[1] || 'unknown'
-      showToast(`Upload canceled. We don't know how to use files of type ${ext}`)
-    }
-  })
-  dropzone.on('complete', (a) => {
-    console.log('file upload complete', a)
-    dropzone.removeAllFiles()
-  })
 
-  const padController = stage.create('padcon', { target: player })
-  const controlPadEl = document.getElementById('control-pad')
-  // controlPadEl.addEventListener('mousemove', (event) => {
-  //   const rect = controlPadEl.getBoundingClientRect()
-  //   const x = (event.layerX - rect.width / 2) / (rect.width/2)
-  //   const y = (event.layerY - rect.height / 2) / (rect.height/2)
-  //   const position = new THREE.Vector3(x * 100, 0, y * 100)
-  //   padController.padDirectionChanged(position)
-  // })
-  // controlPadEl.addEventListener('mouseleave', (event) => {
-  //   padController.padDirectionChanged(new THREE.Vector3())
-  // })
-  const onTouchEvent = (event) => {
-    const rect = controlPadEl.getBoundingClientRect()
-    const touchX = event.targetTouches[0].clientX - rect.x
-    const touchY = event.targetTouches[0].clientY - rect.y
-    const x = (touchX - rect.width / 2) / (rect.width/2)
-    const y = (touchY - rect.height / 2) / (rect.height/2)
-    const position = new THREE.Vector3(x * 100, 0, y * 100)
-    padController.padDirectionChanged(position)
-  }
-  controlPadEl.addEventListener('touchstart', onTouchEvent)
-  controlPadEl.addEventListener('touchmove', onTouchEvent)
-  controlPadEl.addEventListener('touchend', (event) => {
-    padController.padDirectionChanged(new THREE.Vector3())
-  })
-  controlPadEl.addEventListener('touchcancel', (event) => {
-    padController.padDirectionChanged(new THREE.Vector3())
-  })
-  // stage.add(padController)
+
   
   
   let dragLock = false
@@ -562,32 +433,15 @@ const start = async () => {
   })
 
   
-  const runCommand = (text, targetObjects = null) => {
-    try {
-      const command = parseCommand(text)
-      const objects = targetObjects || stage.selection.getAllEntities()
-      const position = player.object.position
-      if (command) {
-        command({ network, stage, player, objects, position, cfg })
-      } else {
-        showToast('Should there be a command after the `/`?')
-      }
-    } catch (err) {
-      console.trace(err)
-      showToast(err.message)
-    }
-  }
+  const runCommandSimple = (text) => runCommand(text, { network, stage, cfg })
 
 
-  // At various times, we need to set focus on the game so that character directional controls work
-  const focusOnGame = () => { stage.renderer.domElement.focus() }
-  const focusOnInput = () => { document.getElementById('input').focus() }
   // Do it once when the page finishes loading, too:
-  focusOnGame()
+  stage.focusOnGame()
 
   document.body.addEventListener('mousedown', (event) => {
     if (event.target.id === 'game') {
-      focusOnGame()
+      stage.focusOnGame()
       event.preventDefault()
     }
   }, true)
@@ -609,91 +463,6 @@ const start = async () => {
     })
   }
   
-  
-  // Import/Export HTML Events
-  const importExport = document.getElementById('import-export')
-  const importButton = document.getElementById('import-button')
-  const importExportCloseButton = document.getElementById('import-export-close-button')
-  importButton.addEventListener('click', (event) => {
-    const text = document.getElementById('import-export-data')
-    const data = JSON.parse(text.value)
-    const objectCount = importRelm(network, data)
-    importExport.classList.add('hide')
-    showToast(`Imported ${objectCount} objects into this arelm.`)
-  })
-  importExportCloseButton.addEventListener('mouseup', (event) => {
-    importExport.classList.add('hide')
-    event.stopPropagation()
-    focusOnGame()
-  }, true)
-  
-
-  // Avatar Selection HTML Events
-  const avatarSelection = document.getElementById('avatars')
-  const avatarSelectionClose = document.getElementById('avatars-close')
-  const avatarSelectionButton = document.getElementById('my-character')
-  const avatarButtons = document.getElementsByClassName('avatar-button')
-  Array.from(avatarButtons).forEach(button => {
-    button.addEventListener('click', (event) => {
-      const gender = button.dataset.gender
-      const index = parseInt(button.dataset.index, 10)
-      const avatarOptions = avatarOptionsOfGender(gender)
-      avatarSelection.classList.add('hide')
-      player.goals.animationMesh.update({ v: avatarOptions[index].avatarId })
-      focusOnGame()
-    })
-  })
-  avatarSelectionClose.addEventListener('click', (event) => {
-    avatarSelection.classList.add('hide')
-    focusOnGame()
-  })
-  avatarSelectionButton.addEventListener('mousedown', (event) => {
-    avatarSelection.classList.remove('hide')
-    event.preventDefault()
-  })
-  
-
-  // Allow TAB and ESC keys to switch from text input to game view
-  const inputEl = document.getElementById('input')
-  inputEl.addEventListener('keydown', e => {
-    const text = e.target.value.trim()
-    if (e.keyCode === KEY_TAB) {
-      // Don't allow TAB to propagate up and cause focus to be switched us back to input
-      e.preventDefault()
-      e.stopPropagation()
-      focusOnGame()
-    } else if (e.keyCode === KEY_ESCAPE) {
-      player.setThought(null)
-      focusOnGame()
-    } else if (e.keyCode === KEY_RETURN) {
-      if (text.substring(0,1) === '/') {
-        runCommand(text.substring(1))
-        e.target.value = ''
-        focusOnGame()
-      } else if (text !== '') {
-        // Before focusing back on the game, make a thought bubble, and clear the text
-        player.setThought(text)
-        e.target.value = ''
-      } else {
-        focusOnGame()
-      }
-    } else if (
-      (e.keyCode === KEY_UP || e.keyCode === KEY_DOWN) ||
-      ((e.keyCode === KEY_LEFT || e.keyCode === KEY_RIGHT) && text === "")
-    ) {
-      // If the player has typed nothing, but uses the arrow keys, go back to the game
-      focusOnGame()
-      kbController.keyPressed(e.keyCode)
-    }
-  })
-
-  const pressTabHelp = document.getElementById('press-tab-help')
-  pressTabHelp.addEventListener('mousedown', (event) => {
-    pressTabHelp.classList.add('hide')
-    // Don't move focus away from webgl canvas
-    event.preventDefault()
-  })
-  
   document.addEventListener('contextmenu', (event) => {
     let intersections = stage.intersectionFinder.getAllIntersectionsOnStage()
     if (intersections.length > 0) {
@@ -708,7 +477,7 @@ const start = async () => {
     
     if (e.target === stage.renderer.domElement) {
       if (e.keyCode === KEY_BACK_SPACE || e.keyCode === KEY_DELETE) {
-        runCommand('object delete')
+        runCommandSimple('object delete')
         // Don't accidentally allow backspace to trigger browser back
         e.preventDefault()
       }
@@ -718,21 +487,17 @@ const start = async () => {
         e.preventDefault()
       }
       else if (e.keyCode === KEY_ESCAPE && stage.selection.hasAtLeast(1)) {
-        runCommand('select none')
-      }
-      // Use `shift+\` as shortcut for toggling lock state of objects
-      else if (e.keyCode === KEY_BACK_SLASH && e.shiftKey) {
-        runCommand('object locktoggle')
+        runCommandSimple('select none')
       }
       // Support `ctrl+A` and `cmd+A` for selecting all
       else if (e.keyCode === KEY_A && (e.ctrlKey || e.metaKey)) {
-        runCommand('select all')
+        runCommandSimple('select all')
         e.preventDefault()
       }
       // Make it easier to type '/object` and all the other commands
       else if (e.keyCode === KEY_SLASH /* Forward Slash */) {
         e.preventDefault()
-        focusOnInput()
+        stage.focusOnInput()
         document.getElementById('input').value = '/' 
       }
       else if (!e.repeat) {
@@ -752,16 +517,15 @@ const start = async () => {
       }
     }
   })
-  kbController.on('done', focusOnInput)
-  kbController.on('switch', () => { focusOnInput(); pressTabHelp.classList.add('hide') })
+  kbController.on('done', stage.focusOnInput)
+  kbController.on('switch', () => { stage.focusOnInput(); pressTabHelpState.update(() => false) })
   kbController.on('close', () => { player.setThought(null) })
   kbController.on('unknown', (keyCode, opts) => {
     // If the player presses a letter of the alphabet on the keyboard, give them a hint
     if (keyCode >= 65 && keyCode <= 90 && !opts.ctrl && !opts.meta) {
-      pressTabHelp.classList.remove('hide')
-      pressTabHelp.classList.add('show')
+      pressTabHelpState.update(() => true)
       setTimeout(() => {
-        pressTabHelp.classList.add('hide')
+        pressTabHelpState.update(() => false)
       }, 7500)
     }
   })
@@ -806,6 +570,18 @@ const start = async () => {
       }
     }
   })
+
+  console.log('start() complete')
 }
 
-start()
+const app = new App({
+  target: document.body,
+  props: {
+    start,
+    stage,
+    network,
+    importExportState,
+  }
+})
+
+export default app

@@ -26,6 +26,7 @@ const importRelm1_0 = (network, data) => {
 const importRelm2_0 = (network, data) => {
   const objects = data.objects
   let importCount = 0
+  console.log('importl', network, data)
   for (let uuid in objects) {
     const object = objects[uuid]
     importCount++

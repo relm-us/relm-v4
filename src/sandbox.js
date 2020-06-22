@@ -1,7 +1,5 @@
-import stampit from 'stampit'
-import { equals } from './util_equals.js'
+import App from './sandbox/App.svelte'
 
-const a = {a:{b:1}}
-const b = {a:{b:1}}
-
-console.log('equals', a, b, equals(a, b))
+new App({
+  target: document.body
+})

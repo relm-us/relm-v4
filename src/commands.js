@@ -1,7 +1,7 @@
 import { showToast } from './lib/Toast.js'
 import { showInfoAboutObject } from './show_info_about_object.js'
 
-import { exportRelm } from './export.js'
+import { exportImportState } from './svelte/stores.js'
 import { muteAudio, unmuteAudio } from './avchat.js'
 import { avatarOptionsOfGender } from './avatars.js'
 import { teleportToOtherRelm } from './teleportal.js'
@@ -260,47 +260,12 @@ const commands = {
   },
   export: (args) => {
     return (env) => {
-      const importExport = document.getElementById('import-export')
-      const importButton = document.getElementById('import-button')
-      const checkboxWrapper = document.getElementById('export-only-selected')
-      let checkbox = document.getElementById('export-only-selected-checkbox')
-      const textarea = document.getElementById('import-export-data')
-      importExport.classList.remove('hide')
-      importButton.classList.add('hide')
-      checkboxWrapper.classList.remove('hide')
-      
-      const exportToTextarea = (selectedOnly) => {
-        const data = exportRelm(env.stage, env.network, selectedOnly, env.cfg.ROOM)
-        textarea.value = JSON.stringify(data, null, 2)
-      }
-      
-      // Ugly hack to remove all previous event listeners:
-      {
-        var newElement = checkbox.cloneNode(true);
-        checkbox.parentNode.replaceChild(newElement, checkbox);
-        checkbox = newElement
-      }
-
-      checkbox.addEventListener('change', (event) => {
-        exportToTextarea(checkbox.checked)
-      })
-      
-      // Automatically check the "selected objects only" box if there are selected objects
-      checkbox.checked = env.objects.length > 0 ? true : false
-      exportToTextarea(checkbox.checked)
+      exportImportState.update(() => 'export')
     }
   },
   import: (args) => {
     return (env) => {
-      const importExport = document.getElementById('import-export')
-      const importButton = document.getElementById('import-button')
-      const checkboxWrapper = document.getElementById('export-only-selected')
-      const textarea = document.getElementById('import-export-data')
-      textarea.value = ''
-      importExport.classList.remove('hide')
-      importButton.classList.remove('hide')
-      checkboxWrapper.classList.add('hide')
-      setTimeout(() => { textarea.focus() } , 100)
+      exportImportState.update(() => 'import')
     }
   },
   go: (args) => {
@@ -789,4 +754,24 @@ const parseCommand = (commandString) => {
   }
 }
 
-export { parseCommand }
+const runCommand = (text, { network, stage, cfg }) => {
+  try {
+    const command = parseCommand(text)
+    const objects = stage.selection.getAllEntities()
+    const position = stage.player.object.position
+    const player = stage.player
+    if (command) {
+      command({ network, stage, player, objects, position, cfg })
+    } else {
+      showToast('Should there be a command after the `/`?')
+    }
+  } catch (err) {
+    console.trace(err)
+    showToast(err.message)
+  }
+}
+
+export {
+  runCommand,
+  parseCommand,
+}

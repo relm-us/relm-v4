@@ -61,9 +61,9 @@ function config(location) {
 
 // Show progress as we load resources
 const resources = window.resources = ResourceLoader()
-resources.on('loaded', ({ id, currentProgress, maxProgress }) => {
-  ShowLoadingProgress(id, currentProgress, maxProgress) 
-})
+// resources.on('loaded', ({ id, currentProgress, maxProgress }) => {
+//   ShowLoadingProgress(id, currentProgress, maxProgress) 
+// })
 
 // The Stage is where all the THREE.js things come together, e.g. camera, lights
 const stage = window.stage = Stage({ width: window.innerWidth, height: window.innerHeight })

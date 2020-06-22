@@ -6481,6 +6481,11 @@ parcel-plugin-html-externals@^0.2.0:
   dependencies:
     minimatch "^3.0.4"
 
+parcel-plugin-svelte@^4.0.6:
+  version "4.0.6"
+  resolved "https://registry.yarnpkg.com/parcel-plugin-svelte/-/parcel-plugin-svelte-4.0.6.tgz#65f3e9cbfb44f5b6db9e6c70c9cc54891297f4b1"
+  integrity sha512-DMeu71qTrcLpSRhgGqAm1Seq+PBw+Aq0BuS2GIYwg8j2WIGo65oB4yRpPgcRQ0OVS1UUOiv8u64+AgiFzCpyOA==
+
 parent-module@^1.0.0:
   version "1.0.1"
   resolved "https://registry.yarnpkg.com/parent-module/-/parent-module-1.0.1.tgz#691d2709e78c79fae3a156622452d00762caaaa2"
@@ -8259,6 +8264,11 @@ supports-hyperlinks@^2.0.0:
   dependencies:
     has-flag "^4.0.0"
     supports-color "^7.0.0"
+
+svelte@^3.23.2:
+  version "3.23.2"
+  resolved "https://registry.yarnpkg.com/svelte/-/svelte-3.23.2.tgz#f3e500384261a2e77b29681ee744c3c790fbcdc3"
+  integrity sha512-hE8GeTM83YVR4GY6/6PeDEcGct4JS5aCi+IYbCAa76oaPSfuF7L85DQYULQxlTK/KPWzw3L1GRGmC3oPG/PQoA==
 
 svgo@^1.0.0, svgo@^1.3.2:
   version "1.3.2"

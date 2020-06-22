@@ -119,6 +119,30 @@ const Stage = stampit(
        */
       delete this.entities[uuid]
     },
+    
+    
+    /**
+     * Wait for an entity to be added to the stage. Normally, it shouldn't take more then a few milliseconds.
+     * 
+     * @param {string} uuid - the UUID of the entity to wait for
+     * @param {number} maxWait - the maximum number of milliseconds to wait
+     * @param {Function} condition - an optional additional condition to be met
+     */
+    async awaitEntity ({ uuid, maxWait = 10000, condition = null }) {
+      const startTime = Date.now()
+      return new Promise((resolve, reject) => {
+        const intervalId = setInterval(() => {
+          if (uuid in this.entities && (condition === null || condition(this.entities[uuid]))) {
+            clearInterval(intervalId)
+            resolve(this.entities[uuid])
+          } else if (Date.now() - startTime > maxWait) {
+            clearInterval(intervalId)
+            reject(`Unable to add entity to scene, waited ${maxWait} milliseconds (UUID: '${uuid}')`)
+          }
+        }, 10)
+      })
+    },
+
 
     forEachEntity(fn) {
       Object.values(this.entities).forEach(fn)
@@ -216,6 +240,17 @@ const Stage = stampit(
     disableEditorMode() {
       this.editorMode = false
       this.setDefaultFovRange()
+    },
+  
+  
+    // At various times, we need to set focus on the game so that character directional controls work
+    focusOnGame() {
+      this.renderer.domElement.focus()
+    },
+    
+    // Focus on the "What's on your mind?" thought bar at the bottom
+    focusOnInput() {
+      document.getElementById('input').focus()
     },
     
     /**
