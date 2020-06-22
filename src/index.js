@@ -173,26 +173,6 @@ const start = async () => {
   const sortByZ = (a, b) => (a.object.position.z - b.object.position.z)
   
   // The player!
-  // player.on('thoughtBubbleAction', (thought) => {
-  //   mostRecentlyCreatedObjectId = uuidv4()
-  //   const position = Object.assign({}, player.state.position.now)
-  //   const diamond = InteractionDiamond({
-  //     uuid: mostRecentlyCreatedObjectId,
-  //     type: 'diamond',
-  //     link: thought,
-  //     position,
-  //   })
-  //   diamond.object.position.copy(position)
-  //   // Make it about chest-height by default
-  //   diamond.state.position.target.y += 100
-  //   diamond.state.position.target.x += 100
-  //   network.setEntity(diamond)
-    
-  //   player.setThought(null)
-  // })
-  // player.videoBubble.object.createDomElement()
-  // player.videoBubble.object.on('mute', muteAudio)
-  // player.videoBubble.object.on('unmute', unmuteAudio)
   
   
   player = stage.player = await stage.awaitEntity({ uuid: playerId })
@@ -202,6 +182,21 @@ const start = async () => {
   player.videoBubble.object.on('unmute', unmuteAudio)
   player.labelObj.setOnLabelChanged((text) => {
     player.goals.label.update({ text })
+  })
+  player.on('thoughtBubbleAction', (thought) => {
+    const pos = player.object.position
+    network.permanents.create({
+      type: 'diamond',
+      goals: {
+        diamond: { open: true, text: thought },
+        position: {
+          x: pos.x + 60,
+          y: pos.y + 80,
+          z: pos.z,
+        }
+      }
+    })
+    player.clearThought()
   })
   
   const playerJSON = localstoreRestore(playerId)
