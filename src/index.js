@@ -197,6 +197,9 @@ const start = async () => {
   
   player = stage.player = await stage.awaitEntity({ uuid: playerId })
   player.autonomous = false
+  player.videoBubble.object.createDomElement()
+  player.videoBubble.object.on('mute', muteAudio)
+  player.videoBubble.object.on('unmute', unmuteAudio)
   player.labelObj.setOnLabelChanged((text) => {
     player.goals.label.update({ text })
   })

@@ -25,6 +25,10 @@ const HasThoughtBubble = stampit(Entity, Component, EventEmittable, {
     setThought(text) {
       this.goals.thought.update({ text: text === "" ? null : text })
     },
+    
+    clearThought() {
+      this.setThought(null)
+    },
 
     getThought() {
       return this.goals.thought.get('text')
