@@ -5,7 +5,7 @@ import { PhotoMaterial } from '../materials/photo_material.js'
 import { defineGoal } from '../goals/goal.js'
 
 const IMAGE_DEFAULT_COLOR = 0xFFFFFF
-const IMAGE_DEFAULT_ALPHA_TEST = 0.2
+const IMAGE_DEFAULT_ALPHA_TEST = 0.05
 
 const UsesAssetAsImage = stampit(Component, {
   deepStatics: {
