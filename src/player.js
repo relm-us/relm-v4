@@ -46,7 +46,8 @@ const FOLLOW_TARGET_SUFFICIENT_TIME = 5000.0
 
 const FollowsTarget2 = stampit(Component, {
   init() {
-    this._addVector = new THREE.Vector3()   
+    this._willVector = new THREE.Vector3()   
+    this._forceVector = new THREE.Vector3()   
     this._followsTargetDebug = false
     this.autonomous = true
 
@@ -88,7 +89,11 @@ const FollowsTarget2 = stampit(Component, {
     },
     
     addPosition(vector) {
-      this._addVector.add(vector)
+      this._willVector.add(vector)
+    },
+    
+    forceDirection(vector) {
+      this._forceVector.add(vector)
     },
     
     getDistanceToTarget() {
@@ -112,13 +117,27 @@ const FollowsTarget2 = stampit(Component, {
       this._goalPos.rotation.z = this.goals.rotation.get('z')
 
       // Normalize the target so that pursuit is of an even speed in all directions
-      this._addVector.normalize()
-      this._addVector.multiplyScalar(FOLLOW_TARGET_DISTANCE_AHEAD)
+      this._willVector.normalize()
+      this._willVector.multiplyScalar(FOLLOW_TARGET_DISTANCE_AHEAD)
       this._target.position.copy(this.object.position)
-      this._target.position.add(this._addVector)
+      this._target.position.add(this._willVector)
+      
+      const dueAt = ServerDate.now() + FOLLOW_TARGET_SUFFICIENT_TIME
+      let addedForce = false
+      if (this._forceVector.length() > 0.1) {
+        addedForce = true
+        const pos = new THREE.Vector3()
+        pos.copy(this._target.position)
+        pos.add(this._forceVector)
+        this._target.position.lerp(pos, 0.2)
+        this.goals.position.update({
+          x: this._target.position.x,
+          y: this._target.position.y,
+          z: this._target.position.z,
+        }, dueAt)
+      }
       
       // See if we need to update the position as the target is followed
-      const dueAt = ServerDate.now() + FOLLOW_TARGET_SUFFICIENT_TIME
       const goalToTargetDist = this._goalPos.position.distanceTo(this._target.position)
       if (goalToTargetDist > FOLLOW_TARGET_DISTANCE_AHEAD/2) {
         this.goals.position.update({
@@ -133,7 +152,7 @@ const FollowsTarget2 = stampit(Component, {
       this._source.lookAt(this._target.position)
       const sourceToTargetDist = this._source.position.distanceTo(this._target.position)
       const angle = this._goalPos.quaternion.angleTo(this._source.quaternion)
-      if (sourceToTargetDist > 1.0 && angle > 0.01) {
+      if (!addedForce && sourceToTargetDist > 1.0 && angle > 0.01) {
         this.goals.rotation.update({
           x: this._source.rotation.x,
           y: this._source.rotation.y,
@@ -142,7 +161,8 @@ const FollowsTarget2 = stampit(Component, {
       }
       
       // Reset the addVector so that the next frame's calls to addPosition will start from origin
-      this._addVector.set(0, 0, 0)
+      this._willVector.set(0, 0, 0)
+      this._forceVector.set(0, 0, 0)
     }
   }
 })

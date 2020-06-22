@@ -13,7 +13,7 @@ import { RoughCircleBufferGeometry } from './geometries/rough_circle_geometry.js
 const GROUND_ROUGH_CIRCLE_VARIATION = 20
 const GROUND_BOUNDS_BUFFER_SIZE = 150
 const GROUND_BOUNDS_SMIDGE = 25
-const GROUND_ADD_POSITION = 100
+const GROUND_ADD_POSITION = 120
 
 const UsesAssetAsGround = stampit(Component, {
   deepStatics: {
@@ -103,9 +103,8 @@ const UsesAssetAsGround = stampit(Component, {
         const vec = new THREE.Vector3()
         vec.copy(this.object.position)
         vec.sub(player.object.position)
-        vec.normalize()
-        vec.multiplyScalar(GROUND_ADD_POSITION)
-        player.addPosition(vec)
+
+        player.forceDirection(vec)
       }
     },
 
