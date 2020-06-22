@@ -255,11 +255,10 @@
     </div>
 
     
-    <h2>Import / Export</h2>
+    <h2>Edit (Import / Export)</h2>
     
     <div>
-      <div class="p">Export the world, or just the selected objects:<pre>/export</pre>(Then copy the JSON)</div>
-      <div class="p">Import into the world:<pre>/import</pre>(Then paste exported JSON in to the box)</div>
+      <div class="p">Select some objects and either right-click or:<pre>/edit</pre> You can copy/paste or modify world state this way.</div>
     </div>
     
     
