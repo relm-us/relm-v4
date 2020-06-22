@@ -10,24 +10,33 @@
 
   const cfg = config(window.location)
   
-  let state
+  let isOpen
   let text
-  let exportSelectedOnly = true
 
   exportImportState.subscribe(value => {
-    state = value
+    isOpen = value
   })
+  
+  
+  function clearText() {
+    text = ''
+  }
+  
+  function exportSelected() {
+    text = JSON.stringify(exportRelm(stage, network, true, cfg.ROOM), null, 2)
+  }
+
 
   function closeWindow() {
-    exportImportState.update(() => null)
+    exportImportState.update(() => false)
   }
 
   function handleClose() {
     closeWindow()
     stage.focusOnGame()
   }
-  
-  function handleImport() {
+
+  function handleImport(event) {
     let data
     try {
       data = JSON.parse(text)
@@ -36,18 +45,22 @@
       return
     }
     
-    closeWindow()
     const objectCount = importRelm(network, data)
-    showToast(`Imported ${objectCount} objects into this arelm.`)
+    showToast(`Imported ${objectCount} objects into this relm.`)
+    
+    handleClose()
+    event.stopPropagation()
   }
   
-  $: switch (state) {
-    case 'import':
-      text = ''
-      break
-    case 'export':
-      text = JSON.stringify(exportRelm(stage, network, exportSelectedOnly, cfg.ROOM), null, 2)
-      break
+  function handleKeydown(event) {
+    if (isOpen && event.keyCode === 27) {
+      handleClose()
+      event.stopPropagation()
+    }
+  }
+  
+  $: if (isOpen) {
+    exportSelected()
   }
 </script>
 
@@ -64,7 +77,7 @@
   z-index: 4;
   background-color: #fff;
 }
-.import-export > textarea {
+textarea {
   resize: none;
   flex-grow: 1;
   padding: 15px;
@@ -74,43 +87,43 @@
 .import-export > .button-panel {
   margin: 10px 15px;
   display: flex;
+  justify-content: space-between;
+}
+
+.button-panel-wrap-left {
+  display: flex;
+  justify-content: flex-start;
+}
+
+.button-panel-wrap-right {
+  display: flex;
   justify-content: flex-end;
 }
-.import-export .button {
+
+.button {
   margin-left: 10px;
-}
-.import-export input[type=checkbox] {
-  width: 35px;
-  height: 35px;
-}
-.import-export .export-only-selected {
-  display: flex;
-  align-items: center;
-  margin-right: 30px;
 }
 </style>
 
+<svelte:window on:keydown|capture={handleKeydown}/>
 
 <div
   class="import-export"
-  class:hide={ state === null }
+  class:hide={ !isOpen }
 >
   <textarea value={ text } on:input={ (e) => { text = e.target.value }}></textarea>
   
   <div class="button-panel">
   
-  {#if state === 'import'}
-    <button class="button" on:click={ handleImport }>Import into this relm</button>
-    <button class="button" on:mouseup|capture|stopPropagation={ handleClose }>Close</button>
-  {:else if state === 'export'}
-    <div class="export-only-selected">
-      <input type="checkbox" id="export-only-selected-checkbox" bind:checked={ exportSelectedOnly }>
-      <label for="export-only-selected-checkbox">Export Selected Objects Only</label>
+    <div class="button-panel-wrap-left">
+      <button class="button" on:click={ clearText }>Clear Editor</button>
+      <button class="button" on:click={ exportSelected }>Reset Editor</button>
     </div>
-    <button class="button" on:mouseup|capture|stopPropagation={ handleClose }>Close</button>
-  {:else}
-    Error: state is {state}
-  {/if}
+    
+    <div class="button-panel-wrap-right">
+      <button class="button" on:click={ handleImport }>Save</button>
+      <button class="button" on:mouseup|capture|stopPropagation={ handleClose }>Close</button>
+    </div>
   
   </div>
   

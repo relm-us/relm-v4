@@ -1,6 +1,6 @@
 import { writable } from 'svelte/store'
 
-export const exportImportState = writable(null)
+export const exportImportState = writable(false)
 
 export const chooseAvatarState = writable(false)
 

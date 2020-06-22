@@ -171,8 +171,10 @@ const Goal = stampit(EventEmittable, {
       this.achieved = this.equals(value)
     },
 
-    toJSON() {
-      return this._map.toJSON()
+    toJSON(hideDue = false) {
+      const json = this._map.toJSON()
+      if (hideDue) { delete json['@due'] }
+      return json
     },
   }
 })

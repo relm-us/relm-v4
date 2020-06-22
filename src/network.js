@@ -99,12 +99,9 @@ const Document = stampit({
               ymapState = new Y.Map()
               ymap.set(goalAbbrev, ymapState)
             }
+            goalState['@due'] = instantaneous ? 0 : ServerDate.now() + 5000
             for (const [k, v] of Object.entries(goalState)) {
-              if (k === '@due') {
-                ymapState.set('@due', instantaneous ? 0 : ServerDate.now() + 2000)
-              } else {
-                ymapState.set(k, v)
-              }
+              ymapState.set(k, v)
             }
           }
         }

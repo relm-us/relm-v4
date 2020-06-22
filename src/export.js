@@ -9,7 +9,8 @@ const exportRelm = (stage, network, selectedOnly, room) => {
   
   Array.from(uuids).forEach(uuid => {
     const entity = stage.entities[uuid]
-    allObjects[uuid] = entity.goals.toJSON()
+    const json = entity.goals.toJSON(true)
+    allObjects[uuid] = json
   })
   return {
     "relm": room,

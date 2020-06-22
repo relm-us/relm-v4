@@ -3,7 +3,6 @@ import { guestNameFromPlayerId, avatarOptionFromPlayerId, avatarOptionsOfGender 
 import { Security } from './security.js'
 import { initializeAVChat, muteAudio, unmuteAudio } from './avchat.js'
 import { normalizeWheel } from './lib/normalizeWheel.js'
-import { showToast } from './lib/Toast.js'
 import { showInfoAboutObject } from './show_info_about_object.js'
 import "toastify-js/src/toastify.css"
 
@@ -38,9 +37,8 @@ import { GoalGroup } from './goals/goal_group.js'
 import { addManifestTo } from './manifest_loaders.js'
 import { runCommand, importExportState } from './commands.js'
 import { recordCoords } from './record_coords.js'
-import { IMAGE_FILETYPE_RE, GLTF_FILETYPE_RE } from './components/loads_asset.js'
 
-import { pressTabHelpState } from './svelte/stores.js'
+import { pressTabHelpState, exportImportState } from './svelte/stores.js'
 
 import {
   KEY_UP, KEY_DOWN, KEY_LEFT, KEY_RIGHT,
@@ -467,13 +465,19 @@ const start = async () => {
     let intersections = stage.intersectionFinder.getAllIntersectionsOnStage()
     if (intersections.length > 0) {
       const clickedEntity = intersections[0].entity
-      showInfoAboutObject(clickedEntity)
+      stage.selection.select([clickedEntity], '=')
+      
+      // Provide a slight delay so user can visually confirm that they
+      // selected the thing they thought they did
+      setTimeout(() => {
+        exportImportState.update(() => true)
+      }, 300)
     }
     event.preventDefault()
   })
   
   const kbController = stage.create('keycon', { target: player })
-  document.addEventListener('keydown', e => {
+  window.addEventListener('keydown', e => {
     
     if (e.target === stage.renderer.domElement) {
       if (e.keyCode === KEY_BACK_SPACE || e.keyCode === KEY_DELETE) {

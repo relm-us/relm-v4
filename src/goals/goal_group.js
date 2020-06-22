@@ -2,7 +2,7 @@ import stampit from 'stampit'
 import * as Y from 'yjs'
 
 import { Goal } from './goal.js'
-import { req, mapToObject } from '../util.js'
+import { req } from '../util.js'
 
 const GoalGroup = stampit({
   statics: {
@@ -139,8 +139,14 @@ const GoalGroup = stampit({
       return desc
     },
 
-    toJSON() {
-      return mapToObject(this._map)
+    toJSON(hideDue = false) {
+      const json = this._map.toJSON()
+      if (hideDue) {
+        for (const [goalAbbrev, goalState] of Object.entries(json)) {
+          delete goalState['@due']
+        }
+      }
+      return json
     }
   }
 })

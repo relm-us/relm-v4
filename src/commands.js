@@ -258,14 +258,9 @@ const commands = {
       default: throw Error(`Is ${subCommand} a '/diamond' subcommand?`)
     }
   },
-  export: (args) => {
+  edit: (args) => {
     return (env) => {
-      exportImportState.update(() => 'export')
-    }
-  },
-  import: (args) => {
-    return (env) => {
-      exportImportState.update(() => 'import')
+      exportImportState.update(() => true)
     }
   },
   go: (args) => {
