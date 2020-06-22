@@ -385,6 +385,8 @@ const start = async () => {
   
   window.addEventListener('mouseup', (event) => {
     if (event.target.id !== 'game' && event.target.id !== 'glcanvas') { return }
+    // must be left-click
+    if (event.button !== 0) { return }
     
     if (!dragLock) {
       // Did player click on something with an onClick callback?
@@ -465,9 +467,16 @@ const start = async () => {
     let intersections = stage.intersectionFinder.getAllIntersectionsOnStage()
     if (intersections.length > 0) {
       const clickedEntity = intersections[0].entity
-      stage.selection.select([clickedEntity], '=')
       
-      // Provide a slight delay so user can visually confirm that they
+      if (stage.selection.has(clickedEntity)) {
+        // Don't modify the selection, keep it as-is
+        console.log("already has")
+      } else {
+        // If player right-clicked on something that wasn't selected, select it
+        stage.selection.select([clickedEntity], '=')
+      }
+      
+      // Provide a slight delay so player can visually confirm that they
       // selected the thing they thought they did
       setTimeout(() => {
         exportImportState.update(() => true)

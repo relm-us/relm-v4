@@ -43,6 +43,10 @@ const Selection = stampit({
       return removed
     },
 
+    has(entity) {
+      return this.selected.has(entity)
+    },
+
     /**
      * Selects an array of entities, either by addition, subtraction, or by replacing.
      * 
