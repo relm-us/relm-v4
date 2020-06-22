@@ -9,15 +9,19 @@ import { Stage } from './stage.js'
  * @returns {Object}
  */
 function config(location) {
+  let ENV
   let SERVER_YJS_URL
   let SERVER_UPLOAD_URL
   if (location.origin === 'https://relm.us') {
+    ENV = 'p'
     SERVER_YJS_URL = 'wss://y.relm.us'
     SERVER_UPLOAD_URL = 'https://y.relm.us/asset'
   } else if (location.origin === 'https://staging.relm.us') {
+    ENV = 's'
     SERVER_YJS_URL = 'wss://y-staging.relm.us'
     SERVER_UPLOAD_URL = 'https://y-staging.relm.us/asset'
   } else {
+    ENV = 'l'
     SERVER_YJS_URL = `ws://${location.hostname}:1235`
     SERVER_UPLOAD_URL = `http://${location.hostname}:1235/asset`
   }
@@ -50,6 +54,7 @@ function config(location) {
   window.config = {
     SERVER_YJS_URL,
     SERVER_UPLOAD_URL,
+    ENV,
     ROOM,
     LANDING_COORDS,
     SINGLE_PLAYER_MODE,

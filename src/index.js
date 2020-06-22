@@ -555,7 +555,7 @@ const start = async () => {
   })
   
 
-  initializeAVChat(player.uuid, 'relm-' + cfg.ROOM + (cfg.SINGLE_PLAYER_MODE ? `-${playerId}` : ''), {
+  initializeAVChat(player.uuid, 'relm-' + cfg.ENV + '-' + cfg.ROOM + (cfg.SINGLE_PLAYER_MODE ? `-${playerId}` : ''), {
     onMuteChanged: (track, playerId) => {
       const muted = track.isMuted()
       const otherPlayer = stage.entities[playerId]
