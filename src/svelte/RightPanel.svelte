@@ -45,6 +45,11 @@
   display: flex;
   flex-direction: column;
   align-items: flex-end;
+  
+  pointer-events: none;
+}
+#right-panel > * {
+  pointer-events: all;
 }
 
 
