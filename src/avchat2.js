@@ -170,7 +170,7 @@ function onUserLeft(participant) {
  * That function is called when connection is established successfully
  */
 function onConnectionSuccess(context) {
-    room = connection.initJitsiConference('conference', {
+    room = connection.initJitsiConference(context.room, {
       openBridgeChannel: true
     });
     
@@ -304,7 +304,7 @@ async function initJitsiMeet(context) {
       useStunTurn: true
     },
     useStunTurn: true,
-    bosh: `https://meet.jit.si/http-bind?room=${room}`,
+    bosh: `https://meet.jit.si/http-bind?room=${context.room}`,
     websocket: 'wss://meet.jit.si/xmpp-websocket',
     clientNode: 'http://jitsi.org/jitsimeet',
   })
@@ -356,7 +356,7 @@ async function initJitsiMeet(context) {
 
 
 function initializeAVChat(context) {
-  console.log('initialized with chat room', room)
+  console.log('initialized with chat room', context.room)
   const intervalId = setInterval(() => {
     // Wait for JitsiMeetJS to be asynchronously, externally loaded
     if (window.JitsiMeetJS) {

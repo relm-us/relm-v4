@@ -25,7 +25,7 @@ const getLoaderFromUrl = (url) => {
   } else if (url.match(GLTF_FILETYPE_RE)) {
     return regularGLTFLoader
   } else {
-    throw Error(`Can't match loader for asset at URL '${url}'`)
+    console.warn(`Can't match loader for asset at URL '${url}'`)
   }
 }
 
