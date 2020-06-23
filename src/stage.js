@@ -83,7 +83,7 @@ const Stage = stampit(
         console.warn(`Entity already on stage, skipping 'add'`, entity)
         return entity
       }
-      console.log(`Adding entity '${entity.type}' [${entity.uuid}] to stage`, entity)
+      // console.log(`Adding entity '${entity.type}' [${entity.uuid}] to stage`, entity)
       this.entities[entity.uuid] = entity
       if (typeof entity.setup === 'function') {
         entity.setup()

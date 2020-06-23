@@ -1,7 +1,7 @@
 // Import external libraries and helpers
 import { guestNameFromPlayerId, avatarOptionFromPlayerId, avatarOptionsOfGender } from './avatars.js'
 import { Security } from './security.js'
-import { initializeAVChat, muteAudio, unmuteAudio } from './avchat.js'
+import { initializeAVChat, muteAudio, unmuteAudio, switchVideo } from './avchat2.js'
 import { normalizeWheel } from './lib/normalizeWheel.js'
 import { showInfoAboutObject } from './show_info_about_object.js'
 import "toastify-js/src/toastify.css"
@@ -69,7 +69,7 @@ const start = async () => {
   // Initialize network first so that entities can send their initial state
   // even before we've connected to server (or eventually, peers)
   network.on('add', async (goalGroupMap, isTransient) => {
-    console.log('network.on add', goalGroupMap.toJSON())
+    // console.log('network.on add', goalGroupMap.toJSON())
     
     // Get the stamp that has registered itself as a named, matching type
     const typeName = goalGroupMap.get('@type')
@@ -177,9 +177,15 @@ const start = async () => {
   
   player = stage.player = await stage.awaitEntity({ uuid: playerId })
   player.autonomous = false
-  player.videoBubble.object.createDomElement()
-  player.videoBubble.object.on('mute', muteAudio)
-  player.videoBubble.object.on('unmute', unmuteAudio)
+  const vidobj = player.videoBubble.object
+  vidobj.createDomElement()
+  vidobj.on('mute', muteAudio)
+  vidobj.on('unmute', unmuteAudio)
+  vidobj.setOnClick(() => {
+    const isVideo = switchVideo()
+    vidobj.setMirrored(isVideo)
+    vidobj.setCircular(isVideo)
+  })
   player.labelObj.setOnLabelChanged((text) => {
     player.goals.label.update({ text })
   })
@@ -555,7 +561,9 @@ const start = async () => {
   })
   
 
-  initializeAVChat(player.uuid, 'relm-' + cfg.ENV + '-' + cfg.ROOM + (cfg.SINGLE_PLAYER_MODE ? `-${playerId}` : ''), {
+  initializeAVChat({
+    playerId: player.uuid,
+    room: 'relm-' + cfg.ENV + '-' + cfg.ROOM + (cfg.SINGLE_PLAYER_MODE ? `-${playerId}` : ''),
     onMuteChanged: (track, playerId) => {
       const muted = track.isMuted()
       const otherPlayer = stage.entities[playerId]

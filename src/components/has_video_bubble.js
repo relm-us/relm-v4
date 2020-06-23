@@ -13,6 +13,9 @@ const WithVideoBubble = stampit(EventEmittable, {
     this.muteButton = null
     this.muted = false
     this.diameter = diameter || 100
+
+    this.onClick = null
+    this._circular = true
   },
   
   methods: {
@@ -28,6 +31,29 @@ const WithVideoBubble = stampit(EventEmittable, {
         this.domElement.classList.add('hide')
         this.domElement.classList.remove('show')
       }
+    },
+
+    setMirrored(mirrored) {
+      if (!this.video) return
+      if (mirrored) {
+        this.video.classList.add('mirror')
+      } else {
+        this.video.classList.remove('mirror')
+      }
+    },
+    
+    setOnClick(fn) {
+      this.onClick = fn
+    },
+
+    setCircular(circular) {
+      if (circular) {
+        this.circle.classList.remove('rect')
+      } else {
+        this.circle.classList.add('rect')
+      }
+      this._circular = circular
+      this.setVideoElementSize()
     },
     
     setDiameter(d) {
@@ -67,11 +93,18 @@ const WithVideoBubble = stampit(EventEmittable, {
           video.style.width = `${this.diameter}px`
           video.style.height = `${this.diameter * h / w}px`
         }
-        circle.style.width = `${this.diameter}px`
-        circle.style.height = `${this.diameter}px`
+        
+        if (this._circular) {
+          circle.style.width = `${this.diameter}px`
+          circle.style.height = `${this.diameter}px`
+        } else {
+          circle.style.width = video.style.width
+          circle.style.height = video.style.height
+        }
         // circle.style.borderRadius = `${this.diameter/2}px`
       }
     },
+
     
     createDomElement() {
       if (this.domElement) {
@@ -104,6 +137,9 @@ const WithVideoBubble = stampit(EventEmittable, {
       const wrapper = this.domElement = document.createElement('div')
       wrapper.classList.add('video-wrapper')
       wrapper.addEventListener('mousedown', (event) => {
+        if (this.onClick) {
+          this.onClick()
+        }
         event.preventDefault()
       })
       

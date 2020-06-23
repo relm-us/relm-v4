@@ -229,7 +229,7 @@ function synchronize() {
       sample = new Offset(serverNow + precision - responseTime,
         precision);
 
-    log("sample: " + iteration + ", offset: " + String(sample));
+    // log("sample: " + iteration + ", offset: " + String(sample));
 
     // Remember the best sample so far.
     if ((iteration == 1) || (precision <= best.precision))
