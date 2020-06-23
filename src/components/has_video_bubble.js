@@ -47,6 +47,7 @@ const WithVideoBubble = stampit(EventEmittable, {
     },
 
     setCircular(circular) {
+      if (!this.circle) return
       if (circular) {
         this.circle.classList.remove('rect')
       } else {

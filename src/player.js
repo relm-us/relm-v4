@@ -186,7 +186,8 @@ const Player = stampit(
   stampit(Component, {
     deepStatics: {
       goalDefinitions: {
-        color: defineGoal('clr', { r: 1.0, g: 1.0, b: 1.0 })
+        color: defineGoal('clr', { r: 1.0, g: 1.0, b: 1.0 }),
+        video: defineGoal('vid', { circ: true }),
       }
     },
 
@@ -206,6 +207,12 @@ const Player = stampit(
           )
           this.setLabelUnderlineColor(color)
           colorGoal.markAchieved()
+        }
+        
+        const videoGoal = this.goals.video
+        if (!videoGoal.achieved) {
+          this.videoBubble.object.setCircular(this.goals.video.get('circ'))
+          videoGoal.markAchieved()
         }
       }
     }

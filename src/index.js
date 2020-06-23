@@ -184,7 +184,7 @@ const start = async () => {
   vidobj.setOnClick(() => {
     const isVideo = switchVideo()
     vidobj.setMirrored(isVideo)
-    vidobj.setCircular(isVideo)
+    player.goals.video.update({ circ: isVideo })
   })
   player.labelObj.setOnLabelChanged((text) => {
     player.goals.label.update({ text })
