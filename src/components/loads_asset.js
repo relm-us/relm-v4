@@ -45,6 +45,7 @@ const LoadsAsset = stampit(Component, EventEmittable, {
       const url = this.goals.asset.get('url')
       if (url) {
         const loader = getLoaderFromUrl(url)
+        if (!loader) return
         this.asset = loader.load(url, (asset) => {
           this.emit('asset-loaded', asset, url)
         })
