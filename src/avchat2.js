@@ -52,7 +52,7 @@ function onLocalTracks(tracks, context) {
         } else {
             const audioElement = document.createElement('audio')
             audioElement.id = `localAudio${i}`
-            audioElement.muted = true
+            // audioElement.muted = true
             document.body.appendChild(audioElement)
             localTracks[i].attach(audioElement)
             
