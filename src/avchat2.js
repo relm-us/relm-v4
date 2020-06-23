@@ -91,6 +91,14 @@ function onRemoteTrack(track, context) {
         deviceId =>
             console.log(
                 `track audio output device was changed to ${deviceId}`));
+    if (context.onMuteChanged) {
+      track.addEventListener(
+        JitsiMeetJS.events.track.TRACK_MUTE_CHANGED,
+        (track) => {
+          context.onMuteChanged(track, participant.playerId)
+        }
+      )
+    } 
     
     const id = participantId + track.getType() + participant.trackIndex;
 
@@ -110,12 +118,16 @@ function onRemoteTrack(track, context) {
     } else {
         const audioElement = document.createElement('audio')
         audioElement.id = id
+        audioElement.autoplay = true
         document.body.appendChild(audioElement)
         track.attach(audioElement)
         
         // $('body').append(
         //     `<audio autoplay='1' id='${participant}audio${idx}' />`);
     }
+
+
+  
 }
 
 /**
