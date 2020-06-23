@@ -123,6 +123,23 @@ const HasAnimationMixer = stampit(Component, {
           console.error('Unable to find AnimationClip for action', action)
         }
       }
+      
+      this._setBoundingBoxHack()
+    },
+    
+    /**
+     * Because FBX-imported animations seem to cause the bounding box around the player to be Very Wrong
+     * (i.e. just a pixel or so at the base of the player's feet), we need a hack to tell the culler
+     * to not remove the player when they go off screen.
+     * 
+     * See https://github.com/mrdoob/three.js/issues/18334 for ongoing discussion.
+     */
+    _setBoundingBoxHack() {
+      this.object.traverse(o => {
+        if (o.isMesh) {
+          o.frustumCulled = false
+        }
+      })
     },
 
     update(delta) {
