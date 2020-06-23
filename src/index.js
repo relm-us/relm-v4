@@ -489,7 +489,7 @@ const start = async () => {
     event.preventDefault()
   })
   
-  const kbController = stage.create('keycon', { target: player })
+  const kbController = stage.kbController = stage.create('keycon', { target: player })
   window.addEventListener('keydown', e => {
     
     if (e.target === stage.renderer.domElement) {
