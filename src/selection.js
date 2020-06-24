@@ -10,11 +10,28 @@ const Selection = stampit({
     this.stage = stage
     this.selected = new Set()
     this.savedPositions = new Map()
+    this._clipboard = []
   },
 
   methods: {
     getAllEntities() {
       return Array.from(this.selected)
+    },
+    
+    copy() {
+      this._clipboard = this.getAllEntities().map(entity => {
+        return {
+          id: entity.uuid,
+          type: entity.type,
+          desc: entity.goals.toDesc()
+        }
+      })
+    },
+    
+    paste(networkDocument, { x, y, z }) {
+      this._clipboard.forEach(({ id, type, desc }) => {
+        networkDocument.create({ type, goals: desc })
+      })
     },
 
     hasAtLeast(n) {

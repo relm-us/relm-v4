@@ -3,7 +3,6 @@ import { guestNameFromPlayerId, avatarOptionFromPlayerId, avatarOptionsOfGender 
 import { Security } from './security.js'
 import { initializeAVChat, muteAudio, unmuteAudio, switchVideo } from './avchat2.js'
 import { normalizeWheel } from './lib/normalizeWheel.js'
-import { showInfoAboutObject } from './show_info_about_object.js'
 import "toastify-js/src/toastify.css"
 
 
@@ -41,11 +40,9 @@ import { recordCoords } from './record_coords.js'
 import { pressTabHelpState, exportImportState } from './svelte/stores.js'
 
 import {
-  KEY_UP, KEY_DOWN, KEY_LEFT, KEY_RIGHT,
-  KEY_W, KEY_A, KEY_S, KEY_D, KEY_Q, KEY_E,
-  KEY_SPACE, KEY_TAB, KEY_RETURN, KEY_ESCAPE,
-  KEY_BACK_SLASH, KEY_SLASH,
-  KEY_BACK_SPACE, KEY_DELETE
+  KEY_A, KEY_C, KEY_V,
+  KEY_TAB, KEY_ESCAPE,
+  KEY_SLASH, KEY_BACK_SPACE, KEY_DELETE
 } from 'keycode-js'
 
 import App from './svelte/App.svelte'
@@ -511,6 +508,15 @@ const start = async () => {
       else if (e.keyCode === KEY_A && (e.ctrlKey || e.metaKey)) {
         runCommandSimple('select all')
         e.preventDefault()
+      }
+      // Support `ctrl+C` and `cmd+C` for copy
+      else if (e.keyCode === KEY_C && (e.ctrlKey || e.metaKey)) {
+        runCommandSimple('select copy')
+        e.preventDefault()
+      }
+      // Support `ctrl+V` and `cmd+V` for copy
+      else if (e.keyCode === KEY_V && (e.ctrlKey || e.metaKey)) {
+        runCommandSimple('select paste')
       }
       // Make it easier to type '/object` and all the other commands
       else if (e.keyCode === KEY_SLASH /* Forward Slash */) {

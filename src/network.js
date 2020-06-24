@@ -69,7 +69,7 @@ const Document = stampit({
           goalsDesc: goals
         })
       })
-      console.log('created', type, uuid, 'goals', goals, 'definitions', Type.goalDefinitions, 'ymap', ymap.toJSON())
+      // console.log('created', type, uuid, 'goals', goals, 'definitions', Type.goalDefinitions, 'ymap', ymap.toJSON())
     },
 
     fromJSON(json, instantaneous = false) {
