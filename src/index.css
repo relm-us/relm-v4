@@ -318,7 +318,7 @@
   position: relative;
   z-index: 1;
 }
-.video-circle.rect {
+.video-circle.desktop {
   border-radius: 0 !important;
 }
 .video-feed {

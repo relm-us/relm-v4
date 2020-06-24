@@ -356,7 +356,7 @@ const commands = {
           for (let i = 0; i < count; i++) {
             goalsDesc.position.x += 25
             goalsDesc.position.z += 25
-            network.permanents.create({ type: entity.goals.type, goals: goalsDesc })
+            env.network.permanents.create({ type: entity.goals.type, goals: goalsDesc })
           }
           return true /* add to success count */
         })
@@ -364,7 +364,7 @@ const commands = {
       
 
       case 'delete': return actionToEachObject((entity, env) => {
-        network.permanents.remove(entity.uuid)
+        env.network.permanents.remove(entity.uuid)
         return true /* add to success count */
       })
       
@@ -630,6 +630,12 @@ const commands = {
       case 'none': return conditionallySelectAll('-', (entity) => !entity.isEffectivelyUiLocked())
       case 'locked': return conditionallySelectAll('+', (entity) => entity.isUiLocked())
       case 'unlocked': return conditionallySelectAll('+', (entity) => !entity.isUiLocked())
+      case 'copy': return (env) => {
+        env.stage.selection.copy()
+      }
+      case 'paste': return (env) => {
+        env.stage.selection.paste(env.network.permanents, env.position)
+      }
       default: throw Error(`Is ${subCommand} a '/sign' subcommand?`)
     }
   },

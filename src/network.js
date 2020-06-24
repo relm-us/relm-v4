@@ -69,7 +69,7 @@ const Document = stampit({
           goalsDesc: goals
         })
       })
-      console.log('created', type, uuid, 'goals', goals, 'definitions', Type.goalDefinitions, 'ymap', ymap.toJSON())
+      // console.log('created', type, uuid, 'goals', goals, 'definitions', Type.goalDefinitions, 'ymap', ymap.toJSON())
     },
 
     fromJSON(json, instantaneous = false) {
@@ -125,7 +125,7 @@ const TransientDocument = stampit(Document, {
   },
 
   methods: {
-    installInterceptors(entity, abbrevs = ['p', 'r', 'spd', 'ans']) {
+    installInterceptors(entity, abbrevs = ['p', 'r', 'spd', 'ans', 'vid']) {
       this._cachedAwarenessState[entity.uuid] = {}
       abbrevs.forEach(goalAbbrev => {
         if (entity.goals.has(goalAbbrev)) {

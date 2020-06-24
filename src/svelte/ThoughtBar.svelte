@@ -10,10 +10,10 @@
   
   export let stage
   export let network
+
+  let thought = null
   
   const cfg = config(window.location)
-
-  console.log("THOUGHT BAR")
 
   // Allow TAB and ESC keys to switch from text input to game view
   const handleKeydown = (e) => {
@@ -28,23 +28,31 @@
       stage.focusOnGame()
     } else if (e.keyCode === KEY_RETURN) {
       if (text.substring(0,1) === '/') {
-        runCommand(text.substring(1), { network, stage, cfg })
+        thought = text.substring(1)
+        runCommand(thought, { network, stage, cfg })
         e.target.value = ''
         stage.focusOnGame()
       } else if (text !== '') {
+        thought = text
         // Before focusing back on the game, make a thought bubble, and clear the text
         stage.player.setThought(text)
         e.target.value = ''
       } else {
         stage.focusOnGame()
       }
+    } else if (e.keyCode === KEY_UP) {
+      e.target.value = thought
+      setTimeout(() => {
+        e.target.focus()
+        e.target.setSelectionRange(thought.length, thought.length)
+      }, 50)
     } else if (
-      (e.keyCode === KEY_UP || e.keyCode === KEY_DOWN) ||
+      (e.keyCode === KEY_DOWN) ||
       ((e.keyCode === KEY_LEFT || e.keyCode === KEY_RIGHT) && text === "")
     ) {
       // If the player has typed nothing, but uses the arrow keys, go back to the game
       stage.focusOnGame()
-      kbController.keyPressed(e.keyCode)
+      stage.kbController.keyPressed(e.keyCode)
     }
   }
 </script>
