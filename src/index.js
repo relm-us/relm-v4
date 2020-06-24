@@ -182,9 +182,9 @@ const start = async () => {
   vidobj.on('mute', muteAudio)
   vidobj.on('unmute', unmuteAudio)
   vidobj.setOnClick(() => {
-    const isVideo = switchVideo()
-    vidobj.setMirrored(isVideo)
-    player.goals.video.update({ circ: isVideo })
+    const isCamera = switchVideo()
+    // vidobj.setMirrored(isVideo)
+    player.goals.video.update({ cam: isCamera })
   })
   player.labelObj.setOnLabelChanged((text) => {
     player.goals.label.update({ text })
@@ -207,6 +207,7 @@ const start = async () => {
   
   const playerJSON = localstoreRestore(playerId)
   if (playerJSON) {
+    delete playerJSON['vid']
     try {
       network.transients.fromJSON(playerJSON, true)
     } catch (e) {

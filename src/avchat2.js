@@ -20,6 +20,22 @@ function initRemoteParticipant(participantId, tracksAdded = 0) {
   return remoteMetadata[participantId]
 }
 
+function adjustVideoClasses(isVideo, isLocal, videoEl) {
+  const circleEl = videoEl.parentElement
+  if (isVideo) {
+    if (isLocal) {
+      // Local camera should appear "flipped" horizontally, like when looking in a mirror
+      videoEl.classList.add('mirror')
+    }
+  } else {
+    if (isLocal) {
+      // Screen sharing does not mirror
+      videoEl.classList.remove('mirror')
+    }
+    
+  }
+}
+
 /**
  * Handles local tracks.
  * @param tracks Array with JitsiTrack objects
@@ -27,41 +43,36 @@ function initRemoteParticipant(participantId, tracksAdded = 0) {
 function onLocalTracks(tracks, context) {
     localTracks = tracks;
     for (let i = 0; i < localTracks.length; i++) {
-        localTracks[i].addEventListener(
+        const track = localTracks[i]
+
+        track.addEventListener(
             JitsiMeetJS.events.track.TRACK_AUDIO_LEVEL_CHANGED,
             audioLevel => console.log(`Audio Level local: ${audioLevel}`));
-        localTracks[i].addEventListener(
+        track.addEventListener(
             JitsiMeetJS.events.track.TRACK_MUTE_CHANGED,
             () => console.log('local track muted'));
-        localTracks[i].addEventListener(
+        track.addEventListener(
             JitsiMeetJS.events.track.LOCAL_TRACK_STOPPED,
             () => console.log('local track stoped'));
-        localTracks[i].addEventListener(
+        track.addEventListener(
             JitsiMeetJS.events.track.TRACK_AUDIO_OUTPUT_CHANGED,
             deviceId =>
                 console.log(
                     `track audio output device was changed to ${deviceId}`));
-        if (localTracks[i].getType() === 'video') {
+        if (track.getType() === 'video') {
             const videoElement = context.createVideoElement(context.playerId)
             videoElement.id = `localVideo${i}`
-            videoElement.classList.add('mirror')
-            localTracks[i].attach(videoElement)
-            
-            // $('body').append(`<video autoplay='1' id='localVideo${i}' />`);
-            // localTracks[i].attach($(`#localVideo${i}`)[0]);
+            adjustVideoClasses(track.videoType === 'camera', true, videoElement)
+            track.attach(videoElement)
         } else {
             const audioElement = document.createElement('audio')
             audioElement.id = `localAudio${i}`
             // audioElement.muted = true
             document.body.appendChild(audioElement)
-            localTracks[i].attach(audioElement)
-            
-            // $('body').append(
-            //     `<audio autoplay='1' muted='true' id='localAudio${i}' />`);
-            // localTracks[i].attach($(`#localAudio${i}`)[0]);
+            track.attach(audioElement)
         }
         if (isJoined) {
-            room.addTrack(localTracks[i]);
+            room.addTrack(track);
         }
     }
 }
@@ -71,6 +82,7 @@ function onLocalTracks(tracks, context) {
  * @param track JitsiTrack object
  */
 function onRemoteTrack(track, context) {
+console.log(`onRemoteTrack (local? ${track.isLocal()})`, track.getType(), track.videoType)
     if (track.isLocal()) {
         return;
     }
@@ -108,22 +120,17 @@ function onRemoteTrack(track, context) {
         if (videoElement) {
             // NOTE: no need to append videoElement, it has already been added to video bubble
             videoElement.id = id
+            adjustVideoClasses(track.videoType === 'camera', false, videoElement)
             track.attach(videoElement)
         } else {
             console.warn("Can't createVideoElement for remote player")
         }
-        
-        // $('body').append(
-        //     `<video autoplay='1' id='${participant}video${idx}' />`);
     } else {
         const audioElement = document.createElement('audio')
         audioElement.id = id
         audioElement.autoplay = true
         document.body.appendChild(audioElement)
         track.attach(audioElement)
-        
-        // $('body').append(
-        //     `<audio autoplay='1' id='${participant}audio${idx}' />`);
     }
 
 
@@ -170,16 +177,24 @@ function onUserLeft(participant) {
  * That function is called when connection is established successfully
  */
 function onConnectionSuccess(context) {
-    room = connection.initJitsiConference(context.room, {
+    room = window.room = connection.initJitsiConference(context.room, {
       openBridgeChannel: true
     });
+    
+    // console.log('onConnectionSuccess', room)
+    room.room.on('xmpp.video_type', (a, b) => {
+      console.log('xmpp.video_type', a, b)
+    })
+    room.xmpp.on('xmpp.video_type', (a, b) => {
+      console.log('xmpp.video_type2', a, b)
+    })
     
     // Set playerId as name so that others can connect video to game player
     room.setDisplayName(context.playerId)
     
     room.on(JitsiMeetJS.events.conference.TRACK_ADDED, track => onRemoteTrack(track, context));
-    room.on(JitsiMeetJS.events.conference.TRACK_REMOVED, track => {
-        console.log(`track removed!!!${track}`);
+    room.on(JitsiMeetJS.events.conference.TRACK_REMOVED, (track, a) => {
+      console.log('track removed', track, a)
     });
     room.on(
         JitsiMeetJS.events.conference.CONFERENCE_JOINED,
@@ -264,8 +279,15 @@ function switchVideo() { // eslint-disable-line no-unused-vars
             localTracks[1].addEventListener(
                 JitsiMeetJS.events.track.LOCAL_TRACK_STOPPED,
                 () => console.log('local track stoped'));
-            localTracks[1].attach($('#localVideo1')[0]);
-            room.addTrack(localTracks[1]);
+            
+            const videoEl = document.getElementById('localVideo1')
+            if (videoEl) {
+              adjustVideoClasses(isVideo, true, videoEl)
+              localTracks[1].attach(videoEl);
+              room.addTrack(localTracks[1]);
+            } else {
+              console.warn("Can't add video track, 'localVideo1' video element not found", videoEl)
+            }
         })
         .catch(error => console.log(error));
   return isVideo

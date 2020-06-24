@@ -15,7 +15,7 @@ const WithVideoBubble = stampit(EventEmittable, {
     this.diameter = diameter || 100
 
     this.onClick = null
-    this._circular = true
+    this._isCamera = true
   },
   
   methods: {
@@ -33,30 +33,10 @@ const WithVideoBubble = stampit(EventEmittable, {
       }
     },
 
-    setMirrored(mirrored) {
-      if (!this.video) return
-      if (mirrored) {
-        this.video.classList.add('mirror')
-      } else {
-        this.video.classList.remove('mirror')
-      }
-    },
-    
     setOnClick(fn) {
       this.onClick = fn
     },
 
-    setCircular(circular) {
-      if (!this.circle) return
-      if (circular) {
-        this.circle.classList.remove('rect')
-      } else {
-        this.circle.classList.add('rect')
-      }
-      this._circular = circular
-      this.setVideoElementSize()
-    },
-    
     setDiameter(d) {
       this.diameter = d
       this.setVideoElementSize()
@@ -80,32 +60,55 @@ const WithVideoBubble = stampit(EventEmittable, {
       this.emit('unmute')
     },
     
+    _sussIsCameraFromClass(circleEl) {
+      if (circleEl.classList.contains('camera')) {
+        return true
+      } else if (circleEl.classList.contains('desktop')) {
+        return false
+      } else {
+        console.warn("Can't adjust video circle, neither 'camera' nor 'desktop'", Array.from(circleEl.classList))
+        return true
+      }
+    },
+    
     setVideoElementSize() {
       const video = this.video
       const circle = this.circle
       
       if (this.video && this.circle) {
+        const multiplier = this._isCamera ? 1 : 2
+        const diameter = this.diameter * multiplier
+        
         const w = video.videoWidth
         const h = video.videoHeight
         if (w > h) {
-          video.style.width = `${this.diameter * w / h}px`
-          video.style.height = `${this.diameter}px`
+          video.style.width = `${diameter * w / h}px`
+          video.style.height = `${diameter}px`
         } else {
-          video.style.width = `${this.diameter}px`
-          video.style.height = `${this.diameter * h / w}px`
+          video.style.width = `${diameter}px`
+          video.style.height = `${diameter * h / w}px`
         }
         
-        if (this._circular) {
-          circle.style.width = `${this.diameter}px`
-          circle.style.height = `${this.diameter}px`
+        if (this._isCamera) {
+          circle.style.width = `${diameter}px`
+          circle.style.height = `${diameter}px`
+          
+          circle.classList.add('camera')
+          circle.classList.remove('desktop')
         } else {
           circle.style.width = video.style.width
           circle.style.height = video.style.height
+          
+          circle.classList.add('desktop')
+          circle.classList.remove('camera')
         }
-        // circle.style.borderRadius = `${this.diameter/2}px`
       }
     },
-
+    
+    setIsCamera(isCamera) {
+      this._isCamera = isCamera
+      this.setVideoElementSize()
+    },
     
     createDomElement() {
       if (this.domElement) {

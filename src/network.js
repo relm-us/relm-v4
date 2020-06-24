@@ -125,7 +125,7 @@ const TransientDocument = stampit(Document, {
   },
 
   methods: {
-    installInterceptors(entity, abbrevs = ['p', 'r', 'spd', 'ans']) {
+    installInterceptors(entity, abbrevs = ['p', 'r', 'spd', 'ans', 'vid']) {
       this._cachedAwarenessState[entity.uuid] = {}
       abbrevs.forEach(goalAbbrev => {
         if (entity.goals.has(goalAbbrev)) {

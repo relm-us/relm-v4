@@ -15,8 +15,6 @@
   
   const cfg = config(window.location)
 
-  console.log("THOUGHT BAR")
-
   // Allow TAB and ESC keys to switch from text input to game view
   const handleKeydown = (e) => {
     const text = e.target.value.trim()
