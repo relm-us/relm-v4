@@ -44,6 +44,8 @@ const Triggers = stampit(Component, {
       this.mesh.rotation.x = -Math.PI * 0.5
       
       this.object.add(this.mesh)
+      
+      this.emit('mesh-updated')
     },
     
     setTarget(target) {

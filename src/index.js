@@ -81,6 +81,9 @@ const start = async () => {
     }
     
     stage.add(entity)
+    
+    // Handle local callbacks after object creation, e.g. to highlight newly pasted entities
+    network.afterAdd(entity)
   })
   
   network.on('remove', (uuid) => {
@@ -422,7 +425,6 @@ const start = async () => {
         }
         
         stage.selection.select(selected, operation)
-        console.log(stage.selection)
       })
     }
     dragStart = false
@@ -513,7 +515,12 @@ const start = async () => {
       }
       // Support `ctrl+V` and `cmd+V` for copy
       else if (e.keyCode === KEY_V && (e.ctrlKey || e.metaKey)) {
-        runCommandSimple('select paste')
+        runCommand('select paste', {
+          network,
+          stage,
+          cfg,
+          position: mousePointer.object.position
+        })
       }
       // Make it easier to type '/object` and all the other commands
       else if (e.keyCode === KEY_SLASH /* Forward Slash */) {

@@ -2,9 +2,8 @@ import stampit from 'stampit'
 
 import { Component } from './component.js'
 
-const COLOR_BLACK = new THREE.Color(0x000000)
-const DECORATION_NORMAL_COLOR = new THREE.Color(0x000000)
-const DECORATION_SELECTED_COLOR = new THREE.Color(0x666600)
+const EMISSIVE_NO_EMISSION_COLOR = new THREE.Color(0x000000)
+const EMISSIVE_DEFAULT_COLOR = new THREE.Color(0x666600)
 
 const HasEmissiveMaterial = stampit(Component, {
   props: {
@@ -13,23 +12,39 @@ const HasEmissiveMaterial = stampit(Component, {
 
   init({ emissiveColor }) {
     if (emissiveColor) {
-      this.emissiveColor = emissiveColor
+      this._emissiveColor = emissiveColor
     } else {
-      // default of 'black' color makes no emissive effect
-      this.emissiveColor = COLOR_BLACK
+      this._emissiveColor = EMISSIVE_DEFAULT_COLOR
     }
     
+    this.on('mesh-updated', () => {
+      this.applyEmissive()
+    })
     this.on('select', () => {
-      this.setEmissive(DECORATION_SELECTED_COLOR)
+      this.enableEmissive()
     })
     this.on('deselect', () => {
-      this.setEmissive(DECORATION_NORMAL_COLOR)
+      this.disableEmissive()
     })
   },
 
   methods: {
-    setEmissive(color) {
-      this.emissiveColor = color
+    enableEmissive() {
+      this._emissive = true
+      this.applyEmissive()
+    },
+
+    disableEmissive() {
+      this._emissive = false
+      this.applyEmissive()
+    },
+    
+    setEmissiveColor(color) {
+      this._emissiveColor = color
+    },
+    
+    applyEmissive() {
+      const color = this._emissive ? this._emissiveColor : EMISSIVE_NO_EMISSION_COLOR
       this.object.traverse(o => {
         if (o.isMesh) {
           o.material.emissive = color

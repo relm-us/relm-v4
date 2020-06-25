@@ -29,9 +29,34 @@ const Selection = stampit({
     },
     
     paste(networkDocument, { x, y, z }) {
+      this.clearSelection()
+      const center = this._getCenter(this._clipboard)
+
       this._clipboard.forEach(({ id, type, desc }) => {
-        networkDocument.create({ type, goals: desc })
+        desc.position.x = x + (desc.position.x - center.x)
+        desc.position.y = y + (desc.position.y - center.y)
+        desc.position.z = z + (desc.position.z - center.z)
+        networkDocument.create({ type, goals: desc, after: (entity) => {
+          entity.once('mesh-updated', () => {
+            this.select([entity], '+')
+          })
+        }})
       })
+    },
+    
+    _getCenter(entities) {
+      let center = { x: 0, y: 0, z: 0 }
+      const size = this._clipboard.length
+      entities.forEach(({ id, type, desc }) => {
+        center.x += desc.position.x
+        center.y += desc.position.y
+        center.z += desc.position.z
+      })
+      center.x /= size
+      center.y /= size
+      center.z /= size
+
+      return center
     },
 
     hasAtLeast(n) {

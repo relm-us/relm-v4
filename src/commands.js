@@ -762,14 +762,20 @@ const parseCommand = (commandString) => {
   }
 }
 
-const runCommand = (text, { network, stage, cfg }) => {
+const runCommand = (text, { network, stage, cfg, position }) => {
   try {
     const command = parseCommand(text)
     const objects = stage.selection.getAllEntities()
-    const position = stage.player.object.position
     const player = stage.player
     if (command) {
-      command({ network, stage, player, objects, position, cfg })
+      command({
+        network,
+        stage,
+        player,
+        objects,
+        position: position || stage.player.object.position,
+        cfg
+      })
     } else {
       showToast('Should there be a command after the `/`?')
     }

@@ -28,6 +28,14 @@ const HasGlowingDiamond = stampit(Component, {
   },
 
   methods: {
+    _createAll() {
+      this._createDiamond()
+      this._createGlow()
+      this._createLightCircle()
+      
+      this.emit('mesh-updated')
+    },
+    
     _createDiamond() {
       const gltf = this.resources.get('interact')
       this.material = new THREE.MeshStandardMaterial({
@@ -92,8 +100,7 @@ const HasGlowingDiamond = stampit(Component, {
     },
     
     setup() {
-      this._createDiamond()
-      this._createGlow()
+      this._createAll()
       
       this.orbit = 0
     },
