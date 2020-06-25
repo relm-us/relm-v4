@@ -135,7 +135,12 @@ const WithVideoBubble = stampit(EventEmittable, {
         } else {
           this.enterMutedState()
         }
+
+        // Don't take focus away from glcanvas
         event.preventDefault()
+
+        // When hitting 'mute', don't trigger the bubble's onClick action
+        event.stopPropagation()
       })
       
       const wrapper = this.domElement = document.createElement('div')
