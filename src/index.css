@@ -332,13 +332,13 @@
 }
 .mute-button {
   background: white center no-repeat url(./icons/unmuted.png);
-  background-size: 16px 16px;
-  width: 18px;
-  height: 18px;
+  background-size: 1.1em 1.1em;
+  width: 1.5em;
+  height: 1.5em;
   position: absolute;
   left: 50%;
   transform: translate(-50%,0);
-  bottom: -8px;
+  bottom: -0.75em;
   border: 2px solid white;
   border-radius: 18px;
   z-index: 1; 
