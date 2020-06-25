@@ -216,8 +216,12 @@ const Player = stampit(
           
           vidobj.setOnClick(() => {
             if (videoGoal.get('cam') === false) {
-              vidobj.domElement.requestFullscreen()
+              vidobj.video.requestFullscreen()
+              vidobj.video.classList.add('fullscreen')
             }
+            document.addEventListener('fullscreenchange', () => {
+              vidobj.video.classList.remove('fullscreen')
+            })
           })
           
           videoGoal.markAchieved()

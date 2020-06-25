@@ -330,6 +330,10 @@
 .video-feed.mirror {
   transform: translate(-50%,-50%) rotateY(180deg); 
 }
+.video-feed.fullscreen {
+  width: 100% !important;
+  height: 100% !important;
+}
 .mute-button {
   background: white center no-repeat url(./icons/unmuted.png);
   background-size: 1.1em 1.1em;
