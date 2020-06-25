@@ -1,7 +1,7 @@
 // Import external libraries and helpers
 import { guestNameFromPlayerId, avatarOptionFromPlayerId, avatarOptionsOfGender } from './avatars.js'
 import { Security } from './security.js'
-import { initializeAVChat, muteAudio, unmuteAudio, switchVideo } from './avchat2.js'
+import { initializeAVChat, muteAudio, unmuteAudio } from './avchat2.js'
 import { normalizeWheel } from './lib/normalizeWheel.js'
 import "toastify-js/src/toastify.css"
 
@@ -179,9 +179,9 @@ const start = async () => {
   vidobj.on('mute', muteAudio)
   vidobj.on('unmute', unmuteAudio)
   vidobj.setOnClick(() => {
-    const isCamera = switchVideo()
-    // vidobj.setMirrored(isVideo)
-    player.goals.video.update({ cam: isCamera })
+    if (player.goals.video.get('cam') === false) {
+      vidobj.domElement.requestFullscreen()
+    }
   })
   player.labelObj.setOnLabelChanged((text) => {
     player.goals.label.update({ text })

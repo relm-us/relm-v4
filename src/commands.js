@@ -5,6 +5,7 @@ import { exportImportState } from './svelte/stores.js'
 import { muteAudio, unmuteAudio } from './avchat.js'
 import { avatarOptionsOfGender } from './avatars.js'
 import { teleportToOtherRelm } from './teleportal.js'
+import { switchVideo } from './avchat2.js'
 
 import {
   take,
@@ -637,6 +638,12 @@ const commands = {
         env.stage.selection.paste(env.network.permanents, env.position)
       }
       default: throw Error(`Is ${subCommand} a '/sign' subcommand?`)
+    }
+  },
+  share: (args) => {
+    return (env) => {
+      const isCamera = switchVideo()
+      env.stage.player.goals.video.update({ cam: isCamera })
     }
   },
   skybox: (args) => {
