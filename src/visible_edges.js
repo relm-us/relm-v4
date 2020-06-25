@@ -38,12 +38,11 @@ const VisibleEdges = stampit({
     _createEdges() {
       if (this.lines) { this.object.remove(this.lines) }
       
-      const geometry = this._findGeometry()
-      if (geometry) {
-        const edges = new THREE.EdgesGeometry(geometry)
-        this.lines = new THREE.LineSegments(edges,
-          new THREE.LineBasicMaterial({ color: 0xffffff })
-        )
+      const parentGeom = this._findGeometry()
+      if (parentGeom) {
+        const geometry = new THREE.EdgesGeometry(parentGeom)
+        const material = new THREE.LineBasicMaterial({ color: 0xffffff })
+        this.lines = new THREE.LineSegments(geometry, material)
         
         this.object.add(this.lines)
       } else {

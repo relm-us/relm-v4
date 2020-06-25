@@ -46,6 +46,7 @@ import {
 } from 'keycode-js'
 
 import App from './svelte/App.svelte'
+import { showToast } from './lib/Toast.js'
 
 const cfg = config(window.location)
 let previousMousedownIndex = 0
@@ -356,14 +357,14 @@ const start = async () => {
     stage.intersectionFinder.setScreenCoords(event.clientX, event.clientY)
     
     // This might be the beginning of a drag & drop sequence, so prep for that possibility
-    if (stage.selection.hasAtLeast(2)) {
+    if (stage.selection.hasAtLeast(1)) {
       const intersection = stage.intersectionFinder.getOneIntersection(stage.background.object)
       if (intersection) {
         dragStart = true
         dragStartPos = intersection.point
         stage.selection.savePositions('drag')
       }
-    } else if (!event.shiftKey && !event.ctrlKey) {
+    } else if (!event.shiftKey && !event.metaKey && !event.ctrlKey) {
         let intersections = stage.intersectionFinder.getAllIntersectionsOnStage()
         if (!stage.editorMode) {
           intersections = intersections.filter((isect) => !isect.entity.isUiLocked())
@@ -411,7 +412,7 @@ const start = async () => {
          *   - ctrl+click: set subtraction
          *   - click: replace set
          */
-        const operation = event.shiftKey ? '+' : (event.ctrlKey ? '-' : '=')
+        const operation = event.shiftKey ? '+' : (event.ctrlKey || event.metaKey ? '-' : '=')
         // Select whatever the most recent 'mousemove' event got us closest to
         let selected = stage.intersectionFinder.getAllIntersectionsOnStage().map((isect) => isect.entity)
         if (!stage.editorMode) {
@@ -427,7 +428,9 @@ const start = async () => {
           previousMousedownIndex = 0
         }
         if (operation === '=' && selected.length > 0) {
-          selected = [selected[previousMousedownIndex % selected.length]]
+          const one = selected[previousMousedownIndex % selected.length]
+          showToast(`Selected ${one.type} (${one.uuid})`)
+          selected = [one]
         }
         
         stage.selection.select(selected, operation)

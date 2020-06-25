@@ -6,10 +6,6 @@ const EMISSIVE_NO_EMISSION_COLOR = new THREE.Color(0x000000)
 const EMISSIVE_DEFAULT_COLOR = new THREE.Color(0x666600)
 
 const HasEmissiveMaterial = stampit(Component, {
-  props: {
-    emissiveColor: null,
-  },
-
   init({ emissiveColor }) {
     if (emissiveColor) {
       this._emissiveColor = emissiveColor
