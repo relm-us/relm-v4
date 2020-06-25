@@ -352,12 +352,20 @@ const commands = {
         let count
         try { count = parseInt(takeOne(args), 10) }
         catch (e) { count = 1 }
+        if (count > 100) {
+          throw Error("Can't clone more than 100")
+        }
         return actionToEachObject((entity, env) => {
           const goalsDesc = entity.goals.toDesc()
+          env.stage.selection.clearSelection()
           for (let i = 0; i < count; i++) {
             goalsDesc.position.x += 25
             goalsDesc.position.z += 25
-            env.network.permanents.create({ type: entity.goals.type, goals: goalsDesc })
+            env.network.permanents.create({ type: entity.goals.type, goals: goalsDesc, after: (entity) => {
+              entity.once('mesh-updated', () => {
+                env.stage.selection.select([entity], '+')
+              })
+            }})
           }
           return true /* add to success count */
         })
