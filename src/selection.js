@@ -37,6 +37,10 @@ const Selection = stampit({
     hasAtLeast(n) {
       return this.selected.size >= n
     },
+    
+    clearSelection() {
+      this.select([], '=')
+    },
 
     addSelection(entitiesSet) {
       const added = difference(entitiesSet, this.selected)

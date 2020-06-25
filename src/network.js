@@ -19,6 +19,7 @@ const Document = stampit({
     this.provider = null
     
     this.addedObjects = {}
+    
 
     this.objects.observe((event) => {
       event.keysChanged.forEach(key => {
@@ -56,7 +57,8 @@ const Document = stampit({
       this._connectWebsocketProvider({ serverUrl, room, params, onSync })
     },
     
-    create({ type, uuid = uuidv4(), goals = {} }) {
+    create({ type, uuid = uuidv4(), goals = {}, after }) {
+      this.emitter._afterCreateCallbacks[uuid] = after
       const Type = Typed.getType(type)
       const ymap = new Y.Map()
       this.doc.transact(() => {
@@ -244,6 +246,8 @@ const Network = stampit(EventEmittable, {
     
     // Permanent Y document: holds game object state & everything that stays in each relm
     this.permanents = Document({ emitter: this })
+    
+    this._afterCreateCallbacks = {}
   },
   
   methods: {
@@ -275,6 +279,13 @@ const Network = stampit(EventEmittable, {
         console.warn("Unable to open indexeddb:", err)
       }
     },
+    
+    afterAdd(entity) {
+      const callback = this._afterCreateCallbacks[entity.uuid]
+      if (callback) {
+        callback(entity)
+      }
+    }
   }
 })
 

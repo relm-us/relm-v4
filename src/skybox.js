@@ -3,6 +3,8 @@ import stampit from 'stampit'
 import { EntityShared } from './entity_shared.js'
 import { Component } from './components/component.js'
 import { LoadsAsset } from './components/loads_asset.js'
+import { ReceivesPointer } from './receives_pointer.js'
+
 
 const UsesAssetAsSkybox = stampit(Component, {
   init() {
@@ -52,6 +54,7 @@ const Skybox = stampit(
   EntityShared,
   LoadsAsset,
   UsesAssetAsSkybox,
+  ReceivesPointer,
 ).setType('skybox')
 
 

@@ -467,23 +467,25 @@ const start = async () => {
   
   document.addEventListener('contextmenu', (event) => {
     let intersections = stage.intersectionFinder.getAllIntersectionsOnStage()
-    if (intersections.length > 0) {
+    if (intersections.length == 0) {
+      stage.forEachEntityOfType('skybox', (entity) => {
+        stage.selection.select([entity], '=')
+      })
+    } else {
       const clickedEntity = intersections[0].entity
       
       if (stage.selection.has(clickedEntity)) {
         // Don't modify the selection, keep it as-is
-        console.log("already has")
       } else {
         // If player right-clicked on something that wasn't selected, select it
         stage.selection.select([clickedEntity], '=')
       }
-      
-      // Provide a slight delay so player can visually confirm that they
-      // selected the thing they thought they did
-      setTimeout(() => {
-        exportImportState.update(() => true)
-      }, 300)
     }
+    // Provide a slight delay so player can visually confirm that they
+    // selected the thing they thought they did
+    setTimeout(() => {
+      exportImportState.update(() => true)
+    }, 300)
     event.preventDefault()
   })
   
