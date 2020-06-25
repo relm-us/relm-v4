@@ -211,7 +211,15 @@ const Player = stampit(
         
         const videoGoal = this.goals.video
         if (!videoGoal.achieved) {
-          this.videoBubble.object.setIsCamera(this.goals.video.get('cam'))
+          const vidobj = this.videoBubble.object
+          vidobj.setIsCamera(videoGoal.get('cam'))
+          
+          vidobj.setOnClick(() => {
+            if (videoGoal.get('cam') === false) {
+              vidobj.domElement.requestFullscreen()
+            }
+          })
+          
           videoGoal.markAchieved()
         }
       }

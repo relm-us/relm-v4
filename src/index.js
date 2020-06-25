@@ -178,11 +178,6 @@ const start = async () => {
   vidobj.createDomElement()
   vidobj.on('mute', muteAudio)
   vidobj.on('unmute', unmuteAudio)
-  vidobj.setOnClick(() => {
-    if (player.goals.video.get('cam') === false) {
-      vidobj.domElement.requestFullscreen()
-    }
-  })
   player.labelObj.setOnLabelChanged((text) => {
     player.goals.label.update({ text })
   })
