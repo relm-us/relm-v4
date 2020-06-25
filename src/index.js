@@ -29,7 +29,7 @@ import { TriggerPlate } from './trigger_plate.js'
 
 // Misc. other imports
 import { localstoreRestore } from './localstore_gets_state.js'
-import { uuidv4, getOrCreateLocalId, randomPastelColor, domReady } from './util.js'
+import { uuidv4, getOrCreateLocalId, randomPastelColor, domReady, sortByZ } from './util.js'
 import { config, stage } from './config.js'
 import { network } from './network.js'
 import { GoalGroup } from './goals/goal_group.js'
@@ -55,6 +55,9 @@ THREE.Cache.enabled = true
 
 const security = Security()
 
+let playersCentroid = new THREE.Vector3()
+let occasionalUpdate = 0
+  
 let player
 let mousePointer
 
@@ -158,8 +161,8 @@ const start = async () => {
   // happen until we `enqueue` and `load`.
   addManifestTo(resources)
   
-  // Stage 1 Resource Load: Bare essentials
-  resources.enqueue(['people', 'interact', 'sparkle', 'marble'])
+  // Load bare essentials
+  resources.enqueue(['people', 'interact'])
   await resources.load()
 
   window.addEventListener('resize', _ => stage.windowResized(window.innerWidth, window.innerHeight))
@@ -168,22 +171,22 @@ const start = async () => {
 
   await domReady()
   
-  let playersCentroid = new THREE.Vector3()
-  let occasionalUpdate = 0
-  const sortByZ = (a, b) => (a.object.position.z - b.object.position.z)
   
   // The player!
-  
-  
   player = stage.player = await stage.awaitEntity({ uuid: playerId })
+  
+  // Allow local player to control self
   player.autonomous = false
+  
   const vidobj = player.videoBubble.object
   vidobj.createDomElement()
   vidobj.on('mute', muteAudio)
   vidobj.on('unmute', unmuteAudio)
+  
   player.labelObj.setOnLabelChanged((text) => {
     player.goals.label.update({ text })
   })
+  
   player.on('thoughtBubbleAction', (thought) => {
     const pos = player.object.position
     network.permanents.create({
@@ -212,11 +215,14 @@ const start = async () => {
     console.log('New Player!', playerId)
   }
   
+  
+  // The mouse pointer!
   mousePointer = stage.mouse = await stage.awaitEntity({ uuid: mouseId })
   {
     const c = player.goals.color
     mousePointer.goals.color.update({ r: c.get('r'), g: c.get('g'), b: c.get('b') })
   }
+  
   
   // Create the stable but invisible "ground" layer that acts as a plane
   // that can always be clicked on by the mouse.

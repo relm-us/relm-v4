@@ -162,6 +162,11 @@ function intersection(setA, setB) {
   return _intersection
 }
 
+
+function sortByZ(a, b) {
+  return (a.object.position.z - b.object.position.z)
+}
+
 export {
   uuidv4,
   getOrCreateLocalId,
@@ -176,4 +181,5 @@ export {
   union,
   difference,
   intersection,
+  sortByZ,
 }
