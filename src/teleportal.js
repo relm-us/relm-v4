@@ -114,8 +114,9 @@ const Teleports = stampit(Component, {
               x: portalGoal.get('dx'),
               y: portalGoal.get('dy'),
               z: portalGoal.get('dz'),
-            })
+            }, 0)
           } else {
+            this.setInactive()
             teleportToOtherRelm({
               relm: portalGoal.get('relm'),
               x: portalGoal.get('dx'),
