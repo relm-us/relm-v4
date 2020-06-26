@@ -39,6 +39,7 @@ exports.setPersistence = persistence_ => {
  * @type {Map<string,WSSharedDoc>}
  */
 const docs = new Map()
+exports.docs = docs
 
 const messageSync = 0
 const messageAwareness = 1

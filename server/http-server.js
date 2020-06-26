@@ -4,7 +4,11 @@ const express = require('express')
 const fileupload = require('express-fileupload')
 const cors = require('cors')
 const sharp = require('sharp')
-const getContentAddressableName = require('./util.js').getContentAddressableName
+const conversion = require('./conversion2.js')
+const util = require('./util.js')
+const relms = require('./relms.js')
+const yws = require('./yws.js')
+const Y = require('yjs')
 
 const config = require('./config.js')
 
@@ -35,63 +39,41 @@ app.get('/', function(_req, res) {
   res.sendFile(__dirname + '/index.html')
 })
 
+app.get('/relms', cors(), async (req, res) => {
+  const relms = relms.getRelms()
+  util.respond(res, 200, { relms })
+})
 
-function fail(res, reason) {
-  console.error(reason)
-  res.writeHead(500, config.CONTENT_TYPE_JSON)
-  res.end(JSON.stringify({
-    status: 'error',
-    reason: reason
-  }))
-}
-
-function fileUploadSuccess(res, files = {}) {
-  res.writeHead(200, config.CONTENT_TYPE_JSON)
-  res.end(JSON.stringify({
-    status: 'success',
-    files,
-  }))
-}
-
-async function moveAndRenameContentAddressable(filepath, extension = null) {
-  const contentAddressableName = await getContentAddressableName(filepath, extension)
-  const destination = path.join(config.ASSET_DIR, contentAddressableName)
+app.post('/relm/create/:name', cors(), async (req, res) => {
+  const name = util.normalizeRelmName(req.params.name)
+  console.log(`Creating relm '${name}'`)
   
-  try {
-    // Check if destination already exists. If content-addressable file exists,
-    // we need not overwrite it because we are guaranteed its content is the same
-    await fs.promises.access(destination)
-    
-    console.log(`Skipping 'move file': file already exists (${destination})`)
-    
-    // clean up
-    await fs.promises.unlink(filepath)
-    
-    return path.basename(destination)
-  } catch (accessError) {
-    if (accessError.code === 'ENOENT') {
-      
-      console.log(`Moving file to '${destination}'`)
-      
-      await fs.promises.rename(filepath, destination)
-      
-      return path.basename(destination)
-    } else {
-      throw err
-    }
+  if (relms.has(name)) {
+    return util.respond(res, 409, {
+      reason: `relm '${name}' already exists`,
+    })
+  } else {
+    const { control, transient, permanent } = relms.createRelm(name)
+    return util.respond(res, 200, {
+      action: 'created',
+      relm: name,
+      control,
+      transient,
+      permanent,
+    })
   }
-}
+})
 
 // Upload images and 3D assets
 app.post('/asset', cors(), async (req, res) => {
   const asset = req.files.file
   if (asset.size > config.MAX_FILE_SIZE) {
-    return fail(res, 'file too large')
+    return util.fail(res, 'file too large')
   }
   
   const extension = path.extname(asset.name)
   if (extension.length >= config.MAX_FILE_EXTENSION_LENGTH) {
-    return fail(res, 'file extension too long')
+    return util.fail(res, 'file extension too long')
   }
   
   try {
@@ -103,11 +85,11 @@ app.post('/asset', cors(), async (req, res) => {
       case '.webp':
         const pngTempFile = asset.tempFilePath + '.png'
         await sharp(asset.tempFilePath).toFile(asset.tempFilePath + '.png')
-        const pngFile = await moveAndRenameContentAddressable(pngTempFile)
+        const pngFile = await conversion.moveAndRenameContentAddressable(pngTempFile)
         
         const webpTempFile = asset.tempFilePath + '.webp'
         await sharp(asset.tempFilePath).toFile(asset.tempFilePath + '.webp')
-        const webpFile = await moveAndRenameContentAddressable(webpTempFile)
+        const webpFile = await conversion.moveAndRenameContentAddressable(webpTempFile)
         
         return fileUploadSuccess(res, {
           png: pngFile,
@@ -117,17 +99,17 @@ app.post('/asset', cors(), async (req, res) => {
       case '.glb':
       case '.gltf':
         return fileUploadSuccess(res, {
-          gltf: await moveAndRenameContentAddressable(asset.tempFilePath, extension)
+          gltf: await conversion.moveAndRenameContentAddressable(asset.tempFilePath, extension)
         })
 
       default:
-        const file = await moveAndRenameContentAddressable(asset.tempFilePath, extension)
-        return fileUploadSuccess(res, {
+        const file = await conversion.moveAndRenameContentAddressable(asset.tempFilePath, extension)
+        return conversion.fileUploadSuccess(res, {
           "*": file
         })
     }
   } catch (err) {
-    return fail(res, err)
+    return util.fail(res, err)
   }
   
 })

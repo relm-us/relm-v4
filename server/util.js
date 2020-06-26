@@ -1,6 +1,7 @@
-const fs = require('fs')
-const path = require('path')
-const md5File = require('md5-file')
+// const fs = require('fs')
+// const path = require('path')
+// const md5File = require('md5-file')
+const config = require('./config.js')
 
 const URLSearchParams = require('url').URLSearchParams
 
@@ -23,30 +24,30 @@ function uuidv4() {
   });
 }
 
-function getFileSizeInBytes(filename) {
-  const stats = fs.statSync(filename);
-  const fileSizeInBytes = stats.size;
-  return fileSizeInBytes;
+function fail(res, reason) {
+  console.error(reason)
+  res.writeHead(500, config.CONTENT_TYPE_JSON)
+  res.end(JSON.stringify({
+    status: 'error',
+    reason: reason
+  }))
 }
 
-async function getContentAddressableName(filepath, fallbackExtension = null) {
-  const hash = await md5File(filepath)
-  const fileSize = getFileSizeInBytes(filepath)
-  let extension = path.extname(filepath)
-  
-  if (extension === '') {
-    if (fallbackExtension) {
-      extension = fallbackExtension
-    } else {
-      throw Error(`File has no extension: '${filepath}'`)
-    }
-  }
-  
-  return `${hash}-${fileSize}${extension}`
+function respond(res, code, json) {
+  res.writeHead(code, config.CONTENT_TYPE_JSON)
+  res.end(JSON.stringify(Object.assign({
+    status: code === 200 ? 'success' : 'failure',
+  }, json)))
 }
+
+function normalizeRelmName(name) {
+  return name.toLowerCase().replace(/[^a-z\-]+/, '')
+}
+
 module.exports = {
   getUrlParams,
   uuidv4,
-  getFileSizeInBytes,
-  getContentAddressableName,
+  fail,
+  respond,
+  normalizeRelmName,
 }
