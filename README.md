@@ -19,7 +19,7 @@ yarn install
 yarn start
 ```
 
-We recommend node 10.15.3 at the time of this writing.
+We recommend node 10.21.0 at the time of this writing.
 
 ## Project Structure
 

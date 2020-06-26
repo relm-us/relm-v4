@@ -10,21 +10,23 @@ import { Stage } from './stage.js'
  */
 function config(location) {
   let ENV
+  let SERVER_URL
   let SERVER_YJS_URL
   let SERVER_UPLOAD_URL
   if (location.origin === 'https://relm.us') {
     ENV = 'p'
+    SERVER_URL = 'https://y.relm.us'
     SERVER_YJS_URL = 'wss://y.relm.us'
-    SERVER_UPLOAD_URL = 'https://y.relm.us/asset'
   } else if (location.origin === 'https://staging.relm.us') {
     ENV = 's'
+    SERVER_URL = 'https://y-staging.relm.us'
     SERVER_YJS_URL = 'wss://y-staging.relm.us'
-    SERVER_UPLOAD_URL = 'https://y-staging.relm.us/asset'
   } else {
     ENV = 'l'
+    SERVER_URL = `http://${location.hostname}:1235`
     SERVER_YJS_URL = `ws://${location.hostname}:1235`
-    SERVER_UPLOAD_URL = `http://${location.hostname}:1235/asset`
   }
+  SERVER_UPLOAD_URL = `${SERVER_URL}/asset`
 
   const params = new URLSearchParams(document.location.search.substring(1))
   const roomParam = params.get('room')
@@ -52,6 +54,7 @@ function config(location) {
   let SINGLE_PLAYER_MODE = (location.hash === '#1')
   
   window.config = {
+    SERVER_URL,
     SERVER_YJS_URL,
     SERVER_UPLOAD_URL,
     ENV,

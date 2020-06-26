@@ -120,7 +120,7 @@ const start = async () => {
 
   if (!window.crypto.subtle) {
     showToast(
-      `Unable to authentiate: please use a browser that supports signing with public keys, such as Firefox or Chrome`
+      `Unable to authenticate: please use a browser that supports signing with public keys, such as Firefox or Chrome`
     )
     return
   }
@@ -143,7 +143,7 @@ const start = async () => {
     .connect({
       params,
       room: cfg.ROOM,
-      serverUrl: cfg.SERVER_YJS_URL,
+      serverUrl: cfg.SERVER_URL,
       serverYjsUrl: cfg.SERVER_YJS_URL,
       connectTransients: !cfg.SINGLE_PLAYER_MODE,
       onTransientsSynced: () => {

@@ -15,7 +15,7 @@ const Equality = {
       return Math.sqrt(dx * dx + dy * dy + dz * dz) <= threshold
     }
   },
-  
+
   // Angle: (threshold) => {
   //   return (a, b) => {
   //     return Math.abs(a.angleTo(b)) < threshold
@@ -24,11 +24,11 @@ const Equality = {
 
   Delta: (property, threshold) => {
     return (a, b) => {
-      const delta = Math.abs(a.get(property) - b.get(property)) 
+      const delta = Math.abs(a.get(property) - b.get(property))
       return delta <= threshold
     }
   },
-  
+
   /**
    * Checks for shallow equality between two Map-compatible objects (e.g. Map, Y.Map). Ignores keys that begin with '@'.
    */
@@ -42,7 +42,7 @@ const Equality = {
       }
       return true
     }
-  }
+  },
 }
 
 function defineGoal(abbrev, defaults, equality = Equality.Map()) {
@@ -62,11 +62,11 @@ function defineGoal(abbrev, defaults, equality = Equality.Map()) {
  *
  * We use a priority queue (FlatQueue) to keep track of which goal states are next (sorted by `due`),
  * and easily check if we need to fast-forward.
- * 
+ *
  * Goals also use a custom equality test function per property. This allows us, for example, to check
  * for current state and goal state as being "close enough" when dealing with floating point numbers.
  * (See Equality.Delta).
- * 
+ *
  * @property {string} name - a name for the goal, e.g. 'position'
  * @property {Object} defaults - the default state of the goal
  * @property {Function} equality - a function that tests for equality--it takes two Maps as params and returns true or false
@@ -79,16 +79,16 @@ const Goal = stampit(EventEmittable, {
      * @type {string}
      */
     this.name = name
-    
+
     /**
      * A function that tests if a this goal is "equal" to another value or set of values. For instance,
      * if this goal is a position with components x, y, z, then the equalityTest would be a distance
      * calculation with a < threshold. Defaults to a shallow comparison of two objects.
-     * 
+     *
      * @type {Function}
      */
     this.testEquality = equality || Equality.Map()
-    
+
     /**
      * Keeps track of whether any of this goal's values have been achieved. Values also individually hold
      * `achieved` state. If any value is modified, it indicates current state is out of sync and needs to
@@ -96,28 +96,31 @@ const Goal = stampit(EventEmittable, {
      * that haven't changed since the last animation frame.
      */
     this.achieved = false
-    
+
     /**
      * The goal's current state, e.g. `{x: 10, y: 10, z: 100}`.
      *
      * @type {Y.Map}
      */
     this._map = map
-    
+
+    if (this._map && !(typeof this._map.observe === 'function')) {
+      console.error('map is not observable', map)
+    }
     this._map.observe((event) => {
       this.achieved = false
     })
-    
+
     // Set default values, as long as they don't overwrite existing values
     for (const [k, v] of Object.entries(defaults)) {
       if (!this._map.has(k)) {
         this._map.set(k, v)
       }
     }
-    
+
     // For easier debugging, define 'value' as a getter on this object (instead of on the prototype)
     Object.defineProperty(this, 'value', {
-      get: () => this._map.toJSON()
+      get: () => this._map.toJSON(),
     })
   },
 
@@ -129,11 +132,11 @@ const Goal = stampit(EventEmittable, {
       const due = this._map.get('@due') || 0
       return due
     },
-    
+
     set due(dueAt) {
       this._map.set('@due', dueAt)
     },
-    
+
     get(key) {
       if (!key) throw Error('key is required')
       return this._map.get(key)
@@ -143,13 +146,13 @@ const Goal = stampit(EventEmittable, {
      * isPastDue checks the time this goal is `due` and returns true or false if it past due. This
      * can be used to determine if an animation needs to be cut short and resort to instantaneous
      * motion instead.
-     * 
+     *
      * @param {number} now - the time in milliseconds to consider as "now" when comparing what is past
      */
     isPastDue(now = ServerDate.now()) {
       return this.due < now
     },
-    
+
     update(object, due = ServerDate.now()) {
       this.due = due
       this._map.doc.transact(() => {
@@ -158,30 +161,27 @@ const Goal = stampit(EventEmittable, {
         }
       })
     },
-    
+
     equals(otherValue) {
       return this.testEquality(this._map, otherValue)
     },
-    
+
     markAchieved() {
-      this.achieved = true     
+      this.achieved = true
     },
-    
+
     markAchievedIfEqual(value) {
       this.achieved = this.equals(value)
     },
 
     toJSON(hideDue = false) {
       const json = this._map.toJSON()
-      if (hideDue) { delete json['@due'] }
+      if (hideDue) {
+        delete json['@due']
+      }
       return json
     },
-  }
+  },
 })
 
-
-export {
-  Goal,
-  Equality,
-  defineGoal,
-}
+export { Goal, Equality, defineGoal }

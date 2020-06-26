@@ -4,12 +4,14 @@ import EventEmittable from '@stamp/eventemittable'
 import * as Y from 'yjs'
 import { WebsocketProvider } from 'y-websocket'
 import { IndexeddbPersistence } from 'y-indexeddb'
+import axios from 'axios'
 
 import { ServerDate } from './lib/ServerDate.js'
 import { GoalGroup } from './goals/goal_group.js'
 import { Typed } from './typed.js'
 import { uuidv4 } from './util.js'
 import { installGetSetInterceptors } from './get_set_interceptors.js'
+import { showToast } from './lib/Toast.js'
 
 const Document = stampit({
   init({ emitter }) {
@@ -17,12 +19,11 @@ const Document = stampit({
     this.doc = new Y.Doc()
     this.objects = this.doc.getMap('objects')
     this.provider = null
-    
+
     this.addedObjects = {}
-    
 
     this.objects.observe((event) => {
-      event.keysChanged.forEach(key => {
+      event.keysChanged.forEach((key) => {
         if (this.objects.has(key)) {
           this._addObject(key)
         } else {
@@ -31,32 +32,36 @@ const Document = stampit({
       })
     })
   },
- 
+
   methods: {
     _addObject(key) {
       const added = this.objects.get(key)
       this.addedObjects[key] = added
       this.emitter.emit('add', added, false)
     },
-    
+
     _removeObject(key) {
       const added = this.addedObjects[key]
       this.emitter.emit('remove', key, added)
       delete this.addedObjects[key]
     },
 
-    _connectWebsocketProvider({ serverUrl, room, params = {}, onSync }) {
-      console.log(`Opening websocket to room '${room}'`, serverUrl, params)
-      this.provider = new WebsocketProvider(serverUrl, room, this.doc, { params })
-      if (onSync) { this.provider.on('sync', onSync) }
-      
-      return this.provider 
+    _connectWebsocketProvider({ serverYjsUrl, room, params = {}, onSync }) {
+      console.log(`Opening websocket to room '${room}'`, serverYjsUrl, params)
+      this.provider = new WebsocketProvider(serverYjsUrl, room, this.doc, {
+        params,
+      })
+      if (onSync) {
+        this.provider.on('sync', onSync)
+      }
+
+      return this.provider
     },
-    
-    connect({ serverUrl, room, params, onSync }) {
-      this._connectWebsocketProvider({ serverUrl, room, params, onSync })
+
+    connect({ serverYjsUrl, room, params, onSync }) {
+      this._connectWebsocketProvider({ serverYjsUrl, room, params, onSync })
     },
-    
+
     create({ type, uuid = uuidv4(), goals = {}, after }) {
       this.emitter._afterCreateCallbacks[uuid] = after
       const Type = Typed.getType(type)
@@ -68,7 +73,7 @@ const Document = stampit({
           uuid,
           ymap,
           goalDefinitions: Type.goalDefinitions,
-          goalsDesc: goals
+          goalsDesc: goals,
         })
       })
       // console.log('created', type, uuid, 'goals', goals, 'definitions', Type.goalDefinitions, 'ymap', ymap.toJSON())
@@ -76,10 +81,14 @@ const Document = stampit({
 
     fromJSON(json, instantaneous = false) {
       const uuid = json['@id']
-      if (!uuid) { throw Error(`Can't import json, no '@id'`) }
+      if (!uuid) {
+        throw Error(`Can't import json, no '@id'`)
+      }
       const type = json['@type']
-      if (!type) { throw Error(`Can't import json, no '@type'`)}
-      
+      if (!type) {
+        throw Error(`Can't import json, no '@type'`)
+      }
+
       this.doc.transact(() => {
         let ymap
         if (this.objects.has(uuid)) {
@@ -88,12 +97,12 @@ const Document = stampit({
           ymap = new Y.Map()
           this.objects.set(uuid, ymap)
         }
-        
+
         ymap.set('@id', uuid)
         ymap.set('@type', type)
-        
+
         for (const [goalAbbrev, goalState] of Object.entries(json)) {
-          if (goalAbbrev.slice(0,1) !== '@') {
+          if (goalAbbrev.slice(0, 1) !== '@') {
             let ymapState
             if (ymap.has(goalAbbrev)) {
               ymapState = ymap.get(goalAbbrev)
@@ -109,13 +118,11 @@ const Document = stampit({
         }
       })
     },
-    
+
     remove(uuid) {
       this.objects.delete(uuid)
     },
-
-
-  }
+  },
 })
 
 const TransientDocument = stampit(Document, {
@@ -129,15 +136,21 @@ const TransientDocument = stampit(Document, {
   methods: {
     installInterceptors(entity, abbrevs = ['p', 'r', 'spd', 'ans', 'vid']) {
       this._cachedAwarenessState[entity.uuid] = {}
-      abbrevs.forEach(goalAbbrev => {
+      abbrevs.forEach((goalAbbrev) => {
         if (entity.goals.has(goalAbbrev)) {
           const internalMap = entity.goals.get(goalAbbrev)._map
           const keys = Array.from(internalMap.keys())
           // Set default values
-          this._cachedAwarenessState[entity.uuid][goalAbbrev] = internalMap.toJSON()
+          this._cachedAwarenessState[entity.uuid][
+            goalAbbrev
+          ] = internalMap.toJSON()
           installGetSetInterceptors(internalMap, keys, {
-            has: (key) => { return this.hasState(entity.uuid, goalAbbrev, key) },
-            get: (key) => { return this.getState(entity.uuid, goalAbbrev, key) },
+            has: (key) => {
+              return this.hasState(entity.uuid, goalAbbrev, key)
+            },
+            get: (key) => {
+              return this.getState(entity.uuid, goalAbbrev, key)
+            },
             set: (key, value) => {
               if (this.setState(entity.uuid, goalAbbrev, key, value)) {
                 entity.goals.get(goalAbbrev).achieved = false
@@ -147,35 +160,35 @@ const TransientDocument = stampit(Document, {
               const state = this.getAllState(entity.uuid, goalAbbrev) || {}
               const json = Object.assign(originalJson, state)
               return json
-            }
+            },
           })
         }
       })
     },
-    
+
     _addObject(key) {
       const added = this.objects.get(key)
       this.addedObjects[key] = added
       // Make sure to send 'true' for isTransient bool
       this.emitter.emit('add', added, true)
     },
-    
+
     _ensureStatePath(uuid, goalAbbrev, key) {
       if (!(uuid in this._cachedAwarenessState)) {
         this._cachedAwarenessState[uuid] = {
-          [goalAbbrev]: {}
+          [goalAbbrev]: {},
         }
       }
       if (!(goalAbbrev in this._cachedAwarenessState[uuid])) {
         this._cachedAwarenessState[uuid][goalAbbrev] = {}
       }
     },
-    
-    connect({ serverUrl, room, params, onSync }) {
-      this._connectWebsocketProvider({ serverUrl, room, params, onSync })
+
+    connect({ serverYjsUrl, room, params, onSync }) {
+      this._connectWebsocketProvider({ serverYjsUrl, room, params, onSync })
       this.provider.awareness.on('update', this.receiveState.bind(this))
     },
-    
+
     hasState(uuid, goalAbbrev, key) {
       try {
         return key in this._cachedAwarenessState[uuid][goalAbbrev]
@@ -189,7 +202,7 @@ const TransientDocument = stampit(Document, {
         return this._cachedAwarenessState[uuid][goalAbbrev][key]
       } catch (e) {}
     },
-    
+
     getAllState(uuid, goalAbbrev) {
       try {
         return this._cachedAwarenessState[uuid][goalAbbrev]
@@ -210,14 +223,17 @@ const TransientDocument = stampit(Document, {
       if (!this.provider) return
       if (this._cachedAwarenessStateChanged) {
         this._cachedAwarenessStateChanged = false
-        uuids.forEach(uuid => {
+        uuids.forEach((uuid) => {
           if (this._cachedAwarenessState[uuid]) {
-            this.provider.awareness.setLocalStateField(uuid, this._cachedAwarenessState[uuid])
+            this.provider.awareness.setLocalStateField(
+              uuid,
+              this._cachedAwarenessState[uuid]
+            )
           }
         })
       }
     },
-    
+
     receiveState({ added, updated, removed }) {
       const states = this.provider.awareness.getStates()
       this.counter++
@@ -226,11 +242,10 @@ const TransientDocument = stampit(Document, {
         for (const [uuid, valuesObject] of Object.entries(state)) {
           this.emitter.emit('transient-receive', uuid, valuesObject)
         }
-      } 
-    }
-  }
+      }
+    },
+  },
 })
-
 
 /**
  * The Network object is an adapter between Yjs and the rest of Relm. It's responsible for setting values that
@@ -240,58 +255,88 @@ const TransientDocument = stampit(Document, {
 const Network = stampit(EventEmittable, {
   init() {
     window.network = this
-    
+
     // Transient document: holds things like player state and mouse pointer state
     this.transients = TransientDocument({ emitter: this })
-    
+
     // Permanent Y document: holds game object state & everything that stays in each relm
     this.permanents = Document({ emitter: this })
-    
+
     this._afterCreateCallbacks = {}
   },
-  
+
   methods: {
-    async connect({ params = {}, serverUrl, room, connectTransients, onTransientsSynced }) {
+    async playerPermit({ params, serverUrl, room }) {
+      console.log('playerPermit params', params)
+      let url = `${serverUrl}/relm/${room}/can/access`
+      if (params.t) {
+        url += `?t=${params.t}`
+      }
+      const res = await axios.get(url, {
+        headers: {
+          'x-relm-id': params.id,
+          'x-relm-s': params.s,
+          'x-relm-x': params.x,
+          'x-relm-y': params.y,
+        },
+      })
+      if (res.data.status === 'success') {
+        return res.data.relm
+      } else {
+        console.error(`Unable to get permission`, res)
+        throw Error(`Unable to get permission`)
+      }
+    },
+
+    async connect({
+      params = {},
+      serverYjsUrl,
+      serverUrl,
+      room,
+      connectTransients,
+      onTransientsSynced,
+    }) {
+      const relm = await this.playerPermit({ params, serverUrl, room })
+
+      console.warn('relm', relm)
+
       if (connectTransients) {
         this.transients.connect({
-          serverUrl,
-          room: room + '.t',
+          serverYjsUrl,
+          room: relm.transientDocId,
           params,
           onSync: onTransientsSynced,
         })
       } else {
         onTransientsSynced()
       }
-      
+
       this.permanents.connect({
-        serverUrl,
-        room,
-        params
+        serverYjsUrl,
+        room: relm.permanentDocId,
+        params,
       })
     },
-    
+
     async connectToLocal(ydoc, room) {
       console.log('Opening local database...', room)
       try {
         const provider = new IndexeddbPersistence(room, ydoc)
         await provider.whenSynced
       } catch (err) {
-        console.warn("Unable to open indexeddb:", err)
+        console.warn('Unable to open indexeddb:', err)
       }
     },
-    
+
     afterAdd(entity) {
       const callback = this._afterCreateCallbacks[entity.uuid]
       if (callback) {
         callback(entity)
       }
-    }
-  }
+    },
+  },
 })
 
-const network = window.network = Network()
+const network = (window.network = Network())
 
-export {
-  Network,
-  network,
-}
+export { Network, network }

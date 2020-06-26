@@ -12,7 +12,7 @@ thumbs.db
 
 backups/
 dist/
-server/relm-db/
+server/relm-data/
 server/assets/
 server/tmp/
 node_modules/

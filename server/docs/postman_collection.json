@@ -1,0 +1,361 @@
+{
+	"info": {
+		"_postman_id": "c2f96644-5e61-4227-a9eb-f244c4a06b17",
+		"name": "Relm Server",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "Relms",
+			"item": [
+				{
+					"name": "Get All Relms",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "X-Relm-S",
+								"type": "text",
+								"value": "P+mx/6jSUnZd2jz5VYNKAhpT48nltN8AzHiYfLTdk8Rpb7QRvnv39SVkDDWIHkXSjL2fcu3gYVWarWr6T9snxHJkSxvK0CSzf2l/19LZMcr08CNz50MjO4Ip30JwcPIZ"
+							},
+							{
+								"key": "X-Relm-Id",
+								"type": "text",
+								"value": "0dce4601-0a92-4c52-ad4a-f355ede669c6"
+							}
+						],
+						"url": {
+							"raw": "http://localhost:1235/relms",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "1235",
+							"path": [
+								"relms"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Create Relm",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "X-Relm-S",
+								"value": "P+mx/6jSUnZd2jz5VYNKAhpT48nltN8AzHiYfLTdk8Rpb7QRvnv39SVkDDWIHkXSjL2fcu3gYVWarWr6T9snxHJkSxvK0CSzf2l/19LZMcr08CNz50MjO4Ip30JwcPIZ",
+								"type": "text"
+							},
+							{
+								"key": "X-Relm-Id",
+								"value": "0dce4601-0a92-4c52-ad4a-f355ede669c6",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"isPublic\": true,\n    \"password\": \"welcome\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:1235/relm/relm/create",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "1235",
+							"path": [
+								"relm",
+								"relm",
+								"create"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Update Relm",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "X-Relm-S",
+								"value": "P+mx/6jSUnZd2jz5VYNKAhpT48nltN8AzHiYfLTdk8Rpb7QRvnv39SVkDDWIHkXSjL2fcu3gYVWarWr6T9snxHJkSxvK0CSzf2l/19LZMcr08CNz50MjO4Ip30JwcPIZ",
+								"type": "text"
+							},
+							{
+								"key": "X-Relm-Id",
+								"value": "0dce4601-0a92-4c52-ad4a-f355ede669c6",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"isPublic\": false\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:1235/relm/relm/meta",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "1235",
+							"path": [
+								"relm",
+								"relm",
+								"meta"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Relm",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "X-Relm-S",
+								"value": "P+mx/6jSUnZd2jz5VYNKAhpT48nltN8AzHiYfLTdk8Rpb7QRvnv39SVkDDWIHkXSjL2fcu3gYVWarWr6T9snxHJkSxvK0CSzf2l/19LZMcr08CNz50MjO4Ip30JwcPIZ",
+								"type": "text"
+							},
+							{
+								"key": "X-Relm-Id",
+								"value": "0dce4601-0a92-4c52-ad4a-f355ede669c6",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "http://localhost:1235/relm/relm/meta",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "1235",
+							"path": [
+								"relm",
+								"relm",
+								"meta"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Relm Permission",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "X-Relm-S",
+								"value": "P+mx/6jSUnZd2jz5VYNKAhpT48nltN8AzHiYfLTdk8Rpb7QRvnv39SVkDDWIHkXSjL2fcu3gYVWarWr6T9snxHJkSxvK0CSzf2l/19LZMcr08CNz50MjO4Ip30JwcPIZ",
+								"type": "text"
+							},
+							{
+								"key": "X-Relm-Id",
+								"value": "0dce4601-0a92-4c52-ad4a-f355ede669c6",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "http://localhost:1235/relm/welcome/can/access",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "1235",
+							"path": [
+								"relm",
+								"welcome",
+								"can",
+								"access"
+							]
+						}
+					},
+					"response": []
+				}
+			],
+			"protocolProfileBehavior": {}
+		},
+		{
+			"name": "Invitations",
+			"item": [
+				{
+					"name": "Create Invitation",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "X-Relm-S",
+								"type": "text",
+								"value": "P+mx/6jSUnZd2jz5VYNKAhpT48nltN8AzHiYfLTdk8Rpb7QRvnv39SVkDDWIHkXSjL2fcu3gYVWarWr6T9snxHJkSxvK0CSzf2l/19LZMcr08CNz50MjO4Ip30JwcPIZ"
+							},
+							{
+								"key": "X-Relm-Id",
+								"type": "text",
+								"value": "0dce4601-0a92-4c52-ad4a-f355ede669c6"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"token\": \"welcome-token\",\n    \"maxUses\": 3\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:1235/relm/welcome/invitation",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "1235",
+							"path": [
+								"relm",
+								"welcome",
+								"invitation"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Accept Invitation",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "X-Relm-S",
+								"type": "text",
+								"value": "2BNb9T3pFb8og2xeFdiSspUf/6tLfXRHB50Od/MOIntwxa/OBXorksd3c0VeZ8oRH4wdKSxM69XGtU/i35kuXyUpVOZqXEqa3PEN+1348IjlFcRXEXISfOAJ10QJ0mj5"
+							},
+							{
+								"key": "X-Relm-Id",
+								"type": "text",
+								"value": "cfec09b4-d0b4-4761-82c4-256d0bf07469"
+							},
+							{
+								"key": "X-Relm-X",
+								"value": "1dus076ICy8nNQlaXroec52c8yvotA9kokR0YRTeYfHBXgDYxY43gOi-DS2Goz5m",
+								"type": "text"
+							},
+							{
+								"key": "X-Relm-Y",
+								"value": "4lVfMlamRBrsfUtJYidcCx6wXVxHHj_HkvgesZDVVmeaDaDxidvYWWc_zeLD4I34",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:1235/relm/welcome/can/access?t=welcome-token",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "1235",
+							"path": [
+								"relm",
+								"welcome",
+								"can",
+								"access"
+							],
+							"query": [
+								{
+									"key": "t",
+									"value": "welcome-token"
+								}
+							]
+						}
+					},
+					"response": []
+				}
+			],
+			"protocolProfileBehavior": {}
+		},
+		{
+			"name": "Authenticate (Admin)",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "X-Relm-S",
+						"value": "P+mx/6jSUnZd2jz5VYNKAhpT48nltN8AzHiYfLTdk8Rpb7QRvnv39SVkDDWIHkXSjL2fcu3gYVWarWr6T9snxHJkSxvK0CSzf2l/19LZMcr08CNz50MjO4Ip30JwcPIZ",
+						"description": "Signed Player ID",
+						"type": "text"
+					},
+					{
+						"key": "X-Relm-Id",
+						"value": "0dce4601-0a92-4c52-ad4a-f355ede669c6",
+						"description": "Player ID",
+						"type": "text"
+					},
+					{
+						"key": "X-Relm-X",
+						"value": "P0HWf4l6bGz6ULfaPROfQSsg_pWfK3ICgsH2UDs-Bb45Q_Qj9QVnhryBpwzjp6Xi",
+						"description": "X Component of Public Key",
+						"type": "text"
+					},
+					{
+						"key": "X-Relm-Y",
+						"value": "Ggf-tcvJE0CqzcslV2VT2pL2NUHtpQyZakTijZbf4HjVRv6VW_5_VanKQS3TVUZx",
+						"description": "Y Component of Public Key",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:1235/authenticate?t=setup",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "1235",
+					"path": [
+						"authenticate"
+					],
+					"query": [
+						{
+							"key": "t",
+							"value": "setup",
+							"description": "Token"
+						}
+					]
+				}
+			},
+			"response": []
+		}
+	],
+	"protocolProfileBehavior": {}
+}
