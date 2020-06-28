@@ -10,6 +10,7 @@ import { GoalGroup } from './goals/goal_group.js'
 import { Typed } from './typed.js'
 import { uuidv4 } from './util.js'
 import { installGetSetInterceptors } from './get_set_interceptors.js'
+import { showToast } from './lib/Toast.js'
 
 const Document = stampit({
   init({ emitter }) {
@@ -241,6 +242,8 @@ const Network = stampit(EventEmittable, {
   init() {
     window.network = this
     
+    this.control = new Y.Doc()
+
     // Transient document: holds things like player state and mouse pointer state
     this.transients = TransientDocument({ emitter: this })
     
@@ -252,21 +255,54 @@ const Network = stampit(EventEmittable, {
   
   methods: {
     async connect({ params = {}, serverUrl, room, connectTransients, onTransientsSynced }) {
-      if (connectTransients) {
-        this.transients.connect({
-          serverUrl,
-          room: room + '.t',
-          params,
-          onSync: onTransientsSynced,
-        })
-      } else {
-        onTransientsSynced()
+    
+      // Open a "control room" for this relm
+      const controlRoom = room + '.c'
+      console.log(`Connecting to control room '${controlRoom}'`)
+      try {
+        this.provider = new WebsocketProvider(serverUrl, controlRoom, this.control, { params })
+      } catch (err) {
+        console.log('caught error', err)
       }
+      this.provider.ws.addEventListener('error', (event) => {
+        console.log("NETWORK ON ERROR WEBSOCKET", event)
+      })
+      this.provider.ws.addEventListener('close', (event) => {
+        console.log("NETWORK ON CLOSE WEBSOCKET", event)
+      })
       
-      this.permanents.connect({
-        serverUrl,
-        room,
-        params
+      this.provider.on('sync', (states) => {
+        console.log('sync')
+        const version = this.control.getMap('versions')
+        
+        const transientVersion = version.get('transient')
+        if (!transientVersion) {
+          showToast('This relm does not yet exist')
+          throw Error(`relm does not exist (transient document not found: '${transientVersion}')`)
+        }
+        
+        const permanentVersion = version.get('permanent')
+        if (!permanentVersion) {
+          showToast('This relm does not yet exist')
+          throw Error(`relm does not exist (permanent document not found: '${permanentVersion}')`)
+        }
+        
+        if (connectTransients) {
+          this.transients.connect({
+            serverUrl,
+            room: `${room}.t.${transientVersion}`,
+            params,
+            onSync: onTransientsSynced,
+          })
+        } else {
+          onTransientsSynced()
+        }
+        
+        this.permanents.connect({
+          serverUrl,
+          room: `${room}.p.${permanentVersion}`,
+          params
+        })
       })
     },
     

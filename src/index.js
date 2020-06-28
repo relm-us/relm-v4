@@ -34,7 +34,7 @@ import { config, stage } from './config.js'
 import { network } from './network.js'
 import { GoalGroup } from './goals/goal_group.js'
 import { addManifestTo } from './manifest_loaders.js'
-import { runCommand, importExportState } from './commands.js'
+import { runCommand } from './commands.js'
 import { recordCoords } from './record_coords.js'
 
 import { pressTabHelpState, exportImportState } from './svelte/stores.js'

@@ -1,3 +1,8 @@
+const fs = require('fs')
+const path = require('path')
+const md5File = require('md5-file')
+
+const config = require('./config.js')
 
 async function getContentAddressableName(filepath, fallbackExtension = null) {
   const hash = await md5File(filepath)

@@ -1,11 +1,15 @@
 const { Crypto } = require('@peculiar/webcrypto')
 const base64 = require('base64-arraybuffer')
 const level = require('level')
+const db = require('./leveldb.js')
+const invitation = require('./invitation.js')
 require('fast-text-encoding')
 
 const config = require('./config.js')
 
 const crypto = new Crypto();
+
+
 /**
  * The 'x' and 'y' components of ECDSA key that can be used to create a public key.
  * @typedef XYDoc
@@ -13,46 +17,53 @@ const crypto = new Crypto();
  * @property {string} y The 'y' component of the ECDSA public key, base64 encoded
  */
 
+
 /**
+ * Authenticate
+ */
+
+
+/**
+ * Authenticate returns true if the user can be identified, or false otherwise. If
+ * a token is provided, the signature and xydoc is recorded as the identity.
  * 
- * @param {LevelDB} db LevelDB Database
  * @param {UUID} id The UUID of the player
  * @param {string} sig The base64-encoded signature of the player UUID (null if not supplied)
  * @param {string} token The token potentially granting access (null if not supplied)
  * @param {XYDoc} xydoc An object containing minimal info to reconstruct a public key
  */
-async function authorize(db, id, sig, token, xydoc) {
+async function authenticate(id, sig, token, xydoc) {
   // Try authorizing with token first
   if (token && token.length <= config.MAX_TOKEN_LENGTH) {
-    console.log('Authorizing token')
-    if (await authorizeWithToken(db, token)) {
-      console.log('Authorization succeeded with token', `'${token}'`, `(${id})`)
-      await setPublicKeyDocForId(db, id, xydoc.x, xydoc.y)
+    console.log('Authenticating via token')
+    if (await authenticateWithToken(token)) {
+      console.log('Authentication succeeded via token', `'${token}'`, `(${id})`)
+      await setPublicKeyDocForId(id, xydoc.x, xydoc.y)
       return true
     } else {
-      console.log('Authorization failed with token', `'${token}'`, `(${id})`)
+      console.log('Authentication failed via token', `'${token}'`, `(${id})`)
     }
   } else {
-    console.log('Skipping token auth')
+    console.log('Skipping authentication via token')
   }
   
   // Try authorizing with signature second
   if (id && id.length <= config.MAX_UUID_LENGTH && sig) {
-    console.log('Authorizing signature')
-    if (await authorizeWithSignature(db, id, sig)) {
-      console.log('Authorization succeeded with signature', `'${sig}'`, `(${id})`)
+    console.log('Authenticating via signature')
+    if (await authenticateWithSignature(id, sig)) {
+      console.log('Authentication succeeded via signature', `'${sig}'`, `(${id})`)
       return true
     } else {
-      console.log('Authorization failed with signature', `'${sig}'`, `(${id})`)
+      console.log('Authenticating failed via signature', `'${sig}'`, `(${id})`)
     }
   } else {
-    console.log('Skipping signature auth')
+    console.log('Skipping authentication via signature')
   }
 
   return false
 }
 
-async function setPublicKeyDocForId(db, id, pkx, pky) {
+async function setPublicKeyDocForId(id, pkx, pky) {
   const secret = {
     crv: 'P-384',
     ext: true,
@@ -64,7 +75,7 @@ async function setPublicKeyDocForId(db, id, pkx, pky) {
   await db.put(`${config.PUBKEY_PREFIX}.${id}`, JSON.stringify(secret))
 }
 
-async function getPublicKeyDocForId(db, id) {
+async function getPublicKeyDocForId(id) {
   const result = await db.get(`${config.PUBKEY_PREFIX}.${id}`)
   return JSON.parse(result)
 }
@@ -91,35 +102,21 @@ async function verify(message, signature, publicKey) {
   return result
 }
 
-async function authorizeWithToken(db, token) {
-  const invitationKey = `${config.INVITE_PREFIX}.${token}`
-  
-  let allowCounter
-  try {
-    allowCounter = await db.get(invitationKey)
-  } catch (err) {
-    if (err instanceof level.errors.NotFoundError) {
-      console.warn('token not found', token)
-    } else {
-      console.error(err)
-    }
-    return false
-  }
-  
-  if (allowCounter > 0) {
-    await db.put(invitationKey, allowCounter - 1)
-    return true
-  } else {
-    console.warn('token use count exhausted')
+async function authenticateWithToken(token) {
+  if (await invitation.useInvitation(db, { token })) {
+    const invite = await invitation.getInvitation(db, { token })
+
+    // Copy invitation params over to permissions
+    
   }
   
   return false
 }
 
-async function authorizeWithSignature(db, id, sig) {
+async function authenticateWithSignature(id, sig) {
   let pubkeyDoc
   try {
-    pubkeyDoc = await getPublicKeyDocForId(db, id)
+    pubkeyDoc = await getPublicKeyDocForId(id)
   } catch (err) {
     if (err instanceof level.errors.NotFoundError) {
       console.warn('id not found', id)
@@ -132,4 +129,37 @@ async function authorizeWithSignature(db, id, sig) {
   return await verify(id, sig, publicKey)
 }
 
-module.exports = authorize
+
+/**
+ * Authorization
+ */
+ 
+async function authorize(permission, relmName, playerId) {
+  let relmPermissions
+  const relmPermsJSON = await db.get(`perms.${relmName}.*`)
+  try {
+    relmPermissions = new Set(JSON.parse(relmPermsJSON))
+    console.log('relmPermissions', relmPermissions)
+  } catch (err) {
+    relmPermissions = new Set()
+  }
+  
+  let playerPermissions
+  const playerPermsJSON = await db.get(`perms.${relmName}.${playerId}`)
+  try {
+    playerPermissions = new Set(JSON.parse(playerPermsJSON))
+    console.log('playerPermissions', playerPermissions)
+  } catch (err) {
+    playerPermissions = new Set()
+  }
+
+  const permissions = set.union(relmPermissions, playerPermissions)
+  
+  return permissions.has(permission)
+}
+
+module.exports = {
+  authenticate,
+  authenticateWithSignature,
+  authorize,
+}

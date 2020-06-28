@@ -1,28 +1,33 @@
-let WSServer = require('ws').Server;
-let server = require('http').createServer();
-let app = require('./http-server');
-let util = require('./util.js')
-let yws = require('./yws.js')
-let db = require('./leveldb.js')
-let authorize = require('./authorize.js')
+const WSServer = require('ws').Server;
+const server = require('http').createServer();
+const app = require('./http-server');
+const util = require('./util.js')
+const relms = require('./relms.js')
+const yws = require('./yws.js')
+const auth = require('./auth.js')
 
 let wss = new WSServer({ noServer: true });
 
 wss.on('connection', (conn, req) => {
   console.log('connection')
-  const docName = req.url.slice(1).split('?')[0]
-  yws.setupWSConnection(conn, req, {
-    docName: docName,
-    gc: true,
-    db: db
-  })
+  const relmName = getRelmName(req)
+  try {
+    yws.setupWSConnection(conn, req, {
+      docName: relmName,
+      gc: true,
+    })
+  } catch (err) {
+    console.error(err)
+    conn.close()
+  }
 })
 
 server.on('request', app);
 
 server.on('upgrade', (request, socket, head) => {
+  console.log('upgrade requested')
+  const relmName = relms.getRelmNameFromRequest(request)
   const params = util.getUrlParams(request.url)
-  console.log('upgrade requested', params)
   
   let id = params.get('id')
   let token = params.get('t')
@@ -35,10 +40,18 @@ server.on('upgrade', (request, socket, head) => {
     x: params.get('x'),
     y: params.get('y')
   }
-  
-  if (authorize(db, id, sig, token, xydoc)) {
-    wss.handleUpgrade(request, socket, head, (ws) => {
-      wss.emit('connection', ws, request)
+
+  if (!relms.relmExists(relmName)) {
+    console.log(`Visitor sought to enter '${relmName}' but was rejected because it doesn't exist`)
+    socket.write('HTTP/1.1 404 Not Found\r\n\r\n')
+    socket.destroy()
+  } else if (!auth.authenticate(id, sig, token, xydoc)) {
+    console.log(`Visitor sought to enter '${relmName}' but was rejected because unauthorized`, params)
+    socket.write('HTTP/1.1 401 Unauthorized\r\n\r\n')
+    socket.destroy()
+  } else {
+    wss.handleUpgrade(request, socket, head, (conn) => {
+      wss.emit('connection', conn, request)
     })
   }
 })

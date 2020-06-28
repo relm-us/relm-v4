@@ -10,9 +10,9 @@ const PUBKEY_PREFIX = 'pubkey'
 const MAX_TOKEN_LENGTH = 100
 const MAX_UUID_LENGTH = 36
 const MAX_FILE_SIZE = 2097152
-const MAX_FILE_EXTENSION_LENGTH = 30
+const MAX_FILE_EXTENSION_LENGTH = 5 // e.g. '.jpeg', '.gltf'
 const SETUP_TOKEN = 'setup'
-const SETUP_TOKEN_COUNTER = 9999
+const SETUP_TOKEN_COUNTER = 1
 const CONTENT_TYPE_JSON = { 'Content-Type': 'application/json' }
 const ASSET_DIR = __dirname + '/assets'
 

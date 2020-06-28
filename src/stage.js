@@ -128,7 +128,7 @@ const Stage = stampit(
      * @param {number} maxWait - the maximum number of milliseconds to wait
      * @param {Function} condition - an optional additional condition to be met
      */
-    async awaitEntity ({ uuid, maxWait = 10000, condition = null }) {
+    async awaitEntity ({ uuid, maxWait = 120000, condition = null }) {
       const startTime = Date.now()
       return new Promise((resolve, reject) => {
         const intervalId = setInterval(() => {

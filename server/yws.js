@@ -7,7 +7,7 @@ const decoding = require('lib0/dist/decoding.cjs')
 const mutex = require('lib0/dist/mutex.cjs')
 const map = require('lib0/dist/map.cjs')
 
-const setupRelm = require('./relm.js').setupRelm
+const db = require('./leveldb.js')
 
 const wsReadyStateConnecting = 0
 const wsReadyStateOpen = 1
@@ -41,9 +41,12 @@ exports.setPersistence = persistence_ => {
 const docs = new Map()
 exports.docs = docs
 
+const pingTimeout = 30000
 const messageSync = 0
 const messageAwareness = 1
 // const messageAuth = 2
+
+
 
 /**
  * @param {Uint8Array} update
@@ -57,6 +60,7 @@ const updateHandler = (update, origin, doc) => {
   const message = encoding.toUint8Array(encoder)
   doc.conns.forEach((_, conn) => send(doc, conn, message))
 }
+
 
 class WSSharedDoc extends Y.Doc {
   /**
@@ -103,6 +107,7 @@ class WSSharedDoc extends Y.Doc {
   }
 }
 
+
 /**
  * @param {any} conn
  * @param {WSSharedDoc} doc
@@ -126,6 +131,7 @@ const messageListener = (conn, doc, message) => {
     }
   }
 }
+
 
 /**
  * @param {WSSharedDoc} doc
@@ -151,6 +157,7 @@ const closeConn = (doc, conn) => {
   conn.close()
 }
 
+
 /**
  * @param {WSSharedDoc} doc
  * @param {any} conn
@@ -167,7 +174,25 @@ const send = (doc, conn, m) => {
   }
 }
 
-const pingTimeout = 30000
+function isRelmControlRoom(docName) {
+  return !!docName.match(/^[^\.]+\.c$/)
+}
+
+
+const findOrCreateDoc = exports.findOrCreateDoc = (docName, gc = true) => {
+  return map.setIfUndefined(docs, docName, () => {
+    console.log('first time setup of doc', docName)
+    const doc = new WSSharedDoc(docName)
+    doc.gc = gc
+
+    if (persistence !== null) {
+      persistence.bindState(docName, doc)
+    }
+    docs.set(docName, doc)
+    return doc
+  })
+}
+
 
 /**
  * @param {any} conn
@@ -177,16 +202,19 @@ const pingTimeout = 30000
 exports.setupWSConnection = (conn, req, { docName = req.url.slice(1).split('?')[0], gc = true, db = null } = {}) => {
   conn.binaryType = 'arraybuffer'
   // get doc, create if it does not exist yet
-  const doc = map.setIfUndefined(docs, docName, () => {
-    const doc = new WSSharedDoc(docName)
-    setupRelm(doc, db)
-    doc.gc = gc
-    if (persistence !== null) {
-      persistence.bindState(docName, doc)
-    }
-    docs.set(docName, doc)
-    return doc
-  })
+  console.log('setupWSConnection docName', docName)
+  if (isRelmControlRoom(docName) && !docs.has(docName)) {
+    // Trying to create a relm that doesn't exist isn't allowed via Websocket
+    throw Error("Not allowed to create relm")
+  }
+  
+  const doc = findOrCreateDoc(docName, gc)
+  
+  // Watch control document
+  // if (docName.match(/\.c$/)) {
+  //   setupRelmControl(doc, db)
+  // }
+  
   doc.conns.set(conn, new Set())
   // listen and reply to events
   conn.on('message', /** @param {ArrayBuffer} message */ message => messageListener(conn, doc, new Uint8Array(message)))
