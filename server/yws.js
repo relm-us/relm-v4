@@ -7,7 +7,7 @@ const decoding = require('lib0/dist/decoding.cjs')
 const mutex = require('lib0/dist/mutex.cjs')
 const map = require('lib0/dist/map.cjs')
 
-const db = require('./leveldb.js')
+// const db = require('./leveldb.js')
 
 const wsReadyStateConnecting = 0
 const wsReadyStateOpen = 1

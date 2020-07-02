@@ -41,10 +41,16 @@ function normalizeRelmName(name) {
   return name.toLowerCase().replace(/[^a-z\-]+/, '')
 }
 
+function joinError(error, newError) {
+  newError.stack += `\nCaused By:\n` + error.stack
+  return newError
+}
+
 module.exports = {
   getUrlParams,
   uuidv4,
   fail,
   respond,
   normalizeRelmName,
+  joinError,
 }
