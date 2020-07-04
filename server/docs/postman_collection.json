@@ -1,0 +1,123 @@
+{
+	"info": {
+		"_postman_id": "07711965-f1a5-436c-9d6f-80b864c2830d",
+		"name": "Relm Server",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "Authenticate",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:1235/authenticate?t=setup&s=P%2Bmx%2F6jSUnZd2jz5VYNKAhpT48nltN8AzHiYfLTdk8Rpb7QRvnv39SVkDDWIHkXSjL2fcu3gYVWarWr6T9snxHJkSxvK0CSzf2l%2F19LZMcr08CNz50MjO4Ip30JwcPIZ&id=0dce4601-0a92-4c52-ad4a-f355ede669c6&x=P0HWf4l6bGz6ULfaPROfQSsg_pWfK3ICgsH2UDs-Bb45Q_Qj9QVnhryBpwzjp6Xi&y=Ggf-tcvJE0CqzcslV2VT2pL2NUHtpQyZakTijZbf4HjVRv6VW_5_VanKQS3TVUZx",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "1235",
+					"path": [
+						"authenticate"
+					],
+					"query": [
+						{
+							"key": "t",
+							"value": "setup",
+							"description": "Token"
+						},
+						{
+							"key": "s",
+							"value": "P%2Bmx%2F6jSUnZd2jz5VYNKAhpT48nltN8AzHiYfLTdk8Rpb7QRvnv39SVkDDWIHkXSjL2fcu3gYVWarWr6T9snxHJkSxvK0CSzf2l%2F19LZMcr08CNz50MjO4Ip30JwcPIZ",
+							"description": "Signature"
+						},
+						{
+							"key": "id",
+							"value": "0dce4601-0a92-4c52-ad4a-f355ede669c6",
+							"description": "Player ID"
+						},
+						{
+							"key": "x",
+							"value": "P0HWf4l6bGz6ULfaPROfQSsg_pWfK3ICgsH2UDs-Bb45Q_Qj9QVnhryBpwzjp6Xi",
+							"description": "Cryptographic X Component"
+						},
+						{
+							"key": "y",
+							"value": "Ggf-tcvJE0CqzcslV2VT2pL2NUHtpQyZakTijZbf4HjVRv6VW_5_VanKQS3TVUZx",
+							"description": "Cryptographic Y Component"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Create Relm",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:1235/relm/welcome/create?s=P%2Bmx%2F6jSUnZd2jz5VYNKAhpT48nltN8AzHiYfLTdk8Rpb7QRvnv39SVkDDWIHkXSjL2fcu3gYVWarWr6T9snxHJkSxvK0CSzf2l%2F19LZMcr08CNz50MjO4Ip30JwcPIZ&id=0dce4601-0a92-4c52-ad4a-f355ede669c6",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "1235",
+					"path": [
+						"relm",
+						"welcome",
+						"create"
+					],
+					"query": [
+						{
+							"key": "s",
+							"value": "P%2Bmx%2F6jSUnZd2jz5VYNKAhpT48nltN8AzHiYfLTdk8Rpb7QRvnv39SVkDDWIHkXSjL2fcu3gYVWarWr6T9snxHJkSxvK0CSzf2l%2F19LZMcr08CNz50MjO4Ip30JwcPIZ",
+							"description": "Signature"
+						},
+						{
+							"key": "id",
+							"value": "0dce4601-0a92-4c52-ad4a-f355ede669c6",
+							"description": "Player ID"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Access Relm",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:1235/relm/welcome/can/access?s=P%2Bmx%2F6jSUnZd2jz5VYNKAhpT48nltN8AzHiYfLTdk8Rpb7QRvnv39SVkDDWIHkXSjL2fcu3gYVWarWr6T9snxHJkSxvK0CSzf2l%2F19LZMcr08CNz50MjO4Ip30JwcPIZ&id=0dce4601-0a92-4c52-ad4a-f355ede669c6",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "1235",
+					"path": [
+						"relm",
+						"welcome",
+						"can",
+						"access"
+					],
+					"query": [
+						{
+							"key": "s",
+							"value": "P%2Bmx%2F6jSUnZd2jz5VYNKAhpT48nltN8AzHiYfLTdk8Rpb7QRvnv39SVkDDWIHkXSjL2fcu3gYVWarWr6T9snxHJkSxvK0CSzf2l%2F19LZMcr08CNz50MjO4Ip30JwcPIZ",
+							"description": "Signature"
+						},
+						{
+							"key": "id",
+							"value": "0dce4601-0a92-4c52-ad4a-f355ede669c6",
+							"description": "Player ID"
+						}
+					]
+				}
+			},
+			"response": []
+		}
+	],
+	"protocolProfileBehavior": {}
+}
