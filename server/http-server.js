@@ -300,6 +300,8 @@ app.use('/asset', express.static(config.ASSET_DIR, {
 
 
 // General error handler; must be last middleware
+// see http://expressjs.com/en/guide/error-handling.html
+// see https://thecodebarbarian.com/80-20-guide-to-express-error-handling
 app.use(function(error, req, res, next) {
   const errorId = util.uuidv4().split('-')[0]
   const status = error.status || 400

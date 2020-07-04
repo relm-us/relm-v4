@@ -26,7 +26,7 @@
 {:then}
   <ThoughtBar stage={ stage } network={ network } />
   <PadController stage={ stage } />
-  <Upload stage={ stage } network={ network } />
+  <!-- <Upload stage={ stage } network={ network } /> -->
   <ExportImport stage={ stage } network={ network } />
   <ChooseAvatar stage={ stage } network={ network } />
 {:catch err}

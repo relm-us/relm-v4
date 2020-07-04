@@ -8,6 +8,7 @@ const Player = require('./player.js')
 const Invitation = require('./invitation.js')
 const Permission = require('./permission.js')
 
+// see https://node-postgres.com/features/connecting
 const { Pool } = pg
 const pool = new Pool({
   database: config.DBNAME
@@ -30,6 +31,7 @@ async function init() {
   const client = await pool.connect()
   
   try {
+    // Migrate database; see https://www.npmjs.com/package/postgres-migrations
     await createDb(config.DBNAME, { client })
     await migrate({ client }, 'migrations')
   } finally {
