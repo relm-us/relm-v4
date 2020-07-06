@@ -29,6 +29,8 @@ const HasLabel = stampit(Component, {
     this.labelOffset = new Vector3()
     
     this.setLabelColor(labelColor)
+    this.on('visible', () => this.labelObj.show())
+    this.on('invisible', () => this.labelObj.hide())
   },
 
   methods: {

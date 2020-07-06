@@ -82,6 +82,9 @@ const start = async () => {
     
     if (isTransient) {
       network.transients.installInterceptors(entity)
+      if (entity.uuid !== playerId && entity.uuid !== mouseId) {
+        entity.hide()
+      }
     }
     
     stage.add(entity)
@@ -242,6 +245,7 @@ const start = async () => {
   network.on('transient-receive', (uuid, state) => {
     if (uuid !== mouseId && uuid !== playerId) {
       const entity = stage.entities[uuid]
+      entity.show()
       if (entity) {
         for (const [goalAbbrev, goalState] of Object.entries(state)) {
           const goal = entity.goals.get(goalAbbrev)

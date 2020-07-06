@@ -14,6 +14,16 @@ const HasObject = stampit(Component, {
 
     teardown() {
       this.stage.scene.remove(this.object)
+    },
+
+    show() {
+      this.object.visible = true
+      this.emit('visible')
+    },
+
+    hide() {
+      this.object.visible = false
+      this.emit('invisible')
     }
   }
 })
