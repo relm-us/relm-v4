@@ -10,6 +10,7 @@ import { AnimatesScale } from './components/animates_scale.js'
 import { AnimatesRotation } from './components/animates_rotation.js'
 import { AnimatesPosition } from './components/animates_position.js'
 import { UsesAssetAsGltf } from './components/uses_asset_as_gltf.js'
+import { VisibleEdges } from './visible_edges.js'
 
 const DEFAULT_SIZE = 100
 
@@ -46,15 +47,26 @@ const Thing3D = stampit(
   HasEmissiveMaterial,
   ReceivesPointer,
   stampit(Component, {
+    init() {
+      this.edges = VisibleEdges({
+        object: this.object,
+        color: 0x000000,
+      })
+      this.on('mesh-updated', () => {
+        this.edges.rebuild()
+      })
+      this.on('select', () => {
+        this.edges.enable()
+      })
+      this.on('deselect', () => {
+        this.edges.disable()
+      })
+    },
+
     methods: {
       normalize() {
         const ratio = getScaleRatio(this.object, DEFAULT_SIZE)
         this.goals.normalizedScale.update({ v: ratio })
-        // this.goals.scale.update({
-        //   x: this.goals.scale.get('x') * ratio,
-        //   y: this.goals.scale.get('y') * ratio,
-        //   z: this.goals.scale.get('z') * ratio,
-        // })
       },
     }
   })

@@ -1,9 +1,11 @@
 import stampit from 'stampit'
 
 const VisibleEdges = stampit({
-  init({ object, enabled = false }) {
-    this.object = object
+  init({ object, color = 0xffffff, enabled = false }) {
+    this._object = object
+    this._color = color
     this.enabled = false
+    this.lines = []
 
     if (enabled) {
       this.enable()
@@ -18,7 +20,7 @@ const VisibleEdges = stampit({
 
     disable() {
       this.enabled = false
-      this.object.remove(this.lines)
+      this._removeLineSegments()
     },
     
     rebuild() {
@@ -27,26 +29,46 @@ const VisibleEdges = stampit({
       }
     },
 
-    _findGeometry() {
-      let mesh
-      this.object.traverse(o => {
-        if (o.isMesh) { mesh = o }
+    getObject() {
+      if (typeof this._object === 'function') {
+        return this._object()
+      } else {
+        return this._object
+      }
+    },
+
+    _removeLineSegments() {
+      this.lines.forEach(line => {
+        if (line.parent) {
+          line.parent.remove(line)
+        }
       })
-      if (mesh) return mesh.geometry
+    },
+
+    _findMeshes() {
+      const meshes = []
+      this.getObject().traverse(o => {
+        if (o.isMesh) {
+          meshes.push(o)
+        }
+      })
+      return meshes
     },
 
     _createEdges() {
-      if (this.lines) { this.object.remove(this.lines) }
+      this._removeLineSegments()
       
-      const parentGeom = this._findGeometry()
-      if (parentGeom) {
-        const geometry = new THREE.EdgesGeometry(parentGeom)
-        const material = new THREE.LineBasicMaterial({ color: 0xffffff })
-        this.lines = new THREE.LineSegments(geometry, material)
+      const meshes = this._findMeshes()
+      for (const mesh of meshes) {
+        const geometry = new THREE.EdgesGeometry(mesh.geometry)
+        const material = new THREE.LineBasicMaterial({ color: this._color})
+        const line = new THREE.LineSegments(geometry, material)
         
-        this.object.add(this.lines)
-      } else {
-        console.warn("Can't show VisibleEdges of object, no geometry found", this.object)
+        mesh.add(line)
+        this.lines.push(line)
+      }
+      if (meshes.length === 0) {
+        console.warn("Can't show VisibleEdges of object, no geometry found", object)
       }
     }
   }

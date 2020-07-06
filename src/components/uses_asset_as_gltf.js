@@ -4,7 +4,7 @@ import { Component } from './component.js'
 import { defineGoal } from '../goals/goal.js'
 
 const findFirstMesh = (object3d) => {
-  if (object3d.type === 'Object3D' || object3d.type === 'Mesh') {
+  if (object3d.type === 'Object3D' || object3d.type === 'Mesh' || object3d.type === 'Group') {
     return object3d
   }
   for (let child of object3d.children) {
