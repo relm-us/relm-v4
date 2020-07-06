@@ -5,14 +5,19 @@ import { Component } from './component.js'
 import { defineGoal } from '../goals/goal.js'
 
 import { GLTFLoader } from '../lib/GLTFLoader.js'
+import { MeshoptGLTFLoader } from '../lib/MeshoptGLTFLoader.js'
 
 
 const IMAGE_FILETYPE_RE = /\.(png|gif|jpg|jpeg|webp)$/
+const GLTF_PACKED_FILETYPE_RE = /\.packed-(gltf|glb)$/
 const GLTF_FILETYPE_RE = /\.(gltf|glb)$/
 
 
 // Loader for regular GLTFs and GLBs
 const regularGLTFLoader = new GLTFLoader()
+
+// Loader for packed GLTFs and GLBs (see https://github.com/zeux/meshoptimizer/tree/master/gltf)
+const meshoptGLTFLoader = new MeshoptGLTFLoader()
 
 // Loader for Textures
 const textureLoader = new THREE.TextureLoader()
@@ -22,6 +27,8 @@ const getLoaderFromUrl = (url) => {
   if (!url.match) { console.error('URL is is not a string', url) }
   if (url.match(IMAGE_FILETYPE_RE)) {
     return textureLoader
+  } else if (url.match(GLTF_PACKED_FILETYPE_RE)) {
+    return meshoptGLTFLoader
   } else if (url.match(GLTF_FILETYPE_RE)) {
     return regularGLTFLoader
   } else {
@@ -68,4 +75,5 @@ export {
   LoadsAsset,
   IMAGE_FILETYPE_RE,
   GLTF_FILETYPE_RE,
+  GLTF_PACKED_FILETYPE_RE,
 }

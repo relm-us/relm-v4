@@ -7,6 +7,8 @@
  */
 // import * as THREE from 'three'
 
+// see https://github.com/zeux/meshoptimizer
+
 THREE.MeshoptGLTFLoader = ( function () {
 
 	function GLTFLoader( manager ) {
