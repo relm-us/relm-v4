@@ -30,7 +30,7 @@ const LocalstoreGetsState = stampit(Component, {
 })
 
 const localstoreRestore = (uuid) => {
-  return JSON.parse(localStorage.getItem(uuid) || '{}')
+  return JSON.parse(localStorage.getItem(uuid) || null)
 }
 
 export { LocalstoreGetsState, localstoreRestore }

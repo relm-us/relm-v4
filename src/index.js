@@ -206,7 +206,13 @@ const start = async () => {
   
   const playerJSON = localstoreRestore(playerId)
   if (playerJSON) {
+    // Ignore stored video state
     delete playerJSON['vid']
+    // Ignore player position if LANDING_COORDS given
+    if (cfg.LANDING_COORDS) {
+      console.log('setting landing coords', cfg.LANDING_COORDS)
+      playerJSON.p = Object.assign({ '@due': 0 }, cfg.LANDING_COORDS)
+    }
     try {
       network.transients.fromJSON(playerJSON, true)
     } catch (e) {
@@ -214,6 +220,10 @@ const start = async () => {
     }
   } else {
     console.log('New Player!', playerId)
+    if (cfg.LANDING_COORDS) {
+      console.log('setting landing coords (new player)', cfg.LANDING_COORDS)
+      player.goals.position.update(cfg.LANDING_COORDS, 0)
+    }
   }
   
   
