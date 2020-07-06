@@ -11,6 +11,9 @@ const HasOffscreenIndicator = stampit(Component, {
     this.offscreenIndicatorLabel = new Label()
     
     this.offscreenIndicatorLabel.domElement.classList.add('offscreen-indicator-label')
+
+    this.on('visible', this.showOffscreenIndicator.bind(this))
+    this.on('invisible', this.hideOffscreenIndicator.bind(this))
   },
 
   methods: {

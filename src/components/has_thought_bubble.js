@@ -19,6 +19,8 @@ const HasThoughtBubble = stampit(Entity, Component, EventEmittable, {
     const action = () => { this.emit('thoughtBubbleAction', this.getThought()) }
     const close = () => { this.emit('thoughtBubbleClose'); this.setThought(null) }
     this.thoughtBubble = new ThoughtBubble(this.stage.camera, action, close)
+
+    this.on('invisible', () => this.clearThought())
   },
 
   methods: {
