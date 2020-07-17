@@ -4,8 +4,8 @@ DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
 
 set -x
 
-echo "Writing src/manifest.js..."
-$DIR/make_manifest.sh
+# echo "Writing src/manifest.js..."
+# $DIR/make_manifest.sh
 
 echo "Cleaning dist/ folder & re-building..."
 rm -rf $DIR/dist/* && ./node_modules/.bin/parcel build --public-url / src/index.html
