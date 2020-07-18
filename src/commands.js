@@ -650,8 +650,9 @@ const commands = {
   },
   share: (args) => {
     return (env) => {
-      const isCamera = switchVideo()
-      env.stage.player.goals.video.update({ cam: isCamera })
+      switchVideo().then(isCamera => {
+        env.stage.player.goals.video.update({ cam: isCamera })
+      })
     }
   },
   skybox: (args) => {
