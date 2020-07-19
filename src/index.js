@@ -624,7 +624,7 @@ const start = async () => {
     }
   })
 
-  console.log('start() complete')
+  // console.log('start() complete')
 }
 
 const app = new App({

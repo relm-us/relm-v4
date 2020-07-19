@@ -12,7 +12,6 @@
   export let stage
   export let network
   
-  console.log('promise = start()')
   let promise = start()
 </script>
 
@@ -28,7 +27,7 @@
   <PadController stage={ stage } />
   <Upload stage={ stage } network={ network } />
   <ExportImport stage={ stage } network={ network } />
-  <ChooseAvatar stage={ stage } network={ network } />
+  <ChooseAvatar stage={ stage } />
 {:catch err}
   {console.error(err)}
 {/await}

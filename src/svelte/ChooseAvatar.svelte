@@ -3,7 +3,6 @@
   import { avatarOptionsOfGender } from '../avatars.js'
   
   export let stage
-  export let network
   
   let visible
   
