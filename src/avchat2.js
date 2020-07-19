@@ -156,23 +156,31 @@ function onRemoteTrack(track) {
 
   const id = participantId + track.getType() + participant.trackIndex;
 
-  if (track.getType() === "video") {
-    console.log("create remote video track", participantId, id, participant);
-    const videoElement = relmContext.createVideoElement(participant.playerId);
-    if (videoElement) {
-      // NOTE: no need to append videoElement, it has already been added to video bubble
-      videoElement.id = id;
-      adjustVideoClasses(track.videoType === "camera", false, videoElement);
-      track.attach(videoElement);
-    } else {
-      console.warn("Can't createVideoElement for remote player");
-    }
-  } else {
-    const audioElement = document.createElement("audio");
-    audioElement.id = id;
-    audioElement.autoplay = true;
-    document.body.appendChild(audioElement);
-    track.attach(audioElement);
+  switch (track.getType()) {
+    case "audio":
+      console.log("create remote video audio", participantId, id, participant);
+      const audioElement = document.createElement("audio");
+      audioElement.id = id;
+      audioElement.autoplay = true;
+      document.body.appendChild(audioElement);
+      track.attach(audioElement);
+    break
+    
+    case "video":
+      console.log("create remote video track", participantId, id, participant);
+      const videoElement = relmContext.createVideoElement(participant.playerId);
+      if (videoElement) {
+        // NOTE: no need to append videoElement, it has already been added to video bubble
+        videoElement.id = id;
+        adjustVideoClasses(track.videoType === "camera", false, videoElement);
+        track.attach(videoElement);
+      } else {
+        console.warn("Can't create video element for remote player");
+      }
+    break
+    
+    default:
+      console.error(`Can't create remote track of type ${track.getType()}`)
   }
 }
 
@@ -246,9 +254,9 @@ function onConnectionSuccess() {
   room.on(JitsiMeetJS.events.conference.MESSAGE_RECEIVED, (userID, text, ts) => {
     console.log(`message received: '${text}' (${userID}), ${ts}`)
   });
-  room.on(JitsiMeetJS.events.conference.ENDPOINT_MESSAGE_RECEIVED, () => {
-    console.log(`endpoint message received`)
-  });
+  // room.on(JitsiMeetJS.events.conference.ENDPOINT_MESSAGE_RECEIVED, () => {
+  //   console.log(`endpoint message received`)
+  // });
   room.on(JitsiMeetJS.events.conference.DISPLAY_NAME_CHANGED, (userID, displayName) => {
     console.log(`display name changed: '${displayName}' (${userID})`)
   });
@@ -300,14 +308,14 @@ function onConnectionSuccess() {
     console.log(`${room.getPhoneNumber()} - ${room.getPhonePin()}`)
   );
   
-  room.on(
-    JitsiMeetJS.events.connectionQuality.LOCAL_STATS_UPDATED,
-    (stats) => console.log(`connection quality local stats updated:`, stats)
-  );
-  room.on(
-    JitsiMeetJS.events.connectionQuality.REMOTE_STATS_UPDATED,
-    (userID, stats) => console.log(`connection quality remote stats updated (${userID}):`, stats)
-  );
+  // room.on(
+  //   JitsiMeetJS.events.connectionQuality.LOCAL_STATS_UPDATED,
+  //   (stats) => console.log(`connection quality local stats updated:`, stats)
+  // );
+  // room.on(
+  //   JitsiMeetJS.events.connectionQuality.REMOTE_STATS_UPDATED,
+  //   (userID, stats) => console.log(`connection quality remote stats updated (${userID}):`, stats)
+  // );
 
   room.join();
 }
