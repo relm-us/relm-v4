@@ -59,10 +59,10 @@ const Selection = stampit({
       return center
     },
 
-    hasAtLeast(n) {
-      return this.selected.size >= n
+    count() {
+      return this.selected.size
     },
-    
+
     clearSelection() {
       this.select([], '=')
     },

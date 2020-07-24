@@ -335,7 +335,7 @@ const start = async () => {
     
     if (dragLock) {
       const intersection = stage.intersectionFinder.getOneIntersection(stage.background.object)
-      if (intersection && stage.selection.hasAtLeast(1)) {
+      if (intersection && stage.selection.count() >= 1) {
         stage.selection.forEach((entity) => {
           dragDelta.copy(intersection.point)
           dragDelta.sub(dragStartPos)
@@ -371,7 +371,7 @@ const start = async () => {
     stage.intersectionFinder.setScreenCoords(event.clientX, event.clientY)
     
     // This might be the beginning of a drag & drop sequence, so prep for that possibility
-    if (stage.selection.hasAtLeast(1)) {
+    if (stage.selection.count() >= 1) {
       const intersection = stage.intersectionFinder.getOneIntersection(stage.background.object)
       if (intersection) {
         dragStart = true
@@ -409,7 +409,11 @@ const start = async () => {
     // must be left-click
     if (event.button !== 0) { return }
     
-    if (!dragLock) {
+    if (dragLock) {
+      if (stage.selection.count() === 1) {
+        stage.selection.clearSelection()
+      }
+    } else {
       // Did player click on something with an onClick callback?
       let clickedEntities = stage.intersectionFinder.getAllIntersectionsOnStage().map((isect) => isect.entity)
       clickedEntities.forEach((entity) => {
@@ -523,7 +527,7 @@ const start = async () => {
       else if (e.keyCode === KEY_TAB) {
         e.preventDefault()
       }
-      else if (e.keyCode === KEY_ESCAPE && stage.selection.hasAtLeast(1)) {
+      else if (e.keyCode === KEY_ESCAPE && stage.selection.count() >= 1) {
         runCommandSimple('select none')
       }
       // Support `ctrl+A` and `cmd+A` for selecting all
