@@ -1,10 +1,13 @@
 // Import external libraries and helpers
-import { guestNameFromPlayerId, avatarOptionFromPlayerId, avatarOptionsOfGender } from './avatars.js'
+import {
+  guestNameFromPlayerId,
+  avatarOptionFromPlayerId,
+  avatarOptionsOfGender,
+} from './avatars.js'
 import { Security } from './security.js'
 import { initializeAVChat, muteAudio, unmuteAudio } from './avchat2.js'
 import { normalizeWheel } from './lib/normalizeWheel.js'
-import "toastify-js/src/toastify.css"
-
+import 'toastify-js/src/toastify.css'
 
 // The `Typed` stamp allows Entities and SharedEntities to be registered
 import { Typed } from './typed.js'
@@ -26,23 +29,33 @@ import { DiamondIndicator } from './diamond_indicator.js'
 import { Skybox } from './skybox.js'
 import { TriggerPlate } from './trigger_plate.js'
 
-
 // Misc. other imports
 import { localstoreRestore } from './localstore_gets_state.js'
-import { uuidv4, getOrCreateLocalId, randomPastelColor, domReady, sortByZ } from './util.js'
+import {
+  uuidv4,
+  getOrCreateLocalId,
+  randomPastelColor,
+  domReady,
+  sortByZ,
+} from './util.js'
 import { config, stage } from './config.js'
 import { network } from './network.js'
 import { GoalGroup } from './goals/goal_group.js'
 import { addManifestTo } from './manifest_loaders.js'
-import { runCommand, importExportState } from './commands.js'
+import { runCommand } from './commands.js'
 import { recordCoords } from './record_coords.js'
 
 import { pressTabHelpState, exportImportState } from './svelte/stores.js'
 
 import {
-  KEY_A, KEY_C, KEY_V,
-  KEY_TAB, KEY_ESCAPE,
-  KEY_SLASH, KEY_BACK_SPACE, KEY_DELETE
+  KEY_A,
+  KEY_C,
+  KEY_V,
+  KEY_TAB,
+  KEY_ESCAPE,
+  KEY_SLASH,
+  KEY_BACK_SPACE,
+  KEY_DELETE,
 } from 'keycode-js'
 
 import App from './svelte/App.svelte'
@@ -58,139 +71,146 @@ const security = Security()
 
 let playersCentroid = new THREE.Vector3()
 let occasionalUpdate = 0
-  
+
 let player
 let mousePointer
-
 
 const start = async () => {
   const playerId = await security.getOrCreateId()
   const mouseId = getOrCreateLocalId('mouseId')
-  
+
   // Initialize network first so that entities can send their initial state
   // even before we've connected to server (or eventually, peers)
   network.on('add', async (goalGroupMap, isTransient) => {
     // console.log('network.on add', goalGroupMap.toJSON())
-    
+
     // Get the stamp that has registered itself as a named, matching type
     const typeName = goalGroupMap.get('@type')
     const Type = Typed.getType(typeName)
-    
-    const goals = GoalGroup({ goalDefinitions: Type.goalDefinitions, goalGroupMap })
-    
+
+    const goals = GoalGroup({
+      goalDefinitions: Type.goalDefinitions,
+      goalGroupMap,
+    })
+
     const entity = Type({ goals })
-    
+
     if (isTransient) {
       network.transients.installInterceptors(entity)
       if (entity.uuid !== playerId && entity.uuid !== mouseId) {
         entity.hide()
       }
     }
-    
+
     stage.add(entity)
-    
+
     // Handle local callbacks after object creation, e.g. to highlight newly pasted entities
     network.afterAdd(entity)
   })
-  
+
   network.on('remove', (uuid) => {
     const entity = stage.entities[uuid]
     if (entity) {
       stage.remove(uuid, entity)
     }
   })
-  
-  const params = { id: playerId }
-  const url = new URL(window.location.href)
-  const token = url.searchParams.get("t")
-  if (window.crypto.subtle) {
-    const pubkey = await security.exportPublicKey()
-    const signature = await security.sign(playerId)
-    params.s = signature
-    if (token) {
-      Object.assign(params, {
-        t: token,
-        /**
-         * The `x` and `y` parameters are public parts of the ECDSA algorithm.
-         * The server registers these and can later verify anything this client
-         * cryptographically signs.
-         */
-        x: pubkey.x,
-        y: pubkey.y
-      })
-    }
-    await security.verify(playerId, signature)
-  } else {
-    console.log("Not using crypto.subtle")
+
+  if (!window.crypto.subtle) {
+    showToast(
+      `Unable to authentiate: please use a browser that supports signing with public keys, such as Firefox or Chrome`
+    )
+    return
   }
-  
-  network.connect({
-    params,
-    room: cfg.ROOM,
-    serverUrl: cfg.SERVER_YJS_URL,
-    connectTransients: !cfg.SINGLE_PLAYER_MODE,
-    onTransientsSynced: () => {
-      const color = randomPastelColor()      
-      // If we don't find ourselves in the transients document, we need to create ourselves
-      if (!network.transients.objects.has(playerId)) {
-        network.transients.create({
-          type: 'player',
-          uuid: playerId,
-          goals: {
-            label: { text: guestNameFromPlayerId(playerId), oz: 50 },
-            animationMesh: { v: avatarOptionFromPlayerId(playerId).avatarId },
-            animationSpeed: { v: 1.0 },
-            speed: { max: 250 },
-            color: color,
-          },
-        })
+
+  const pubkey = await security.exportPublicKey()
+  const signature = await security.sign(playerId)
+  const params = {
+    id: playerId,
+    s: signature,
+    x: pubkey.x,
+    y: pubkey.y,
+  }
+  const url = new URL(window.location.href)
+  const token = url.searchParams.get('t')
+  if (token) {
+    params.t = token
+  }
+
+  network
+    .connect({
+      params,
+      room: cfg.ROOM,
+      serverUrl: cfg.SERVER_YJS_URL,
+      serverYjsUrl: cfg.SERVER_YJS_URL,
+      connectTransients: !cfg.SINGLE_PLAYER_MODE,
+      onTransientsSynced: () => {
+        const color = randomPastelColor()
+        // If we don't find ourselves in the transients document, we need to create ourselves
+        if (!network.transients.objects.has(playerId)) {
+          network.transients.create({
+            type: 'player',
+            uuid: playerId,
+            goals: {
+              label: { text: guestNameFromPlayerId(playerId), oz: 50 },
+              animationMesh: { v: avatarOptionFromPlayerId(playerId).avatarId },
+              animationSpeed: { v: 1.0 },
+              speed: { max: 250 },
+              color: color,
+            },
+          })
+        }
+
+        if (!network.transients.objects.has(mouseId)) {
+          network.transients.create({
+            type: 'mouse',
+            uuid: mouseId,
+            goals: {
+              color: color,
+            },
+          })
+        }
+      },
+    })
+    .catch((err) => {
+      console.log(err, err.response)
+      if (err.response && err.response.data) {
+        showToast(err.response.data.reason)
+      } else {
+        showToast(`There was a problem loading this relm`)
       }
-      
-      if (!network.transients.objects.has(mouseId)) {
-        network.transients.create({
-          type: 'mouse',
-          uuid: mouseId,
-          goals: {
-            color: color,
-          }
-        })
-      }
-    }
-  })
-  
-  
+    })
 
   // We first add all resources from the manifest so that the progress
   // bar can add up all the resource's sizes. The actual loading doesn't
   // happen until we `enqueue` and `load`.
   addManifestTo(resources)
-  
+
   // Load bare essentials
   resources.enqueue(['people', 'interact'])
   await resources.load()
 
-  window.addEventListener('resize', _ => stage.windowResized(window.innerWidth, window.innerHeight))
+  window.addEventListener('resize', (_) =>
+    stage.windowResized(window.innerWidth, window.innerHeight)
+  )
   stage.start()
 
-
   await domReady()
-  
-  
+
   // The player!
   player = stage.player = await stage.awaitEntity({ uuid: playerId })
-  
+
   // Allow local player to control self
   player.autonomous = false
-  
+
   const vidobj = player.videoBubble.object
   vidobj.createDomElement()
   vidobj.on('mute', muteAudio)
   vidobj.on('unmute', unmuteAudio)
-  
+
   player.labelObj.setOnLabelChanged((text) => {
     player.goals.label.update({ text })
   })
-  
+
   player.on('thoughtBubbleAction', (thought) => {
     const pos = player.object.position
     network.permanents.create({
@@ -201,12 +221,12 @@ const start = async () => {
           x: pos.x + 60,
           y: pos.y + 80,
           z: pos.z,
-        }
-      }
+        },
+      },
     })
     player.clearThought()
   })
-  
+
   const playerJSON = localstoreRestore(playerId)
   if (playerJSON) {
     // Ignore stored video state
@@ -219,7 +239,7 @@ const start = async () => {
     try {
       network.transients.fromJSON(playerJSON, true)
     } catch (e) {
-      console.warn("Unable to restore player json", e)
+      console.warn('Unable to restore player json', e)
     }
   } else {
     console.log('New Player!', playerId)
@@ -228,20 +248,22 @@ const start = async () => {
       player.goals.position.update(cfg.LANDING_COORDS, 0)
     }
   }
-  
-  
+
   // The mouse pointer!
   mousePointer = stage.mouse = await stage.awaitEntity({ uuid: mouseId })
   {
     const c = player.goals.color
-    mousePointer.goals.color.update({ r: c.get('r'), g: c.get('g'), b: c.get('b') })
+    mousePointer.goals.color.update({
+      r: c.get('r'),
+      g: c.get('g'),
+      b: c.get('b'),
+    })
   }
-  
-  
+
   // Create the stable but invisible "ground" layer that acts as a plane
   // that can always be clicked on by the mouse.
   stage.background = stage.create('background')
-  
+
   network.on('transient-receive', (uuid, state) => {
     if (uuid !== mouseId && uuid !== playerId) {
       const entity = stage.entities[uuid]
@@ -258,7 +280,7 @@ const start = async () => {
       }
     }
   })
-  
+
   // Perform several calculations once per game loop:
   // 1. (occasionally) Refresh videoBubble diameter
   // 2. Calculate centroid of all players on stage
@@ -268,39 +290,45 @@ const start = async () => {
 
     // Double-count the player's position so that the camera prefers player slightly
     let playerCount = 1
-    playersCentroid.copy(player.object.position)   
+    playersCentroid.copy(player.object.position)
     // TODO: make this filter for 'HasVideoBubble' instead of just looking for players
-    stage.forEachEntityOnStageOfType('player', (player, i) => {
-      // Occasionally refresh videoBubble diameter due to new players
-      // entering scene and needing size adjusted to zoom level
-      if (occasionalUpdate % 100 === 0) {
-        player.videoBubble.object.setDiameter(stage.fov)
-      }
-      
-      // Add player positions and keep track of count so we can divide by
-      // number of players after the loop (to get average/centroid position)
-      playersCentroid.add(player.object.position)
-      playerCount++
-      
-      // Sort the visible players by Z order
-      const el = player.videoBubble.object.domElement
-      if (el) { el.style.zIndex = i + 1 }
-    }, sortByZ)
-    
+    stage.forEachEntityOnStageOfType(
+      'player',
+      (player, i) => {
+        // Occasionally refresh videoBubble diameter due to new players
+        // entering scene and needing size adjusted to zoom level
+        if (occasionalUpdate % 100 === 0) {
+          player.videoBubble.object.setDiameter(stage.fov)
+        }
+
+        // Add player positions and keep track of count so we can divide by
+        // number of players after the loop (to get average/centroid position)
+        playersCentroid.add(player.object.position)
+        playerCount++
+
+        // Sort the visible players by Z order
+        const el = player.videoBubble.object.domElement
+        if (el) {
+          el.style.zIndex = i + 1
+        }
+      },
+      sortByZ
+    )
+
     // Finalize player centroid calculation
     playersCentroid.divideScalar(playerCount)
-    
+
     network.transients.sendState([playerId, mouseId])
   })
-    
+
   // Mouse wheel zooms in and out
-  document.addEventListener('wheel', function(event) {
+  document.addEventListener('wheel', function (event) {
     if (event.target.id === 'game') {
       let pixelY = normalizeWheel(event.deltaY)
       const newFov = stage.fov - pixelY
       stage.setFov(newFov)
-      
-      stage.forEachEntityOnStageOfType('player', player => {
+
+      stage.forEachEntityOnStageOfType('player', (player) => {
         player.videoBubble.object.setDiameter(stage.fov)
       })
     }
@@ -308,11 +336,7 @@ const start = async () => {
 
   // The stage is special in that it creates a domElement that must be added to our page
   document.getElementById('game').appendChild(stage.renderer.domElement)
-  
 
-
-  
-  
   let dragLock = false
   let dragStart = false
   let dragStartPos = null
@@ -321,10 +345,12 @@ const start = async () => {
     // Show mouse pointer
     mousePointer.setScreenCoords(event.clientX, event.clientY)
     stage.intersectionFinder.setScreenCoords(event.clientX, event.clientY)
-    
+
     // If mouse has moved a certain distance since clicking, then turn into a "drag"
     if (dragStart && !dragLock) {
-      const intersection = stage.intersectionFinder.getOneIntersection(stage.background.object)
+      const intersection = stage.intersectionFinder.getOneIntersection(
+        stage.background.object
+      )
       if (intersection) {
         const mousePos = intersection.point
         if (mousePos.distanceTo(dragStartPos) > 10) {
@@ -332,22 +358,24 @@ const start = async () => {
         }
       }
     }
-    
+
     if (dragLock) {
-      const intersection = stage.intersectionFinder.getOneIntersection(stage.background.object)
+      const intersection = stage.intersectionFinder.getOneIntersection(
+        stage.background.object
+      )
       if (intersection && stage.selection.count() >= 1) {
         stage.selection.forEach((entity) => {
           dragDelta.copy(intersection.point)
           dragDelta.sub(dragStartPos)
           const pos = stage.selection.savedPositionFor('drag', entity)
           dragDelta.add(pos)
-          
+
           if (stage.gridSnap) {
             const size = stage.gridSnap
             dragDelta.x = Math.floor(dragDelta.x / size) * size
             dragDelta.z = Math.floor(dragDelta.z / size) * size
           }
-          
+
           // entity.disableFollowsTarget()
           entity.object.position.copy(dragDelta)
           entity.goals.position.update({
@@ -362,39 +390,63 @@ const start = async () => {
       }
     }
   })
-  
+
   window.addEventListener('mousedown', (event) => {
-    if (event.target.id !== 'game' && event.target.id !== 'glcanvas') { return }
+    if (event.target.id !== 'game' && event.target.id !== 'glcanvas') {
+      return
+    }
     // must be left-click
-    if (event.button !== 0) { return }
-    
+    if (event.button !== 0) {
+      return
+    }
+
+    // Check for pointer-events:none HTML that needs synthetic click
+    for (const clickable of document.getElementsByClassName('clickable')) {
+      const bounds = clickable.getBoundingClientRect()
+      if (
+        event.clientX >= bounds.left &&
+        event.clientX <= bounds.right &&
+        event.clientY >= bounds.top &&
+        event.clientY <= bounds.bottom
+      ) {
+        clickable.focus()
+        // console.log("clickable", clickable);
+      }
+    }
+
     stage.intersectionFinder.setScreenCoords(event.clientX, event.clientY)
-    
+
     // This might be the beginning of a drag & drop sequence, so prep for that possibility
     if (stage.selection.count() >= 1) {
-      const intersection = stage.intersectionFinder.getOneIntersection(stage.background.object)
+      const intersection = stage.intersectionFinder.getOneIntersection(
+        stage.background.object
+      )
       if (intersection) {
         dragStart = true
         dragStartPos = intersection.point
         stage.selection.savePositions('drag')
       }
     } else if (!event.shiftKey && !event.metaKey && !event.ctrlKey) {
-        let intersections = stage.intersectionFinder.getAllIntersectionsOnStage()
-        if (!stage.editorMode) {
-          intersections = intersections.filter((isect) => !isect.entity.isUiLocked())
-        }
-        const groundIntersection = stage.intersectionFinder.getOneIntersection(stage.background.object)
-        // Don't allow selecting locked objects
-        if (intersections.length > 0 && groundIntersection) {
-          const isect = intersections[0]
-          stage.selection.select([isect.entity], '=')
-        
-          dragStart = true
-          dragStartPos = groundIntersection.point
-          stage.selection.savePositions('drag')
-        }
+      let intersections = stage.intersectionFinder.getAllIntersectionsOnStage()
+      if (!stage.editorMode) {
+        intersections = intersections.filter(
+          (isect) => !isect.entity.isUiLocked()
+        )
+      }
+      const groundIntersection = stage.intersectionFinder.getOneIntersection(
+        stage.background.object
+      )
+      // Don't allow selecting locked objects
+      if (intersections.length > 0 && groundIntersection) {
+        const isect = intersections[0]
+        stage.selection.select([isect.entity], '=')
+
+        dragStart = true
+        dragStartPos = groundIntersection.point
+        stage.selection.savePositions('drag')
+      }
     }
-    
+
     // TODO: Why can't we detect a click on the player?
     //
     // const isect3 = mousePointer.getIntersects(player.object)
@@ -403,25 +455,31 @@ const start = async () => {
     //   console.log('clicked player')
     // }
   })
-  
+
   window.addEventListener('mouseup', (event) => {
-    if (event.target.id !== 'game' && event.target.id !== 'glcanvas') { return }
+    if (event.target.id !== 'game' && event.target.id !== 'glcanvas') {
+      return
+    }
     // must be left-click
-    if (event.button !== 0) { return }
-    
+    if (event.button !== 0) {
+      return
+    }
+
     if (dragLock) {
       if (stage.selection.count() === 1) {
         stage.selection.clearSelection()
       }
     } else {
       // Did player click on something with an onClick callback?
-      let clickedEntities = stage.intersectionFinder.getAllIntersectionsOnStage().map((isect) => isect.entity)
+      let clickedEntities = stage.intersectionFinder
+        .getAllIntersectionsOnStage()
+        .map((isect) => isect.entity)
       clickedEntities.forEach((entity) => {
         if (entity.onClick) {
           entity.onClick()
         }
       })
-      
+
       // Click to select things on the stage
       recordCoords({ x: event.clientX, y: event.clientY }, (isNearPrevious) => {
         /**
@@ -430,14 +488,20 @@ const start = async () => {
          *   - ctrl+click: set subtraction
          *   - click: replace set
          */
-        const operation = event.shiftKey ? '+' : (event.ctrlKey || event.metaKey ? '-' : '=')
+        const operation = event.shiftKey
+          ? '+'
+          : event.ctrlKey || event.metaKey
+          ? '-'
+          : '='
         // Select whatever the most recent 'mousemove' event got us closest to
-        let selected = stage.intersectionFinder.getAllIntersectionsOnStage().map((isect) => isect.entity)
+        let selected = stage.intersectionFinder
+          .getAllIntersectionsOnStage()
+          .map((isect) => isect.entity)
         if (!stage.editorMode) {
           // Don't allow selecting locked objects
           selected = selected.filter((entity) => !entity.isUiLocked())
         }
-        
+
         // When clicking near the same spot as last time without shift or ctrl keys,
         // cycle through the various intersecting objects under the mouse pointer
         if (operation === '=' && isNearPrevious) {
@@ -450,7 +514,7 @@ const start = async () => {
           showToast(`Selected ${one.type} (${one.uuid})`)
           selected = [one]
         }
-        
+
         stage.selection.select(selected, operation)
       })
     }
@@ -458,20 +522,22 @@ const start = async () => {
     dragLock = false
   })
 
-  
   const runCommandSimple = (text) => runCommand(text, { network, stage, cfg })
-
 
   // Do it once when the page finishes loading, too:
   stage.focusOnGame()
 
-  document.body.addEventListener('mousedown', (event) => {
-    if (event.target.id === 'game') {
-      stage.focusOnGame()
-      event.preventDefault()
-    }
-  }, true)
-  
+  document.body.addEventListener(
+    'mousedown',
+    (event) => {
+      if (event.target.id === 'game') {
+        stage.focusOnGame()
+        event.preventDefault()
+      }
+    },
+    true
+  )
+
   const invite = document.getElementById('invite')
   if (invite) {
     const invitation = document.getElementById('invitation')
@@ -480,7 +546,7 @@ const start = async () => {
       if (invitation.classList.contains('show')) {
         invitation.classList.remove('show')
       } else {
-        const invitationToken = uuidv4().slice(0,7)
+        const invitationToken = uuidv4().slice(0, 7)
         network.invitations.set(invitationToken, 1)
         invitationInput.value = `${window.location.origin}/?t=${invitationToken}`
         invitation.classList.add('show')
@@ -488,7 +554,7 @@ const start = async () => {
       event.preventDefault()
     })
   }
-  
+
   document.addEventListener('contextmenu', (event) => {
     let intersections = stage.intersectionFinder.getAllIntersectionsOnStage()
     if (intersections.length == 0) {
@@ -497,7 +563,7 @@ const start = async () => {
       })
     } else {
       const clickedEntity = intersections[0].entity
-      
+
       if (stage.selection.has(clickedEntity)) {
         // Don't modify the selection, keep it as-is
       } else {
@@ -512,10 +578,11 @@ const start = async () => {
     }, 300)
     event.preventDefault()
   })
-  
-  const kbController = stage.kbController = stage.create('keycon', { target: player })
-  window.addEventListener('keydown', e => {
-    
+
+  const kbController = (stage.kbController = stage.create('keycon', {
+    target: player,
+  }))
+  window.addEventListener('keydown', (e) => {
     if (e.target === stage.renderer.domElement) {
       if (e.keyCode === KEY_BACK_SPACE || e.keyCode === KEY_DELETE) {
         runCommandSimple('object delete')
@@ -526,8 +593,7 @@ const start = async () => {
       // the default HTML tabIndex system
       else if (e.keyCode === KEY_TAB) {
         e.preventDefault()
-      }
-      else if (e.keyCode === KEY_ESCAPE && stage.selection.count() >= 1) {
+      } else if (e.keyCode === KEY_ESCAPE && stage.selection.count() >= 1) {
         runCommandSimple('select none')
       }
       // Support `ctrl+A` and `cmd+A` for selecting all
@@ -546,23 +612,30 @@ const start = async () => {
           network,
           stage,
           cfg,
-          position: mousePointer.object.position
+          position: mousePointer.object.position,
         })
       }
       // Make it easier to type '/object` and all the other commands
       else if (e.keyCode === KEY_SLASH /* Forward Slash */) {
         e.preventDefault()
         stage.focusOnInput()
-        document.getElementById('input').value = '/' 
-      }
-      else if (!e.repeat) {
-        kbController.keyPressed(e.keyCode, { shift: e.shiftKey, ctrl: e.ctrlKey, meta: e.metaKey })
+        document.getElementById('input').value = '/'
+      } else if (!e.repeat) {
+        kbController.keyPressed(e.keyCode, {
+          shift: e.shiftKey,
+          ctrl: e.ctrlKey,
+          meta: e.metaKey,
+        })
       }
     }
   })
-  document.addEventListener('keyup', e => {
+  document.addEventListener('keyup', (e) => {
     if (e.target === stage.renderer.domElement) {
-      kbController.keyReleased(e.keyCode, { shift: e.shiftKey, ctrl: e.ctrlKey, meta: e.metaKey })
+      kbController.keyReleased(e.keyCode, {
+        shift: e.shiftKey,
+        ctrl: e.ctrlKey,
+        meta: e.metaKey,
+      })
       // This makes it so that 'tab' is controlled by us, rather than
       // the default HTML tabIndex system
       if (e.keyCode === 9) {
@@ -573,8 +646,13 @@ const start = async () => {
     }
   })
   kbController.on('done', stage.focusOnInput)
-  kbController.on('switch', () => { stage.focusOnInput(); pressTabHelpState.update(() => false) })
-  kbController.on('close', () => { player.setThought(null) })
+  kbController.on('switch', () => {
+    stage.focusOnInput()
+    pressTabHelpState.update(() => false)
+  })
+  kbController.on('close', () => {
+    player.setThought(null)
+  })
   kbController.on('unknown', (keyCode, opts) => {
     // If the player presses a letter of the alphabet on the keyboard, give them a hint
     if (keyCode >= 65 && keyCode <= 90 && !opts.ctrl && !opts.meta) {
@@ -595,13 +673,17 @@ const start = async () => {
 
   const camController = stage.create('camcon', {
     targetNear: playersCentroid,
-    targetFar: player.object.position
+    targetFar: player.object.position,
   })
-  
 
   initializeAVChat({
     playerId: player.uuid,
-    room: 'relm-' + cfg.ENV + '-' + cfg.ROOM + (cfg.SINGLE_PLAYER_MODE ? `-${playerId}` : ''),
+    room:
+      'relm-' +
+      cfg.ENV +
+      '-' +
+      cfg.ROOM +
+      (cfg.SINGLE_PLAYER_MODE ? `-${playerId}` : ''),
     onMuteChanged: (track, playerId) => {
       const muted = track.isMuted()
       const otherPlayer = stage.entities[playerId]
@@ -620,12 +702,15 @@ const start = async () => {
         if (entity.videoBubble) {
           return entity.videoBubble.object.createDomElement()
         } else {
-          console.warn("Can't create video element for entity that has no VideoBubble", entityId)
+          console.warn(
+            "Can't create video element for entity that has no VideoBubble",
+            entityId
+          )
         }
       } else {
         console.warn("Can't create video element for missing entity", entityId)
       }
-    }
+    },
   })
 
   // console.log('start() complete')
@@ -637,7 +722,7 @@ const app = new App({
     start,
     stage,
     network,
-  }
+  },
 })
 
 export default app
