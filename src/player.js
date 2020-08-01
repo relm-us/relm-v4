@@ -21,10 +21,10 @@ import { defineGoal } from './goals/goal.js'
 const HasMaxSpeed = stampit(Component, {
   deepStatics: {
     goalDefinitions: {
-      speed: defineGoal('spd', { max: 250 })
-    }
+      speed: defineGoal('spd', { max: 250 }),
+    },
   },
-  
+
   methods: {
     setSpeed(speed) {
       this.goals.speed.update({ max: speed })
@@ -35,10 +35,10 @@ const HasMaxSpeed = stampit(Component, {
       if (speed === undefined) {
         throw Error('speed is undefined')
       }
-      const alpha = speed * delta / distance
+      const alpha = (speed * delta) / distance
       return THREE.MathUtils.clamp(alpha, 0.00001, 0.5)
-    }
-  }
+    },
+  },
 })
 
 const FOLLOW_TARGET_DISTANCE_AHEAD = 100.0
@@ -46,8 +46,8 @@ const FOLLOW_TARGET_SUFFICIENT_TIME = 5000.0
 
 const FollowsTarget2 = stampit(Component, {
   init() {
-    this._willVector = new THREE.Vector3()   
-    this._forceVector = new THREE.Vector3()   
+    this._willVector = new THREE.Vector3()
+    this._forceVector = new THREE.Vector3()
     this._followsTargetDebug = false
     this.autonomous = true
 
@@ -61,25 +61,42 @@ const FollowsTarget2 = stampit(Component, {
     },
 
     _createTargetObjects() {
-      if (this._source) { this.stage.scene.remove(this._source) }
-      if (this._sourceBox) { this.object.remove(this._sourceBox) }
-      if (this._target) { this.stage.scene.remove(this._target) }
-      if (this._goalPos) { this.stage.scene.remove(this._goalPos) }
-    
+      if (this._source) {
+        this.stage.scene.remove(this._source)
+      }
+      if (this._sourceBox) {
+        this.object.remove(this._sourceBox)
+      }
+      if (this._target) {
+        this.stage.scene.remove(this._target)
+      }
+      if (this._goalPos) {
+        this.stage.scene.remove(this._goalPos)
+      }
+
       if (this._followsTargetDebug) {
         const sphere1 = new THREE.SphereBufferGeometry(10)
-        this._source = new THREE.Mesh( sphere1, new THREE.MeshBasicMaterial({ color: 0xff7700}) )
+        this._source = new THREE.Mesh(
+          sphere1,
+          new THREE.MeshBasicMaterial({ color: 0xff7700 })
+        )
         this.stage.scene.add(this._source)
-        
-        this._sourceBox = new THREE.BoxHelper( this._source, 0xffffff )
-        this.object.add( this._sourceBox )
+
+        this._sourceBox = new THREE.BoxHelper(this._source, 0xffffff)
+        this.object.add(this._sourceBox)
 
         const sphere2 = new THREE.SphereBufferGeometry(10)
-        this._target = new THREE.Mesh( sphere2, new THREE.MeshBasicMaterial({ color: 0x0000aa }) )
+        this._target = new THREE.Mesh(
+          sphere2,
+          new THREE.MeshBasicMaterial({ color: 0x0000aa })
+        )
         this.stage.scene.add(this._target)
-        
+
         const box1 = new THREE.BoxBufferGeometry(10, 10, 10)
-        this._goalPos = new THREE.Mesh( box1, new THREE.MeshBasicMaterial({ color: 0xff0000 }) )
+        this._goalPos = new THREE.Mesh(
+          box1,
+          new THREE.MeshBasicMaterial({ color: 0xff0000 })
+        )
         this.stage.scene.add(this._goalPos)
       } else {
         this._source = new THREE.Object3D()
@@ -87,15 +104,15 @@ const FollowsTarget2 = stampit(Component, {
         this._goalPos = new THREE.Object3D()
       }
     },
-    
+
     addPosition(vector) {
       this._willVector.add(vector)
     },
-    
+
     forceDirection(vector) {
       this._forceVector.add(vector)
     },
-    
+
     getDistanceToTarget() {
       this._goalPos.position.copy(this.goals.position.toJSON())
       const distance = this.object.position.distanceTo(this._goalPos.position)
@@ -110,7 +127,7 @@ const FollowsTarget2 = stampit(Component, {
       this._goalPos.position.x = this.goals.position.get('x')
       this._goalPos.position.y = this.goals.position.get('y')
       this._goalPos.position.z = this.goals.position.get('z')
-      
+
       // Fastest way to copy from rotation goal is to `get` attributes
       this._goalPos.rotation.x = this.goals.rotation.get('x')
       this._goalPos.rotation.y = this.goals.rotation.get('y')
@@ -121,7 +138,7 @@ const FollowsTarget2 = stampit(Component, {
       this._willVector.multiplyScalar(FOLLOW_TARGET_DISTANCE_AHEAD)
       this._target.position.copy(this.object.position)
       this._target.position.add(this._willVector)
-      
+
       const dueAt = ServerDate.now() + FOLLOW_TARGET_SUFFICIENT_TIME
       let addedForce = false
       if (this._forceVector.length() > 0.1) {
@@ -130,43 +147,55 @@ const FollowsTarget2 = stampit(Component, {
         pos.copy(this._target.position)
         pos.add(this._forceVector)
         this._target.position.lerp(pos, 0.2)
-        this.goals.position.update({
-          x: this._target.position.x,
-          y: this._target.position.y,
-          z: this._target.position.z,
-        }, dueAt)
+        this.goals.position.update(
+          {
+            x: this._target.position.x,
+            y: this._target.position.y,
+            z: this._target.position.z,
+          },
+          dueAt
+        )
       }
-      
+
       // See if we need to update the position as the target is followed
-      const goalToTargetDist = this._goalPos.position.distanceTo(this._target.position)
-      if (goalToTargetDist > FOLLOW_TARGET_DISTANCE_AHEAD/2) {
-        this.goals.position.update({
-          x: this._target.position.x,
-          y: this._target.position.y,
-          z: this._target.position.z,
-        }, dueAt)
+      const goalToTargetDist = this._goalPos.position.distanceTo(
+        this._target.position
+      )
+      if (goalToTargetDist > FOLLOW_TARGET_DISTANCE_AHEAD / 2) {
+        this.goals.position.update(
+          {
+            x: this._target.position.x,
+            y: this._target.position.y,
+            z: this._target.position.z,
+          },
+          dueAt
+        )
       }
-      
+
       // See if we need to update the rotation angle as the target is followed
       this._source.position.copy(this.object.position)
       this._source.lookAt(this._target.position)
-      const sourceToTargetDist = this._source.position.distanceTo(this._target.position)
+      const sourceToTargetDist = this._source.position.distanceTo(
+        this._target.position
+      )
       const angle = this._goalPos.quaternion.angleTo(this._source.quaternion)
       if (!addedForce && sourceToTargetDist > 1.0 && angle > 0.01) {
-        this.goals.rotation.update({
-          x: this._source.rotation.x,
-          y: this._source.rotation.y,
-          z: this._source.rotation.z,
-        }, dueAt)
+        this.goals.rotation.update(
+          {
+            x: this._source.rotation.x,
+            y: this._source.rotation.y,
+            z: this._source.rotation.z,
+          },
+          dueAt
+        )
       }
-      
+
       // Reset the addVector so that the next frame's calls to addPosition will start from origin
       this._willVector.set(0, 0, 0)
       this._forceVector.set(0, 0, 0)
-    }
-  }
+    },
+  },
 })
-
 
 const Player = stampit(
   EntityShared,
@@ -188,11 +217,10 @@ const Player = stampit(
       goalDefinitions: {
         color: defineGoal('clr', { r: 1.0, g: 1.0, b: 1.0 }),
         video: defineGoal('vid', { cam: true }),
-      }
+      },
     },
 
     init() {
-      this.videoBubble.offset = new THREE.Vector3(0, 200, 0)
       this.thoughtBubbleOffset = { x: 60, y: 110 }
     },
 
@@ -208,12 +236,12 @@ const Player = stampit(
           this.setLabelUnderlineColor(color)
           colorGoal.markAchieved()
         }
-        
+
         const videoGoal = this.goals.video
         if (!videoGoal.achieved) {
           const vidobj = this.videoBubble.object
           vidobj.setIsCamera(videoGoal.get('cam'))
-          
+
           vidobj.setOnClick(() => {
             if (videoGoal.get('cam') === false) {
               vidobj.video.requestFullscreen()
@@ -223,14 +251,22 @@ const Player = stampit(
               vidobj.video.classList.remove('fullscreen')
             })
           })
-          
+
+          vidobj.setOnDrag((pos) => {
+            const offsetGoal = this.goals.videoBubbleOffset
+            // console.log('player onDrag', pos, this.stage.fov)
+            offsetGoal.update({
+              x: offsetGoal.get('x') + (pos.x * 100) / this.stage.fov,
+              y: offsetGoal.get('y') - (pos.y * 100) / this.stage.fov,
+              z: offsetGoal.get('z'),
+            })
+          })
+
           videoGoal.markAchieved()
         }
-      }
-    }
+      },
+    },
   })
 ).setType('player')
 
-export {
-  Player,
-}
+export { Player }

@@ -119,7 +119,7 @@
   max-height: 300px;
 }
 .circle-text::before {
-  content: "";
+  content: '';
   height: 100%;
   width: 50%;
   float: left;
@@ -142,7 +142,7 @@
   );
 }
 .circle-text > span::before {
-  content: "";
+  content: '';
   height: 100%;
   width: 50%;
   float: right;
@@ -178,7 +178,7 @@
 }
 /* action button */
 .thought-bubble-action:after {
-  content: "G";
+  content: 'G';
   padding: 5px;
 }
 .thought-bubble-action {
@@ -244,7 +244,7 @@
   position: absolute;
   left: 12px;
   top: 2px;
-  content: " ";
+  content: ' ';
   height: 20px;
   width: 2px;
   background-color: #aaa;
@@ -304,7 +304,7 @@
 }
 
 #game:focus-within::before {
-  content: "";
+  content: '';
   position: absolute;
   top: 0;
   bottom: 50px;
@@ -327,6 +327,10 @@
 .video-wrapper {
   position: absolute;
   transform: translate(-50%, -100%);
+  pointer-events: none;
+}
+.video-wrapper.drag-lock .video-circle {
+  border-color: #eebb11;
 }
 .video-wrapper.show {
   animation: fadein 0.5s;
@@ -373,6 +377,7 @@
   border: 2px solid white;
   border-radius: 18px;
   z-index: 1;
+  pointer-events: auto;
 }
 .mute-button.muted {
   background-image: url(./icons/muted.png);

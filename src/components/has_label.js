@@ -10,8 +10,8 @@ const { Vector3, Color } = THREE
 const HasLabel = stampit(Component, {
   deepStatics: {
     goalDefinitions: {
-      label: defineGoal('lbl', { text: null, ox: 0, oy: 0, oz: 0 })
-    }
+      label: defineGoal('lbl', { text: null, ox: 0, oy: 0, oz: 0 }),
+    },
   },
 
   props: {
@@ -20,14 +20,12 @@ const HasLabel = stampit(Component, {
     labelColor: null,
   },
 
-  init({
-    labelColor = this.labelColor
-  }) {
+  init({ labelColor = this.labelColor }) {
     this.labelPosition = new Vector3()
     this.labelColor = labelColor || new Color()
     this.labelObj = new Label()
     this.labelOffset = new Vector3()
-    
+
     this.setLabelColor(labelColor)
     this.on('visible', () => this.labelObj.show())
     this.on('invisible', () => this.labelObj.hide())
@@ -47,18 +45,18 @@ const HasLabel = stampit(Component, {
     setLabel(text) {
       this.goals.label.set('text', text)
     },
-    
+
     setLabelColor(color) {
       this.labelColor = color
       if (color) {
         this.labelObj.domElement.style.color = '#' + color.getHexString()
       }
     },
-    
+
     setLabelUnderlineColor(color) {
       this.labelObj.domElement.style.borderBottom = `3px solid #${color.getHexString()}`
     },
-    
+
     setup() {
       this.postrenderLabel = () => {
         // Since nametags are just HTML and CSS we have to 'manually' project
@@ -66,7 +64,10 @@ const HasLabel = stampit(Component, {
         this.labelPosition.copy(this.object.position)
         this.labelPosition.add(this.labelOffset)
 
-        const screenSize = { width: this.stage.width, height: this.stage.height }
+        const screenSize = {
+          width: this.stage.width,
+          height: this.stage.height,
+        }
         this.labelObj.project(this.labelPosition, this.stage.camera, screenSize)
       }
       this.stage.addPostrenderFunction(this.postrenderLabel)
@@ -86,9 +87,8 @@ const HasLabel = stampit(Component, {
     teardown() {
       this.labelObj.destroyDomElement()
       this.stage.removePostrenderFunction(this.postrenderLabel)
-    }
-  }
-
+    },
+  },
 })
 
 export { HasLabel }

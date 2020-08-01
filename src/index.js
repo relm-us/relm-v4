@@ -37,6 +37,8 @@ import {
   randomPastelColor,
   domReady,
   sortByZ,
+  delta,
+  distance,
 } from './util.js'
 import { config, stage } from './config.js'
 import { network } from './network.js'
@@ -44,6 +46,7 @@ import { GoalGroup } from './goals/goal_group.js'
 import { addManifestTo } from './manifest_loaders.js'
 import { runCommand } from './commands.js'
 import { recordCoords } from './record_coords.js'
+import { getRef } from './dom_reference.js'
 
 import { pressTabHelpState, exportImportState } from './svelte/stores.js'
 
@@ -337,14 +340,33 @@ const start = async () => {
   // The stage is special in that it creates a domElement that must be added to our page
   document.getElementById('game').appendChild(stage.renderer.domElement)
 
-  let dragLock = false
+  let htmlDragTarget = null
+  let htmlDragLock = false
+  let htmlDragStartPos = null
+
   let dragStart = false
+  let dragLock = false
   let dragStartPos = null
   let dragDelta = new THREE.Vector3()
+
   window.addEventListener('mousemove', (event) => {
     // Show mouse pointer
     mousePointer.setScreenCoords(event.clientX, event.clientY)
     stage.intersectionFinder.setScreenCoords(event.clientX, event.clientY)
+
+    if (htmlDragTarget) {
+      const pos = { x: event.clientX, y: event.clientY }
+      if (htmlDragLock) {
+        // no drag animation for now
+      } else {
+        if (distance(pos, htmlDragStartPos) > 10) {
+          htmlDragLock = true
+          htmlDragStartPos = pos
+          htmlDragTarget.classList.add('drag-lock')
+        }
+      }
+      return
+    }
 
     // If mouse has moved a certain distance since clicking, then turn into a "drag"
     if (dragStart && !dragLock) {
@@ -410,7 +432,16 @@ const start = async () => {
         event.clientY <= bounds.bottom
       ) {
         clickable.focus()
-        // console.log("clickable", clickable);
+      }
+    }
+
+    for (const el of document.querySelectorAll('[data-draggable]')) {
+      const draggable = getRef(el, 'draggable')
+      const pos = { x: event.clientX, y: event.clientY }
+      if (draggable.pointerWithinBounds && draggable.pointerWithinBounds(pos)) {
+        htmlDragTarget = el
+        htmlDragStartPos = pos
+        return
       }
     }
 
@@ -463,6 +494,32 @@ const start = async () => {
     // must be left-click
     if (event.button !== 0) {
       return
+    }
+
+    if (htmlDragLock) {
+      if (htmlDragTarget) {
+        htmlDragTarget.classList.remove('drag-lock')
+
+        const ref = getRef(htmlDragTarget, 'draggable')
+        const pos = { x: event.clientX, y: event.clientY }
+        const d = delta(htmlDragStartPos, pos)
+
+        if (ref.onDrag) {
+          ref.onDrag(d)
+        }
+      }
+    } else {
+      for (const el of document.querySelectorAll('[data-draggable]')) {
+        const ref = getRef(el, 'draggable')
+        const pos = { x: event.clientX, y: event.clientY }
+        if (
+          ref.pointerWithinBounds &&
+          ref.pointerWithinBounds(pos) &&
+          ref.onClick
+        ) {
+          ref.onClick()
+        }
+      }
     }
 
     if (dragLock) {
@@ -518,6 +575,11 @@ const start = async () => {
         stage.selection.select(selected, operation)
       })
     }
+
+    htmlDragTarget = null
+    htmlDragLock = false
+    htmlDragStartPos = null
+
     dragStart = false
     dragLock = false
   })
