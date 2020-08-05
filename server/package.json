@@ -13,7 +13,7 @@
     "cors": "^2.8.5",
     "detect-file-type": "^0.2.8",
     "express": "^4.17.1",
-    "express-fileupload": "^1.1.7-alpha.3",
+    "express-fileupload": "^1.1.9",
     "fast-text-encoding": "^1.0.1",
     "level": "^6.0.1",
     "lib0": "^0.2.25",
