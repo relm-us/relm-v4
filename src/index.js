@@ -354,7 +354,8 @@ const start = async () => {
       }
       cameraPlayerOffset.copy(mouseWheelTarget)
       cameraPlayerOffset.sub(player.object.position)
-      // mousePointer.setScreenCoords(event.clientX, event.clientY)
+
+      mousePointer.setScreenCoords(event.clientX, event.clientY)
 
       stage.forEachEntityOnStageOfType('player', (player) => {
         player.videoBubble.object.setDiameter(stage.fov)
