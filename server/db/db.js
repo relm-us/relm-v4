@@ -5,8 +5,10 @@ const moment = require('moment')
 
 const config = require('../config.js')
 
-const conn = process.env.DATABASE_URL || {
+const conn = config.DATABASE_URL || {
+  host: config.DATABASE_HOST,
   database: config.DATABASE_NAME,
+  password: config.DATABASE_PASSWORD,
 }
 const db = pgp(conn)
 

@@ -5,8 +5,8 @@
   "author": "Duane Johnson",
   "license": "GPL-3.0-only",
   "scripts": {
-    "start": "PORT=1235 YPERSISTENCE=./relm-data node server.js",
-    "test": "cross-env NODE_ENV=test PGDATABASE=relm-test jest",
+    "start": "PORT=1235 YPERSISTENCE=./relm-data DATABASE_HOST=localhost node --inspect server.js",
+    "test": "cross-env NODE_ENV=test DATABASE_NAME=relm-test DATABASE_HOST=localhost jest",
     "sandbox": "node sandbox.js",
     "pretest": "dropdb relm-test; createdb relm-test"
   },
