@@ -16,21 +16,19 @@
 							{
 								"key": "X-Relm-S",
 								"type": "text",
-								"value": "P+mx/6jSUnZd2jz5VYNKAhpT48nltN8AzHiYfLTdk8Rpb7QRvnv39SVkDDWIHkXSjL2fcu3gYVWarWr6T9snxHJkSxvK0CSzf2l/19LZMcr08CNz50MjO4Ip30JwcPIZ"
+								"value": "{{relmSig}}"
 							},
 							{
 								"key": "X-Relm-Id",
 								"type": "text",
-								"value": "0dce4601-0a92-4c52-ad4a-f355ede669c6"
+								"value": "{{relmId}}"
 							}
 						],
 						"url": {
-							"raw": "http://localhost:1235/relms",
-							"protocol": "http",
+							"raw": "{{serverUrl}}/relms",
 							"host": [
-								"localhost"
+								"{{serverUrl}}"
 							],
-							"port": "1235",
 							"path": [
 								"relms"
 							]
@@ -45,12 +43,12 @@
 						"header": [
 							{
 								"key": "X-Relm-S",
-								"value": "P+mx/6jSUnZd2jz5VYNKAhpT48nltN8AzHiYfLTdk8Rpb7QRvnv39SVkDDWIHkXSjL2fcu3gYVWarWr6T9snxHJkSxvK0CSzf2l/19LZMcr08CNz50MjO4Ip30JwcPIZ",
+								"value": "{{relmSig}}",
 								"type": "text"
 							},
 							{
 								"key": "X-Relm-Id",
-								"value": "0dce4601-0a92-4c52-ad4a-f355ede669c6",
+								"value": "{{relmId}}",
 								"type": "text"
 							}
 						],
@@ -64,12 +62,10 @@
 							}
 						},
 						"url": {
-							"raw": "http://localhost:1235/relm/relm/create",
-							"protocol": "http",
+							"raw": "{{serverUrl}}/relm/relm/create",
 							"host": [
-								"localhost"
+								"{{serverUrl}}"
 							],
-							"port": "1235",
 							"path": [
 								"relm",
 								"relm",
@@ -80,24 +76,24 @@
 					"response": []
 				},
 				{
-					"name": "Update Relm",
+					"name": "Delete Relm",
 					"request": {
-						"method": "PUT",
+						"method": "DELETE",
 						"header": [
 							{
 								"key": "X-Relm-S",
-								"value": "P+mx/6jSUnZd2jz5VYNKAhpT48nltN8AzHiYfLTdk8Rpb7QRvnv39SVkDDWIHkXSjL2fcu3gYVWarWr6T9snxHJkSxvK0CSzf2l/19LZMcr08CNz50MjO4Ip30JwcPIZ",
+								"value": "{{relmSig}}",
 								"type": "text"
 							},
 							{
 								"key": "X-Relm-Id",
-								"value": "0dce4601-0a92-4c52-ad4a-f355ede669c6",
+								"value": "{{relmId}}",
 								"type": "text"
 							}
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"isPublic\": false\n}",
+							"raw": "{\n    \"isPublic\": true,\n    \"password\": \"welcome\"\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -105,12 +101,49 @@
 							}
 						},
 						"url": {
-							"raw": "http://localhost:1235/relm/relm/meta",
-							"protocol": "http",
+							"raw": "{{serverUrl}}/relm/relm/delete",
 							"host": [
-								"localhost"
+								"{{serverUrl}}"
 							],
-							"port": "1235",
+							"path": [
+								"relm",
+								"relm",
+								"delete"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Update Relm Metadata",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "X-Relm-S",
+								"value": "{{relmSig}}",
+								"type": "text"
+							},
+							{
+								"key": "X-Relm-Id",
+								"value": "{{relmId}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"isPublic\": true\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{serverUrl}}/relm/relm/meta",
+							"host": [
+								"{{serverUrl}}"
+							],
 							"path": [
 								"relm",
 								"relm",
@@ -121,32 +154,90 @@
 					"response": []
 				},
 				{
-					"name": "Get Relm",
+					"name": "Get Relm Metadata",
 					"request": {
 						"method": "GET",
 						"header": [
 							{
 								"key": "X-Relm-S",
-								"value": "P+mx/6jSUnZd2jz5VYNKAhpT48nltN8AzHiYfLTdk8Rpb7QRvnv39SVkDDWIHkXSjL2fcu3gYVWarWr6T9snxHJkSxvK0CSzf2l/19LZMcr08CNz50MjO4Ip30JwcPIZ",
+								"value": "{{relmSig}}",
 								"type": "text"
 							},
 							{
 								"key": "X-Relm-Id",
-								"value": "0dce4601-0a92-4c52-ad4a-f355ede669c6",
+								"value": "{{relmId}}",
 								"type": "text"
 							}
 						],
 						"url": {
-							"raw": "http://localhost:1235/relm/relm/meta",
-							"protocol": "http",
+							"raw": "{{serverUrl}}/relm/relm/meta",
 							"host": [
-								"localhost"
+								"{{serverUrl}}"
 							],
-							"port": "1235",
 							"path": [
 								"relm",
 								"relm",
 								"meta"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Relm Data",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "X-Relm-S",
+								"type": "text",
+								"value": "{{relmSig}}"
+							},
+							{
+								"key": "X-Relm-Id",
+								"type": "text",
+								"value": "{{relmId}}"
+							}
+						],
+						"url": {
+							"raw": "{{serverUrl}}/relm/relm/data",
+							"host": [
+								"{{serverUrl}}"
+							],
+							"path": [
+								"relm",
+								"relm",
+								"data"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Truncate Relm History",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "X-Relm-S",
+								"type": "text",
+								"value": "{{relmSig}}"
+							},
+							{
+								"key": "X-Relm-Id",
+								"type": "text",
+								"value": "{{relmId}}"
+							}
+						],
+						"url": {
+							"raw": "{{serverUrl}}/relm/relm/truncate",
+							"host": [
+								"{{serverUrl}}"
+							],
+							"path": [
+								"relm",
+								"relm",
+								"truncate"
 							]
 						}
 					},
@@ -159,25 +250,23 @@
 						"header": [
 							{
 								"key": "X-Relm-S",
-								"value": "P+mx/6jSUnZd2jz5VYNKAhpT48nltN8AzHiYfLTdk8Rpb7QRvnv39SVkDDWIHkXSjL2fcu3gYVWarWr6T9snxHJkSxvK0CSzf2l/19LZMcr08CNz50MjO4Ip30JwcPIZ",
+								"value": "{{relmSig}}",
 								"type": "text"
 							},
 							{
 								"key": "X-Relm-Id",
-								"value": "0dce4601-0a92-4c52-ad4a-f355ede669c6",
+								"value": "{{relmId}}",
 								"type": "text"
 							}
 						],
 						"url": {
-							"raw": "http://localhost:1235/relm/welcome/can/access",
-							"protocol": "http",
+							"raw": "{{serverUrl}}/relm/relm/can/access",
 							"host": [
-								"localhost"
+								"{{serverUrl}}"
 							],
-							"port": "1235",
 							"path": [
 								"relm",
-								"welcome",
+								"relm",
 								"can",
 								"access"
 							]
@@ -199,12 +288,12 @@
 							{
 								"key": "X-Relm-S",
 								"type": "text",
-								"value": "P+mx/6jSUnZd2jz5VYNKAhpT48nltN8AzHiYfLTdk8Rpb7QRvnv39SVkDDWIHkXSjL2fcu3gYVWarWr6T9snxHJkSxvK0CSzf2l/19LZMcr08CNz50MjO4Ip30JwcPIZ"
+								"value": "{{relmSig}}"
 							},
 							{
 								"key": "X-Relm-Id",
 								"type": "text",
-								"value": "0dce4601-0a92-4c52-ad4a-f355ede669c6"
+								"value": "{{relmId}}"
 							}
 						],
 						"body": {
@@ -217,15 +306,13 @@
 							}
 						},
 						"url": {
-							"raw": "http://localhost:1235/relm/welcome/invitation",
-							"protocol": "http",
+							"raw": "{{serverUrl}}/relm/relm/invitation",
 							"host": [
-								"localhost"
+								"{{serverUrl}}"
 							],
-							"port": "1235",
 							"path": [
 								"relm",
-								"welcome",
+								"relm",
 								"invitation"
 							]
 						}
@@ -271,12 +358,10 @@
 							}
 						},
 						"url": {
-							"raw": "http://localhost:1235/relm/welcome/can/access?t=welcome-token",
-							"protocol": "http",
+							"raw": "{{serverUrl}}/relm/welcome/can/access?t=welcome-token",
 							"host": [
-								"localhost"
+								"{{serverUrl}}"
 							],
-							"port": "1235",
 							"path": [
 								"relm",
 								"welcome",
@@ -303,25 +388,25 @@
 				"header": [
 					{
 						"key": "X-Relm-S",
-						"value": "P+mx/6jSUnZd2jz5VYNKAhpT48nltN8AzHiYfLTdk8Rpb7QRvnv39SVkDDWIHkXSjL2fcu3gYVWarWr6T9snxHJkSxvK0CSzf2l/19LZMcr08CNz50MjO4Ip30JwcPIZ",
+						"value": "{{relmSig}}",
 						"description": "Signed Player ID",
 						"type": "text"
 					},
 					{
 						"key": "X-Relm-Id",
-						"value": "0dce4601-0a92-4c52-ad4a-f355ede669c6",
+						"value": "{{relmId}}",
 						"description": "Player ID",
 						"type": "text"
 					},
 					{
 						"key": "X-Relm-X",
-						"value": "P0HWf4l6bGz6ULfaPROfQSsg_pWfK3ICgsH2UDs-Bb45Q_Qj9QVnhryBpwzjp6Xi",
+						"value": "{{relmX}}",
 						"description": "X Component of Public Key",
 						"type": "text"
 					},
 					{
 						"key": "X-Relm-Y",
-						"value": "Ggf-tcvJE0CqzcslV2VT2pL2NUHtpQyZakTijZbf4HjVRv6VW_5_VanKQS3TVUZx",
+						"value": "{{relmY}}",
 						"description": "Y Component of Public Key",
 						"type": "text"
 					}
@@ -336,12 +421,10 @@
 					}
 				},
 				"url": {
-					"raw": "http://localhost:1235/authenticate?t=setup",
-					"protocol": "http",
+					"raw": "{{serverUrl}}/authenticate?t=setup",
 					"host": [
-						"localhost"
+						"{{serverUrl}}"
 					],
-					"port": "1235",
 					"path": [
 						"authenticate"
 					],
