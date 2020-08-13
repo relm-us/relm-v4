@@ -7,11 +7,11 @@ const CAMERA_DEFAULT_PERSPECTIVE_RATIO = 11.25 / CAMERA_DEFAULT_ISOMETRY
 const CAMERA_DEFAULT_POSITION = new Vector3(0, 4000, 5000)
 
 const FOV_DEFAULT_MIN = 75.0
-const FOV_DEFAULT_MAX = 220.0
+const FOV_DEFAULT_MAX = 280.0
 
 const SceneWithCamera = stampit({
   name: 'SceneWithCamera',
-  
+
   props: {
     isometry: CAMERA_DEFAULT_ISOMETRY,
     perspectiveRatio: CAMERA_DEFAULT_PERSPECTIVE_RATIO,
@@ -44,29 +44,28 @@ const SceneWithCamera = stampit({
       this.fov = MathUtils.clamp(value, maxZoomOut, maxZoomIn)
       this.adjustNewWindowSize()
     },
-    
+
     getFovRatio() {
       return (this.fov - this.minFov) / (this.maxFov - this.minFov)
     },
 
-    adjustNewWindowSize () {
+    adjustNewWindowSize() {
       if (!this.camera) {
         this.camera = new PerspectiveCamera(
           this.perspectiveRatio,
           this.width / this.height,
           4000, // near clipping
-          10000, // far clipping
+          10000 // far clipping
         )
         this.camera.position.copy(this.cameraIdealPosition)
         this.camera.lookAt(0, 110, 0)
       }
-      const aspect = this.width / this.height 
+      const aspect = this.width / this.height
       this.camera.aspect = aspect
       this.camera.fov = this.height / this.fov
       this.camera.updateProjectionMatrix()
-    }
-  }
-
+    },
+  },
 })
 
 export { SceneWithCamera }
