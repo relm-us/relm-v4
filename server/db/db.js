@@ -25,7 +25,7 @@ function patchPgUseUTC(pg) {
 async function init() {
   const client = await db.$pool.connect()
   try {
-    await createDb(config.DATABASE_NAME, { client })
+    // await createDb(config.DATABASE_NAME, { client })
     await migrate({ client }, 'migrations')
   } finally {
     client.release()
