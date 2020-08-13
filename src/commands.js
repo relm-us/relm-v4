@@ -6,8 +6,7 @@ import { muteAudio, unmuteAudio } from './avchat.js'
 import { avatarOptionsOfGender } from './avatars.js'
 import { teleportToOtherRelm } from './teleportal.js'
 import { switchVideo } from './avchat2.js'
-import { Security } from './security.js'
-import { uuidv4 } from './util.js'
+import { createRelm } from './api/admin.js'
 
 import {
   take,
@@ -766,6 +765,31 @@ const commands = {
 
       default:
         throw Error(`Is ${subCommand} a '/object' subcommand?`)
+    }
+  },
+  relm: (args) => {
+    const subCommand = takeOne(
+      args,
+      `Shouldn't there be a subcommand after '/relm'? e.g. 'create'`
+    )
+    console.log('relm command:', subCommand)
+    switch (subCommand) {
+      case 'create':
+        return (env) => {
+          const relmName = takeOne(
+            args,
+            `Shouldn't there be a relm name after '/relm create'?`
+          )
+          createRelm(env.player.uuid, relmName)
+            .then(() => {
+              showToast(`Relm ${relmName} created`)
+            })
+            .catch((err) => {
+              showToast(err)
+            })
+        }
+      default:
+        throw Error(`Is ${subCommand} a '/relm' subcommand?`)
     }
   },
   reset: (args) => {
