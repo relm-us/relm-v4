@@ -41,7 +41,7 @@ const CameraController = stampit(Entity, Component, {
       if (Number.isNaN(this.stage.camera.position.x)) {
         this.stage.camera.position.copy(this.position)
       } else {
-        this.stage.camera.position.lerp(this.position, 0.1)
+        this.stage.camera.position.lerp(this.position, 0.25)
       }
     },
   },

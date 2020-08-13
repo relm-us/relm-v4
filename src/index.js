@@ -74,6 +74,9 @@ const security = Security()
 
 let playersCentroid = new THREE.Vector3()
 let mousePlayerCentroid = new THREE.Vector3()
+let mouseWheelTarget = new THREE.Vector3()
+let cameraTarget = new THREE.Vector3()
+let cameraPlayerOffset = new THREE.Vector3()
 let occasionalUpdate = 0
 
 let player
@@ -294,6 +297,9 @@ const start = async () => {
 
     mousePointer.updateScreenCoords()
 
+    cameraTarget.copy(player.object.position)
+    cameraTarget.add(cameraPlayerOffset)
+
     // Calculate mouse+player centroid for camera
     mousePlayerCentroid.copy(mousePointer.object.position)
     mousePlayerCentroid.add(player.object.position)
@@ -334,12 +340,21 @@ const start = async () => {
 
   // Mouse wheel zooms in and out
   document.addEventListener('wheel', function (event) {
-    mousePointer.updateScreenCoords()
-
     if (event.target.id === 'game') {
       let pixelY = normalizeWheel(event.deltaY)
       const newFov = stage.fov - pixelY
       stage.setFov(newFov)
+
+      if (zoomLockPos === null) {
+        zoomLockPos = {
+          x: event.clientX,
+          y: event.clientY,
+        }
+        mouseWheelTarget.copy(mousePointer.object.position)
+      }
+      cameraPlayerOffset.copy(mouseWheelTarget)
+      cameraPlayerOffset.sub(player.object.position)
+      // mousePointer.setScreenCoords(event.clientX, event.clientY)
 
       stage.forEachEntityOnStageOfType('player', (player) => {
         player.videoBubble.object.setDiameter(stage.fov)
@@ -359,13 +374,16 @@ const start = async () => {
   let dragStartPos = null
   let dragDelta = new THREE.Vector3()
 
+  let zoomLockPos = null
+
   window.addEventListener('mousemove', (event) => {
     // Show mouse pointer
     mousePointer.setScreenCoords(event.clientX, event.clientY)
     stage.intersectionFinder.setScreenCoords(event.clientX, event.clientY)
 
+    const pos = { x: event.clientX, y: event.clientY }
+
     if (htmlDragTarget) {
-      const pos = { x: event.clientX, y: event.clientY }
       if (htmlDragLock) {
         // no drag animation for now
       } else {
@@ -376,6 +394,11 @@ const start = async () => {
         }
       }
       return
+    }
+
+    // If mouse has moved a certain distance since zooming, then reset zoom lock
+    if (zoomLockPos && distance(pos, zoomLockPos) > 10) {
+      zoomLockPos = null
     }
 
     // If mouse has moved a certain distance since clicking, then turn into a "drag"
@@ -743,8 +766,8 @@ const start = async () => {
     player.goals.animationSpeed.update({ v: 1.5 })
   })
 
-  const camController = stage.create('camcon', {
-    targetNear: mousePlayerCentroid,
+  stage.create('camcon', {
+    targetNear: cameraTarget,
     targetFar: player.object.position,
   })
 
