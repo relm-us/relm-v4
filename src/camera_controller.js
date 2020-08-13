@@ -17,7 +17,7 @@ const CameraController = stampit(Entity, Component, {
     // between the two as zoom goes in and out.
     this.targetFar = targetFar
     this.targetNear = targetNear
-    
+
     this.offset = new Vector3()
     this.position = new Vector3()
   },
@@ -26,27 +26,25 @@ const CameraController = stampit(Entity, Component, {
     setup() {
       this.offset.copy(this.stage.camera.position)
     },
-    
+
     warp(position) {
       this.stage.camera.position.copy(position)
     },
 
     update(delta) {
       const fovRatio = this.stage.getFovRatio()
-      
+
       this.position.copy(this.targetFar)
-      if (fovRatio > 0.75) {
-        this.position.lerp(this.targetNear, fovRatio)
-      }
+      this.position.lerp(this.targetNear, fovRatio)
       this.position.add(this.offset)
-      
+
       if (Number.isNaN(this.stage.camera.position.x)) {
         this.stage.camera.position.copy(this.position)
       } else {
         this.stage.camera.position.lerp(this.position, 0.1)
       }
-    }
-  }
+    },
+  },
 }).setType('camcon')
 
 export { CameraController }

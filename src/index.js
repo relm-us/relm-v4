@@ -73,6 +73,7 @@ THREE.Cache.enabled = true
 const security = Security()
 
 let playersCentroid = new THREE.Vector3()
+let mousePlayerCentroid = new THREE.Vector3()
 let occasionalUpdate = 0
 
 let player
@@ -291,6 +292,13 @@ const start = async () => {
   stage.addUpdateFunction((delta) => {
     occasionalUpdate++
 
+    mousePointer.updateScreenCoords()
+
+    // Calculate mouse+player centroid for camera
+    mousePlayerCentroid.copy(mousePointer.object.position)
+    mousePlayerCentroid.add(player.object.position)
+    mousePlayerCentroid.divideScalar(2.0)
+
     // Double-count the player's position so that the camera prefers player slightly
     let playerCount = 1
     playersCentroid.copy(player.object.position)
@@ -326,6 +334,8 @@ const start = async () => {
 
   // Mouse wheel zooms in and out
   document.addEventListener('wheel', function (event) {
+    mousePointer.updateScreenCoords()
+
     if (event.target.id === 'game') {
       let pixelY = normalizeWheel(event.deltaY)
       const newFov = stage.fov - pixelY
@@ -734,7 +744,7 @@ const start = async () => {
   })
 
   const camController = stage.create('camcon', {
-    targetNear: playersCentroid,
+    targetNear: mousePlayerCentroid,
     targetFar: player.object.position,
   })
 
