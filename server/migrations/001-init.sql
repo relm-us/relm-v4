@@ -79,3 +79,15 @@ CREATE TABLE entryways (
 -- Add initial setup token
 INSERT INTO invitations (token, permits)
 VALUES ('setup', '["admin","access","invite","edit"]'::JSONB);
+
+-- Add initial admin relm; access with one-time token above, e.g.:
+--   http://localhost:1234/admin?t=setup
+WITH rows AS (
+  INSERT INTO relms (relm_name)
+  VALUES ('admin')
+  RETURNING relm_id
+)
+INSERT INTO docs (relm_id, doc_type)
+SELECT relm_id, 'permanent' FROM rows
+UNION ALL
+SELECT relm_id, 'transient' FROM rows;

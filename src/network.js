@@ -267,7 +267,6 @@ const Network = stampit(EventEmittable, {
 
   methods: {
     async playerPermit({ params, serverUrl, room }) {
-      console.log('playerPermit params', params)
       let url = `${serverUrl}/relm/${room}/can/access`
       if (params.t) {
         url += `?t=${params.t}`
