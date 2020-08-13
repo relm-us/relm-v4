@@ -8,8 +8,9 @@ const DELTA_MODE_PIXEL = 0
 const DELTA_MODE_LINE = 1
 const DELTA_MODE_PAGE = 2
 
-function normalizeWheel(deltaY) {
+function normalizeWheel(event) {
   let pixelY
+  console.log('wheel', event.deltaMode, event.deltaY)
   switch (event.deltaMode) {
     case DELTA_MODE_PIXEL:
       pixelY = MathUtils.clamp(event.deltaY * PIXEL_STEP, -20, 20)

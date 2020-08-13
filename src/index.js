@@ -341,7 +341,7 @@ const start = async () => {
   // Mouse wheel zooms in and out
   document.addEventListener('wheel', function (event) {
     if (event.target.id === 'game') {
-      let pixelY = normalizeWheel(event.deltaY)
+      let pixelY = normalizeWheel(event)
       const newFov = stage.fov - pixelY
       stage.setFov(newFov)
 
