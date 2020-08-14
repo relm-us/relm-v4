@@ -297,7 +297,7 @@ const start = async () => {
     // mousePointer.updateScreenCoords()
 
     const dist = stage.camera.position.distanceTo(player.object.position)
-    const playerHeight = 500000 / dist
+    const playerHeight = 800000 / dist
 
     // Double-count the player's position so that the camera prefers player slightly
     let playerCount = 1
@@ -331,8 +331,8 @@ const start = async () => {
     network.transients.sendState([playerId, mouseId])
   })
 
-  let mouseWheelScale = 100.0
-  const mouseWheelScaleMax = 200.0
+  let mouseWheelScale = 50.0
+  const mouseWheelScaleMax = 100.0
 
   // Mouse wheel zooms in and out
   document.addEventListener('wheel', function (event) {
