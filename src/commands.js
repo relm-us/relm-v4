@@ -2,7 +2,7 @@ import { showToast } from './lib/Toast.js'
 import { showInfoAboutObject } from './show_info_about_object.js'
 
 import { exportImportState, identityModalState } from './svelte/stores.js'
-import { muteAudio, unmuteAudio } from './avchat.js'
+import { muteAudio, unmuteAudio } from './avchat2.js'
 import { avatarOptionsOfGender } from './avatars.js'
 import { teleportToOtherRelm } from './teleportal.js'
 import { switchVideo } from './avchat2.js'
