@@ -74,7 +74,6 @@ const security = Security()
 
 let playersCentroid = new THREE.Vector3()
 let mouseWheelTarget = new THREE.Vector3()
-let cameraTarget = new THREE.Vector3()
 let cameraPlayerOffset = new THREE.Vector3()
 let occasionalUpdate = 0
 
@@ -297,6 +296,7 @@ const start = async () => {
     // mousePointer.updateScreenCoords()
 
     const dist = stage.camera.position.distanceTo(player.object.position)
+    // TODO: How do we arrive at this magic number?
     const playerHeight = 800000 / dist
 
     // Double-count the player's position so that the camera prefers player slightly
@@ -344,7 +344,11 @@ const start = async () => {
         0,
         mouseWheelScaleMax
       )
-      if (zoomLockPos === null && mouseWheelScale < mouseWheelScaleMax) {
+      if (
+        zoomLockPos === null &&
+        mouseWheelScale < mouseWheelScaleMax &&
+        pixelY < 0 // Only re-position when zooming "IN"
+      ) {
         zoomLockPos = {
           x: mousePointer.clientX,
           y: mousePointer.clientY,
