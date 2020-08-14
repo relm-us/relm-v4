@@ -130,6 +130,11 @@ const WithVideoBubble = stampit(EventEmittable, {
       this.setVideoElementSize()
     },
 
+    createAudioElement() {
+      this.audio = document.createElement('audio')
+      return this.audio
+    },
+
     createDomElement() {
       if (this.domElement) {
         this.destroyDomElement()

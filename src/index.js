@@ -72,10 +72,9 @@ THREE.Cache.enabled = true
 
 const security = Security()
 
-let playersCentroid = new THREE.Vector3()
+let occasionalUpdate = 0
 let mouseWheelTarget = new THREE.Vector3()
 let cameraPlayerOffset = new THREE.Vector3()
-let occasionalUpdate = 0
 
 let player
 let mousePointer
@@ -287,46 +286,48 @@ const start = async () => {
   })
 
   // Perform several calculations once per game loop:
-  // 1. (occasionally) Refresh videoBubble diameter
-  // 2. Calculate centroid of all players on stage
+  // 1. Refresh videoBubble diameters
+  // 2. Calculate audio volume based on distance
   // 3. Sort players by Z order
   stage.addUpdateFunction((delta) => {
     occasionalUpdate++
-
-    // mousePointer.updateScreenCoords()
 
     const dist = stage.camera.position.distanceTo(player.object.position)
     // TODO: How do we arrive at this magic number?
     const playerHeight = 800000 / dist
 
-    // Double-count the player's position so that the camera prefers player slightly
-    let playerCount = 1
-    playersCentroid.copy(player.object.position)
     // TODO: make this filter for 'HasVideoBubble' instead of just looking for players
+    if (occasionalUpdate % 10 === 0) {
+      stage.forEachEntityOfType('player', (anyPlayer, i) => {
+        const dist = player.object.position.distanceTo(
+          anyPlayer.object.position
+        )
+        const audio = anyPlayer.videoBubble.object.audio
+        if (audio) {
+          if (dist < 1000) {
+            audio.volume = 1.0
+          } else {
+            audio.volume = 0.3
+          }
+        }
+      })
+    }
     stage.forEachEntityOnStageOfType(
       'player',
-      (player, i) => {
+      (anyPlayer, i) => {
         // Set videoBubble diameter, which can change due to
-        // (a) new players the scene, or
+        // (a) new players entering the scene, or
         // (b) zoom level changing
-        player.videoBubble.object.setDiameter(playerHeight)
-
-        // Add player positions and keep track of count so we can divide by
-        // number of players after the loop (to get average/centroid position)
-        playersCentroid.add(player.object.position)
-        playerCount++
+        anyPlayer.videoBubble.object.setDiameter(playerHeight)
 
         // Sort the visible players by Z order
-        const el = player.videoBubble.object.domElement
+        const el = anyPlayer.videoBubble.object.domElement
         if (el) {
           el.style.zIndex = i + 1
         }
       },
       sortByZ
     )
-
-    // Finalize player centroid calculation
-    playersCentroid.divideScalar(playerCount)
 
     network.transients.sendState([playerId, mouseId])
   })
@@ -810,6 +811,21 @@ const start = async () => {
         }
       } else {
         console.warn("Can't create video element for missing entity", entityId)
+      }
+    },
+    createAudioElement: (entityId) => {
+      const entity = stage.entities[entityId]
+      if (entity) {
+        if (entity.videoBubble) {
+          return entity.videoBubble.object.createAudioElement()
+        } else {
+          console.warn(
+            "Can't create audio element for entity that has no VideoBubble",
+            entityId
+          )
+        }
+      } else {
+        console.warn("Can't create audio element for missing entity", entityId)
       }
     },
   })
