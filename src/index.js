@@ -299,16 +299,17 @@ const start = async () => {
     // TODO: make this filter for 'HasVideoBubble' instead of just looking for players
     if (occasionalUpdate % 10 === 0) {
       stage.forEachEntityOfType('player', (anyPlayer, i) => {
-        const dist = player.object.position.distanceTo(
-          anyPlayer.object.position
-        )
         const audio = anyPlayer.videoBubble.object.audio
         if (audio) {
-          if (dist < 1000) {
-            audio.volume = 1.0
-          } else {
-            audio.volume = 0.3
-          }
+          const dist = player.object.position.distanceTo(
+            anyPlayer.object.position
+          )
+          // if dist = 0: (500 + 1000) / 500 = 3.0
+          // if dist = 1000: (500 - 0) / 500 = 1.0
+          // if dist = 1200: (500 - 200) / 500 = 0.6
+          // if dist = 2000: (500 - 1000) / 500 = -0.5
+          const volume = (500 - (dist - 1000)) / 500
+          audio.volume = THREE.MathUtils.clamp(volume, 0.15, 1.0)
         }
       })
     }
