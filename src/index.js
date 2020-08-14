@@ -73,7 +73,6 @@ THREE.Cache.enabled = true
 const security = Security()
 
 let playersCentroid = new THREE.Vector3()
-let mousePlayerCentroid = new THREE.Vector3()
 let mouseWheelTarget = new THREE.Vector3()
 let cameraTarget = new THREE.Vector3()
 let cameraPlayerOffset = new THREE.Vector3()
@@ -295,15 +294,10 @@ const start = async () => {
   stage.addUpdateFunction((delta) => {
     occasionalUpdate++
 
-    mousePointer.updateScreenCoords()
+    // mousePointer.updateScreenCoords()
 
-    cameraTarget.copy(player.object.position)
-    cameraTarget.add(cameraPlayerOffset)
-
-    // Calculate mouse+player centroid for camera
-    mousePlayerCentroid.copy(mousePointer.object.position)
-    mousePlayerCentroid.add(player.object.position)
-    mousePlayerCentroid.divideScalar(2.0)
+    const dist = stage.camera.position.distanceTo(player.object.position)
+    const playerHeight = 500000 / dist
 
     // Double-count the player's position so that the camera prefers player slightly
     let playerCount = 1
@@ -312,11 +306,10 @@ const start = async () => {
     stage.forEachEntityOnStageOfType(
       'player',
       (player, i) => {
-        // Occasionally refresh videoBubble diameter due to new players
-        // entering scene and needing size adjusted to zoom level
-        if (occasionalUpdate % 100 === 0) {
-          player.videoBubble.object.setDiameter(stage.fov)
-        }
+        // Set videoBubble diameter, which can change due to
+        // (a) new players the scene, or
+        // (b) zoom level changing
+        player.videoBubble.object.setDiameter(playerHeight)
 
         // Add player positions and keep track of count so we can divide by
         // number of players after the loop (to get average/centroid position)
@@ -338,28 +331,32 @@ const start = async () => {
     network.transients.sendState([playerId, mouseId])
   })
 
+  let mouseWheelScale = 100.0
+  const mouseWheelScaleMax = 200.0
+
   // Mouse wheel zooms in and out
   document.addEventListener('wheel', function (event) {
     if (event.target.id === 'game') {
       let pixelY = normalizeWheel(event)
-      const newFov = stage.fov - pixelY
-      stage.setFov(newFov)
 
-      if (zoomLockPos === null) {
+      mouseWheelScale = THREE.MathUtils.clamp(
+        mouseWheelScale - pixelY,
+        0,
+        mouseWheelScaleMax
+      )
+      if (zoomLockPos === null && mouseWheelScale < mouseWheelScaleMax) {
         zoomLockPos = {
-          x: event.clientX,
-          y: event.clientY,
+          x: mousePointer.clientX,
+          y: mousePointer.clientY,
         }
         mouseWheelTarget.copy(mousePointer.object.position)
+        cameraPlayerOffset.copy(mouseWheelTarget)
+        cameraPlayerOffset.sub(player.object.position)
+
+        // Move the camera to a point hovering "above" the target
+        cameraPlayerOffset.y += 1000
+        cameraPlayerOffset.z += 1250
       }
-      cameraPlayerOffset.copy(mouseWheelTarget)
-      cameraPlayerOffset.sub(player.object.position)
-
-      mousePointer.setScreenCoords(event.clientX, event.clientY)
-
-      stage.forEachEntityOnStageOfType('player', (player) => {
-        player.videoBubble.object.setDiameter(stage.fov)
-      })
     }
   })
 
@@ -768,8 +765,12 @@ const start = async () => {
   })
 
   stage.create('camcon', {
-    targetNear: cameraTarget,
-    targetFar: player.object.position,
+    target: player.object.position,
+    offsetNear: cameraPlayerOffset,
+    offsetFar: new THREE.Vector3(0, 4000, 5000),
+    getRatio: () => {
+      return mouseWheelScale / mouseWheelScaleMax
+    },
   })
 
   initializeAVChat({
