@@ -59,6 +59,7 @@ import {
   KEY_SLASH,
   KEY_BACK_SPACE,
   KEY_DELETE,
+  KEY_M,
 } from 'keycode-js'
 
 import App from './svelte/App.svelte'
@@ -719,7 +720,18 @@ const start = async () => {
         e.preventDefault()
         stage.focusOnInput()
         document.getElementById('input').value = '/'
-      } else if (!e.repeat) {
+      }
+      // Mute/unmute
+      else if (e.keyCode === KEY_M) {
+        const env = { network, stage, cfg }
+        if (stage.player.videoBubble.object.muted) {
+          runCommand('unmute', env)
+        } else {
+          runCommand('mute', env)
+        }
+      }
+      // Forward other keys to the keyboard controller
+      else if (!e.repeat) {
         kbController.keyPressed(e.keyCode, {
           shift: e.shiftKey,
           ctrl: e.ctrlKey,
@@ -737,9 +749,9 @@ const start = async () => {
       })
       // This makes it so that 'tab' is controlled by us, rather than
       // the default HTML tabIndex system
-      if (e.keyCode === 9) {
+      if (e.keyCode === KEY_TAB) {
         e.preventDefault()
-      } else if (e.keyCode === 191 /* Forward Slash */) {
+      } else if (e.keyCode === KEY_SLASH /* Forward Slash */) {
         e.preventDefault()
       }
     }
