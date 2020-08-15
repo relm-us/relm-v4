@@ -236,7 +236,7 @@ relmRouter.post(
         attrs.maxUses = req.body.maxUses
       }
       if ('permits' in req.body) {
-        attrs.permits = [...Permissions.filteredPermits(req.body.permits)]
+        attrs.permits = [...Permission.filteredPermits(req.body.permits)]
       }
     }
 
