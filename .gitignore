@@ -12,6 +12,7 @@ thumbs.db
 
 backups/
 dist/
+saved_relms/
 server/relm-data/
 server/assets/
 server/tmp/
