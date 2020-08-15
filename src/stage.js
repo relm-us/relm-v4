@@ -247,13 +247,16 @@ const Stage = stampit(
 
       enableEditorMode() {
         this.editorMode = true
-        this.minFov = 20.0
-        this.maxFov = 800.0
+        this.forEachEntityOfType('camcon', (entity) => {
+          entity.offsetFar = new THREE.Vector3(0, 12000, 15000)
+        })
       },
 
       disableEditorMode() {
         this.editorMode = false
-        this.setDefaultFovRange()
+        this.forEachEntityOfType('camcon', (entity) => {
+          entity.offsetFar = new THREE.Vector3(0, 4000, 5000)
+        })
       },
 
       // At various times, we need to set focus on the game so that character directional controls work

@@ -76,6 +76,8 @@ const security = Security()
 let occasionalUpdate = 0
 let mouseWheelTarget = new THREE.Vector3()
 let cameraPlayerOffset = new THREE.Vector3()
+let mouseWheelScale = 0.0
+const mouseWheelScaleMax = 100.0
 
 let player
 let mousePointer
@@ -337,9 +339,6 @@ const start = async () => {
     network.transients.sendState([playerId, mouseId])
   })
 
-  let mouseWheelScale = 50.0
-  const mouseWheelScaleMax = 100.0
-
   // Mouse wheel zooms in and out
   document.addEventListener('wheel', function (event) {
     if (event.target.id === 'game') {
@@ -364,8 +363,8 @@ const start = async () => {
         cameraPlayerOffset.sub(player.object.position)
 
         // Move the camera to a point hovering "above" the target
-        cameraPlayerOffset.y += 1000
-        cameraPlayerOffset.z += 1250
+        cameraPlayerOffset.y += 1500
+        cameraPlayerOffset.z += 1875
       }
     }
   })
