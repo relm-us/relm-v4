@@ -383,7 +383,7 @@
   border-color: #eebb11;
 }
 .mute-button:hover::before {
-  content: 'Mute (m)';
+  content: 'Mute (M)';
   white-space: nowrap;
   position: relative;
   left: 2em;
