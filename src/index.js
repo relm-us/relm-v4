@@ -313,10 +313,10 @@ const start = async () => {
           const dist = player.object.position.distanceTo(
             anyPlayer.object.position
           )
-          // if dist = 0: (500 + 1000) / 500 = 3.0
-          // if dist = 1000: (500 - 0) / 500 = 1.0
-          // if dist = 1200: (500 - 200) / 500 = 0.6
-          // if dist = 2000: (500 - 1000) / 500 = -0.5
+          // if dist = 0: (500 + 1000) / 500 = 3.0     => clamped to 1.0
+          // if dist = 1000: (500 - 0) / 500 = 1.0     => clamped to 1.0
+          // if dist = 1200: (500 - 200) / 500 = 0.6   => clamped to 0.6
+          // if dist = 2000: (500 - 1000) / 500 = -0.5 => clamped to 0.15
           const volume = (500 - (dist - 1000)) / 500
           audio.volume = THREE.MathUtils.clamp(volume, 0.15, 1.0)
         }
