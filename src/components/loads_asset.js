@@ -7,11 +7,16 @@ import { defineGoal } from '../goals/goal.js'
 import { GLTFLoader } from '../lib/GLTFLoader.js'
 import { MeshoptGLTFLoader } from '../lib/MeshoptGLTFLoader.js'
 
+import { checkWebpFeature } from '../util.js'
 
 const IMAGE_FILETYPE_RE = /\.(png|gif|jpg|jpeg|webp)$/
 const GLTF_PACKED_FILETYPE_RE = /\.packed-(gltf|glb)$/
 const GLTF_FILETYPE_RE = /\.(gltf|glb)$/
 
+let hasWebpSupport = true
+checkWebpFeature('alpha', (feature, result) => {
+  hasWebpSupport = result
+})
 
 // Loader for regular GLTFs and GLBs
 const regularGLTFLoader = new GLTFLoader()
@@ -22,9 +27,10 @@ const meshoptGLTFLoader = new MeshoptGLTFLoader()
 // Loader for Textures
 const textureLoader = new THREE.TextureLoader()
 
-
 const getLoaderFromUrl = (url) => {
-  if (!url.match) { console.error('URL is is not a string', url) }
+  if (!url.match) {
+    console.error('URL is is not a string', url)
+  }
   if (url.match(IMAGE_FILETYPE_RE)) {
     return textureLoader
   } else if (url.match(GLTF_PACKED_FILETYPE_RE)) {
@@ -39,17 +45,18 @@ const getLoaderFromUrl = (url) => {
 const LoadsAsset = stampit(Component, EventEmittable, {
   deepStatics: {
     goalDefinitions: {
-      asset: defineGoal('ast', { url: null })
-    }
+      asset: defineGoal('ast', { url: null, alt: null }),
+    },
   },
-  
+
   init() {
     this.asset = null
   },
 
   methods: {
     loadAsset() {
-      const url = this.goals.asset.get('url')
+      const url = this.goals.asset.get(hasWebpSupport ? 'url' : 'alt')
+      console.log('url', hasWebpSupport, url)
       if (url) {
         const loader = getLoaderFromUrl(url)
         if (!loader) return
@@ -65,10 +72,10 @@ const LoadsAsset = stampit(Component, EventEmittable, {
     update(_delta) {
       if (!this.goals.asset.achieved) {
         this.loadAsset()
-        this.goals.asset.markAchieved('url')
+        this.goals.asset.markAchieved()
       }
-    }
-  }
+    },
+  },
 })
 
 export {
