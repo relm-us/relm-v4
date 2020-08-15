@@ -6,7 +6,7 @@ import { muteAudio, unmuteAudio } from './avchat2.js'
 import { avatarOptionsOfGender } from './avatars.js'
 import { teleportToOtherRelm } from './teleportal.js'
 import { switchVideo } from './avchat2.js'
-import { createRelm } from './api/admin.js'
+import { createRelm, truncateRelm } from './api/admin.js'
 
 import {
   take,
@@ -391,13 +391,11 @@ const commands = {
   mute: (args) => {
     return (env) => {
       muteAudio()
-      env.stage.player.videoBubble.object.enterMutedState()
     }
   },
   unmute: (args) => {
     return (env) => {
       unmuteAudio()
-      env.stage.player.videoBubble.object.enterUnmutedState()
     }
   },
   name: (args) => {
@@ -784,7 +782,18 @@ const commands = {
           )
           createRelm(env.player.uuid, relmName)
             .then(() => {
-              showToast(`Relm ${relmName} created`)
+              showToast(`Created relm named '${relmName}'.`)
+            })
+            .catch((err) => {
+              showToast(err)
+            })
+        }
+      case 'truncate':
+        return (env) => {
+          const relmName = env.cfg.ROOM
+          truncateRelm(env.player.uuid, relmName)
+            .then(() => {
+              showToast(`History truncated for relm '${relmName}'.`)
             })
             .catch((err) => {
               showToast(err)

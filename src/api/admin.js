@@ -31,4 +31,27 @@ async function createRelm(playerId, relmName, isPublic = true) {
   }
 }
 
-export { createRelm }
+async function truncateRelm(playerId, relmName) {
+  let url = `${cfg.SERVER_URL}/relm/${relmName}/truncate`
+  try {
+    const res = await axios.post(
+      url,
+      {},
+      {
+        headers: {
+          'x-relm-id': playerId,
+          'x-relm-s': await security.sign(playerId),
+        },
+      }
+    )
+    return true
+  } catch (err) {
+    if (err && err.response && err.response.data) {
+      throw Error(err.response.data.reason)
+    } else {
+      throw err
+    }
+  }
+}
+
+export { createRelm, truncateRelm }
