@@ -298,8 +298,16 @@ const start = async () => {
     const playerHeight = 800000 / dist
 
     // TODO: make this filter for 'HasVideoBubble' instead of just looking for players
-    if (occasionalUpdate % 10 === 0) {
-      stage.forEachEntityOfType('player', (anyPlayer, i) => {
+    stage.forEachEntityOfType('player', (anyPlayer, i) => {
+      // Set videoBubble diameter, which can change due to
+      // (a) new players entering the scene, or
+      // (b) zoom level changing
+      anyPlayer.videoBubble.object.setDiameter(playerHeight)
+      // (Note: due to bug in ThreeJS, we incorrectly exclude players
+      //  from being "on stage" when the bottom of their avatar
+      //  goes off screen, so we process diameters here.)
+
+      if (occasionalUpdate % 10 === 0) {
         const audio = anyPlayer.videoBubble.object.audio
         if (audio) {
           const dist = player.object.position.distanceTo(
@@ -312,16 +320,11 @@ const start = async () => {
           const volume = (500 - (dist - 1000)) / 500
           audio.volume = THREE.MathUtils.clamp(volume, 0.15, 1.0)
         }
-      })
-    }
+      }
+    })
     stage.forEachEntityOnStageOfType(
       'player',
       (anyPlayer, i) => {
-        // Set videoBubble diameter, which can change due to
-        // (a) new players entering the scene, or
-        // (b) zoom level changing
-        anyPlayer.videoBubble.object.setDiameter(playerHeight)
-
         // Sort the visible players by Z order
         const el = anyPlayer.videoBubble.object.domElement
         if (el) {
