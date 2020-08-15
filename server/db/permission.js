@@ -34,10 +34,12 @@ const Permission = (module.exports = {
       player_id: playerId,
       permits: JSON.stringify([...permits]),
     }
-    await db.none(sql`
+    const row = await db.one(sql`
       ${INSERT('permissions', attrs)}
+      RETURNING permits
     `)
-    return true
+
+    return new Set(row.permits)
   },
 
   getPermissions: async ({ playerId, relmId }) => {

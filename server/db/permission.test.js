@@ -18,7 +18,11 @@ describe('Permission model tests', () => {
 
   it('sets permissions', async () => {
     const playerId = uuidv4()
-    await Permission.setPermissions({ playerId, relm: 'welcome' })
+    const setPermits = await Permission.setPermissions({
+      playerId,
+      relm: 'welcome',
+    })
+    expect(setPermits).toEqual(new Set(['access']))
 
     const permits = await Permission.getPermissions({
       playerId,
