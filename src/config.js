@@ -4,7 +4,7 @@ import { Stage } from './stage.js'
 
 /**
  * Uses the window.location as a way to distinguish which server environment we are in.
- * 
+ *
  * @param {Location} location The window.location of this web page
  * @returns {Object}
  */
@@ -31,7 +31,7 @@ function config(location) {
   const params = new URLSearchParams(document.location.search.substring(1))
   const roomParam = params.get('room')
   const roomPath = location.pathname.split('/')[1]
-  
+
   let ROOM
   if (roomParam) {
     ROOM = roomParam
@@ -41,7 +41,7 @@ function config(location) {
     ROOM = 'relm'
   }
   ROOM = ROOM.toLowerCase().replace(/[^a-z\-]/, '')
-  
+
   let LANDING_COORDS = null
   if (params.has('x') && params.has('z')) {
     LANDING_COORDS = {
@@ -50,9 +50,9 @@ function config(location) {
       z: parseInt(params.get('z'), 10),
     }
   }
-  
-  let SINGLE_PLAYER_MODE = (location.hash === '#1')
-  
+
+  let SINGLE_PLAYER_MODE = location.hash === '#1'
+
   window.config = {
     SERVER_URL,
     SERVER_YJS_URL,
@@ -62,23 +62,20 @@ function config(location) {
     LANDING_COORDS,
     SINGLE_PLAYER_MODE,
   }
-  
+
   return window.config
 }
 
-
 // Show progress as we load resources
-const resources = window.resources = ResourceLoader()
+const resources = (window.resources = ResourceLoader())
 // resources.on('loaded', ({ id, currentProgress, maxProgress }) => {
-//   ShowLoadingProgress(id, currentProgress, maxProgress) 
+//   ShowLoadingProgress(id, currentProgress, maxProgress)
 // })
 
 // The Stage is where all the THREE.js things come together, e.g. camera, lights
-const stage = window.stage = Stage({ width: window.innerWidth, height: window.innerHeight })
+const stage = (window.stage = Stage({
+  width: window.innerWidth,
+  height: window.innerHeight,
+}))
 
-
-export {
-  config,
-  resources,
-  stage,
-}
+export { config, resources, stage }
