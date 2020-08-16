@@ -391,11 +391,13 @@ const commands = {
   mute: (args) => {
     return (env) => {
       muteAudio()
+      env.stage.player.videoBubble.object.enterMutedState()
     }
   },
   unmute: (args) => {
     return (env) => {
       unmuteAudio()
+      env.stage.player.videoBubble.object.enterUnmutedState()
     }
   },
   name: (args) => {
