@@ -51,7 +51,6 @@ relmRouter.delete(
   cors(),
   middleware.relmExists(),
   middleware.authenticated(),
-  middleware.acceptToken(),
   middleware.authorized(Permission.ADMIN),
   wrapAsync(async (req, res) => {
     await Relm.deleteRelm({ relmId: req.relm.relmId })
@@ -69,7 +68,6 @@ relmRouter.get(
   cors(),
   middleware.relmExists(),
   middleware.authenticated(),
-  middleware.acceptToken(),
   middleware.authorized(Permission.ACCESS),
   wrapAsync(async (req, res) => {
     const permanentDoc = await persistence.getYDoc(req.relm.permanentDocId)
@@ -89,7 +87,6 @@ relmRouter.get(
   cors(),
   middleware.relmExists(),
   middleware.authenticated(),
-  middleware.acceptToken(),
   middleware.authorized(Permission.ACCESS),
   wrapAsync(async (req, res) => {
     const permanentDoc = await persistence.getYDoc(req.relm.permanentDocId)
@@ -109,7 +106,6 @@ relmRouter.post(
   cors(),
   middleware.relmExists(),
   middleware.authenticated(),
-  middleware.acceptToken(),
   middleware.authorized(Permission.EDIT),
   wrapAsync(async (req, res) => {
     const relm = req.relm
@@ -171,7 +167,6 @@ relmRouter.put(
   cors(),
   middleware.relmExists(),
   middleware.authenticated(),
-  middleware.acceptToken(),
   middleware.authorized(Permission.EDIT),
   wrapAsync(async (req, res) => {
     const attrs = {

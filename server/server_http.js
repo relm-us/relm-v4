@@ -10,7 +10,7 @@ const util = require('./util.js')
 const config = require('./config.js')
 const middleware = require('./middleware.js')
 const relmRouter = require('./relm_router.js')
-const { Relm } = require('./db/models.js')
+const { Relm, Permission } = require('./db/models.js')
 
 const { wrapAsync, getRemoteIP } = util
 
@@ -37,6 +37,30 @@ app.post(
     util.respond(res, 200, {
       status: 'success',
       action: 'authenticate',
+    })
+  })
+)
+
+app.post(
+  '/mkadmin',
+  cors(),
+  middleware.authenticated(),
+  middleware.authorized('admin'),
+  wrapAsync(async (req, res) => {
+    const permits = await Permission.getPermissions({
+      playerId: req.body.playerId,
+    })
+    if (!permits.has('admin')) {
+      await Permission.setPermissions({
+        playerId: req.body.playerId,
+        permits: ['admin'],
+      })
+      permits.add('admin')
+    }
+    util.respond(res, 200, {
+      status: 'success',
+      action: 'mkadmin',
+      permits: [...permits],
     })
   })
 )

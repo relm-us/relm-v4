@@ -76,6 +76,8 @@ const security = Security()
 let occasionalUpdate = 0
 let mouseWheelTarget = new THREE.Vector3()
 let cameraPlayerOffset = new THREE.Vector3()
+let mouseWheelScale = 0.0
+const mouseWheelScaleMax = 100.0
 
 let player
 let mousePointer
@@ -298,30 +300,33 @@ const start = async () => {
     const playerHeight = 800000 / dist
 
     // TODO: make this filter for 'HasVideoBubble' instead of just looking for players
-    if (occasionalUpdate % 10 === 0) {
-      stage.forEachEntityOfType('player', (anyPlayer, i) => {
+    stage.forEachEntityOfType('player', (anyPlayer, i) => {
+      // Set videoBubble diameter, which can change due to
+      // (a) new players entering the scene, or
+      // (b) zoom level changing
+      anyPlayer.videoBubble.object.setDiameter(playerHeight)
+      // (Note: due to bug in ThreeJS, we incorrectly exclude players
+      //  from being "on stage" when the bottom of their avatar
+      //  goes off screen, so we process diameters here.)
+
+      if (occasionalUpdate % 10 === 0) {
         const audio = anyPlayer.videoBubble.object.audio
         if (audio) {
           const dist = player.object.position.distanceTo(
             anyPlayer.object.position
           )
-          // if dist = 0: (500 + 1000) / 500 = 3.0
-          // if dist = 1000: (500 - 0) / 500 = 1.0
-          // if dist = 1200: (500 - 200) / 500 = 0.6
-          // if dist = 2000: (500 - 1000) / 500 = -0.5
+          // if dist = 0: (500 + 1000) / 500 = 3.0     => clamped to 1.0
+          // if dist = 1000: (500 - 0) / 500 = 1.0     => clamped to 1.0
+          // if dist = 1200: (500 - 200) / 500 = 0.6   => clamped to 0.6
+          // if dist = 2000: (500 - 1000) / 500 = -0.5 => clamped to 0.15
           const volume = (500 - (dist - 1000)) / 500
           audio.volume = THREE.MathUtils.clamp(volume, 0.15, 1.0)
         }
-      })
-    }
+      }
+    })
     stage.forEachEntityOnStageOfType(
       'player',
       (anyPlayer, i) => {
-        // Set videoBubble diameter, which can change due to
-        // (a) new players entering the scene, or
-        // (b) zoom level changing
-        anyPlayer.videoBubble.object.setDiameter(playerHeight)
-
         // Sort the visible players by Z order
         const el = anyPlayer.videoBubble.object.domElement
         if (el) {
@@ -333,9 +338,6 @@ const start = async () => {
 
     network.transients.sendState([playerId, mouseId])
   })
-
-  let mouseWheelScale = 50.0
-  const mouseWheelScaleMax = 100.0
 
   // Mouse wheel zooms in and out
   document.addEventListener('wheel', function (event) {
@@ -361,8 +363,8 @@ const start = async () => {
         cameraPlayerOffset.sub(player.object.position)
 
         // Move the camera to a point hovering "above" the target
-        cameraPlayerOffset.y += 1000
-        cameraPlayerOffset.z += 1250
+        cameraPlayerOffset.y += 1500
+        cameraPlayerOffset.z += 1875
       }
     }
   })
@@ -656,6 +658,11 @@ const start = async () => {
   }
 
   document.addEventListener('contextmenu', (event) => {
+    event.preventDefault()
+
+    if (!stage.editorMode) {
+      return
+    }
     let intersections = stage.intersectionFinder.getAllIntersectionsOnStage()
     if (intersections.length == 0) {
       stage.forEachEntityOfType('skybox', (entity) => {
@@ -676,7 +683,6 @@ const start = async () => {
     setTimeout(() => {
       exportImportState.update(() => true)
     }, 300)
-    event.preventDefault()
   })
 
   const kbController = (stage.kbController = stage.create('keycon', {
