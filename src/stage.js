@@ -247,6 +247,7 @@ const Stage = stampit(
 
       enableEditorMode() {
         this.editorMode = true
+        localStorage.setItem('editorMode', true)
         this.forEachEntityOfType('camcon', (entity) => {
           entity.offsetFar = new THREE.Vector3(0, 12000, 15000)
         })
@@ -254,6 +255,7 @@ const Stage = stampit(
 
       disableEditorMode() {
         this.editorMode = false
+        localStorage.setItem('editorMode', false)
         this.forEachEntityOfType('camcon', (entity) => {
           entity.offsetFar = new THREE.Vector3(0, 4000, 5000)
         })

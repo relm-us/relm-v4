@@ -797,6 +797,16 @@ const start = async () => {
     },
   })
 
+  // Restore editorMode, if saved
+  switch (localStorage.getItem('editorMode')) {
+    case 'true':
+      stage.enableEditorMode()
+      break
+    case 'false':
+      stage.disableEditorMode()
+      break
+  }
+
   initializeAVChat({
     playerId: player.uuid,
     room:

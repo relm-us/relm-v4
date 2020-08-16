@@ -58,7 +58,7 @@ const SceneWithCamera = stampit({
           this.perspectiveRatio,
           this.width / this.height,
           1000, // near clipping
-          20000 // far clipping
+          30000 // far clipping
         )
       }
       const aspect = this.width / this.height
