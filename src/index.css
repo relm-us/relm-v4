@@ -84,11 +84,19 @@
   opacity: 0.9;
   flex-shrink: 0;
 }
+.thought-bubble.centered {
+  /** FIXME: We shouldn't just assume that centered "thought bubbles"
+   *  don't get mouse pointer events. This is a hack for now, so that
+   *  diamonds don't interfore with mouse wheel scrolling.  
+   */
+  pointer-events: none;
+}
 .thought-bubble.centered .speech-text a,
 .thought-bubble.centered .speech-text:visited {
   text-decoration: none;
   font-weight: bold;
   color: #f54;
+  pointer-events: all;
 }
 .speech-text a,
 .speech-text:visited {
