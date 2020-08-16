@@ -658,6 +658,11 @@ const start = async () => {
   }
 
   document.addEventListener('contextmenu', (event) => {
+    event.preventDefault()
+
+    if (!stage.editorMode) {
+      return
+    }
     let intersections = stage.intersectionFinder.getAllIntersectionsOnStage()
     if (intersections.length == 0) {
       stage.forEachEntityOfType('skybox', (entity) => {
@@ -678,7 +683,6 @@ const start = async () => {
     setTimeout(() => {
       exportImportState.update(() => true)
     }, 300)
-    event.preventDefault()
   })
 
   const kbController = (stage.kbController = stage.create('keycon', {
