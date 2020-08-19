@@ -5,9 +5,10 @@
   "license": "GPL-3.0-only",
   "scripts": {
     "start": "parcel src/index.html",
+    "start-search": "parcel src/search.html",
     "test": "jest --watch",
     "sandbox": "parcel src/sandbox.html",
-    "build": "parcel build --public-url / src/index.html",
+    "build": "parcel build --public-url / src/index.html && parcel build --public-url /search src/search.html",
     "format": "standard 'src/*.js' 'lib/*.js' --fix"
   },
   "dependencies": {
