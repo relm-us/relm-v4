@@ -8,7 +8,7 @@
     "start-search": "parcel src/search.html",
     "test": "jest --watch",
     "sandbox": "parcel src/sandbox.html",
-    "build": "parcel build --public-url / src/index.html && parcel build --public-url /search src/search.html",
+    "build": "./build.sh",
     "format": "standard 'src/*.js' 'lib/*.js' --fix"
   },
   "dependencies": {

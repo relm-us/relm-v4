@@ -8,7 +8,9 @@ set -x
 # $DIR/make_manifest.sh
 
 echo "Cleaning dist/ folder & re-building..."
-rm -rf $DIR/dist/* && ./node_modules/.bin/parcel build --public-url / src/index.html
+rm -rf $DIR/dist/* && \
+  ./node_modules/.bin/parcel build --public-url / src/index.html
+  ./node_modules/.bin/parcel build --public-url / src/search.html
 RESULT=$?
 
 if [ $RESULT -eq 0 ]; then
