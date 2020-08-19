@@ -434,8 +434,10 @@ const start = async () => {
 
           if (stage.gridSnap) {
             const size = stage.gridSnap
-            dragDelta.x = Math.floor(dragDelta.x / size) * size
-            dragDelta.z = Math.floor(dragDelta.z / size) * size
+            dragDelta.x =
+              Math.floor(dragDelta.x / size) * size + stage.gridOffsetX
+            dragDelta.z =
+              Math.floor(dragDelta.z / size) * size + stage.gridOffsetZ
           }
 
           // entity.disableFollowsTarget()

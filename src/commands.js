@@ -899,11 +899,21 @@ const commands = {
       args,
       `Shouldn't there be a [SIZE] after '/snap'? or 'off'?`
     )
+    let offsetX = 0
+    let offsetZ = 0
+    if (args.length === 2) {
+      offsetX = takeOne(args)
+      offsetZ = takeOne(args)
+    }
     return (env) => {
       if (size === 'off') {
         stage.setGridSnap(null)
       } else {
-        stage.setGridSnap(parseFloat(size))
+        stage.setGridSnap(
+          parseFloat(size),
+          parseFloat(offsetX),
+          parseFloat(offsetZ)
+        )
       }
     }
   },

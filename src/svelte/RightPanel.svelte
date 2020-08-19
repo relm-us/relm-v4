@@ -498,7 +498,7 @@
     <div>
       <div class="p">
         Snap to grid:
-        <Thought text="/snap off|[SIZE]" />
+        <Thought text="/snap off|[SIZE] [X-OFFSET=0] [Z-OFFSET=0]" />
       </div>
     </div>
 

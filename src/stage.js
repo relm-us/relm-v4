@@ -55,6 +55,8 @@ const Stage = stampit(
       this.updateFns = new Map()
       this.postrenderFns = new Map()
       this.gridSnap = null
+      this.gridOffsetX = 0
+      this.gridOffsetZ = 0
       this.intersectionFinder = FindIntersectionsFromScreenCoords({
         stage: this,
       })
@@ -241,8 +243,10 @@ const Stage = stampit(
         this.continueRendering = false
       },
 
-      setGridSnap(size) {
+      setGridSnap(size, offsetX = 0, offsetZ = 0) {
         this.gridSnap = size
+        this.gridOffsetX = offsetX
+        this.gridOffsetZ = offsetZ
       },
 
       enableEditorMode() {
