@@ -6,7 +6,7 @@ import { muteAudio, unmuteAudio } from './avchat2.js'
 import { avatarOptionsOfGender } from './avatars.js'
 import { teleportToOtherRelm } from './teleportal.js'
 import { switchVideo } from './avchat2.js'
-import { createRelm, truncateRelm } from './api/admin.js'
+import { createRelm, truncateRelm, getRelmMetadata } from './api/admin.js'
 
 import {
   take,
@@ -776,6 +776,19 @@ const commands = {
     )
     console.log('relm command:', subCommand)
     switch (subCommand) {
+      case 'info':
+        return (env) => {
+          getRelmMetadata(env.player.uuid, env.cfg.ROOM)
+            .then((md) => {
+              showToast(`
+                <b>Public?</b>: ${md.isPublic}<br>
+                <b>Size (in bytes)</b>: ${md.permanentDocSize}<br>
+              `)
+            })
+            .catch((err) => {
+              showToast(err)
+            })
+        }
       case 'create':
         return (env) => {
           const relmName = takeOne(
