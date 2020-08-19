@@ -7,20 +7,36 @@ describe('Relm model tests', () => {
   beforeAll(setup)
   afterAll(teardown)
 
-  it('Creates a relm with defaults', async () => {
-    const relmName = 'relm-being-created'
-    const relm = await Relm.createRelm({ relmName })
-    expect(relm).toEqual({
-      relmId: expect.stringMatching(UUID_RE),
-      relmName: 'relm-being-created',
+  it('Gets all public relms', async () => {
+    await Relm.createRelm({ relmName: 'allpub-public-relm-1', isPublic: true })
+    await Relm.createRelm({ relmName: 'allpub-public-relm-2', isPublic: true })
+    await Relm.createRelm({
+      relmName: 'allpub-private-relm-3',
       isPublic: false,
-      defaultEntrywayId: null,
-      createdBy: null,
-      createdAt: expect.any(Date),
-      transientDocId: expect.stringMatching(UUID_RE),
-      permanentDocId: expect.stringMatching(UUID_RE),
     })
-  })
+    const relms = await Relm.getAllRelms({
+      prefix: 'allpub',
+      isPublic: true,
+    })
+    const relmNames = new Set(relms.map((r) => r.relmName))
+    expect(relmNames).toEqual(
+      new Set(['allpub-public-relm-1', 'allpub-public-relm-2'])
+    )
+  }),
+    it('Creates a relm with defaults', async () => {
+      const relmName = 'relm-being-created'
+      const relm = await Relm.createRelm({ relmName })
+      expect(relm).toEqual({
+        relmId: expect.stringMatching(UUID_RE),
+        relmName: 'relm-being-created',
+        isPublic: false,
+        defaultEntrywayId: null,
+        createdBy: null,
+        createdAt: expect.any(Date),
+        transientDocId: expect.stringMatching(UUID_RE),
+        permanentDocId: expect.stringMatching(UUID_RE),
+      })
+    })
 
   it('Gets a relm by relmName', async () => {
     const relmName = 'relm-with-name'

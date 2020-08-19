@@ -66,10 +66,24 @@ app.post(
 )
 
 app.get(
-  '/relms',
+  '/relms/all',
+  cors(),
+  middleware.authenticated(),
+  middleware.authorized('admin'),
+  wrapAsync(async (req, res) => {
+    const relms = await Relm.getAllRelms({})
+    util.respond(res, 200, {
+      status: 'success',
+      relms,
+    })
+  })
+)
+
+app.get(
+  '/relms/public',
   cors(),
   wrapAsync(async (req, res) => {
-    const relms = await Relm.getAllRelms()
+    const relms = await Relm.getAllRelms({ isPublic: true })
     util.respond(res, 200, {
       status: 'success',
       relms,

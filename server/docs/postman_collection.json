@@ -9,28 +9,61 @@
 			"name": "Relms",
 			"item": [
 				{
-					"name": "Get All Relms",
+					"name": "List Public Relms",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{serverUrl}}/relms/public",
+							"host": [
+								"{{serverUrl}}"
+							],
+							"path": [
+								"relms",
+								"public"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "List All Relms (Admin)",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
 					"request": {
 						"method": "GET",
 						"header": [
 							{
+								"description": "Signed Player ID",
 								"key": "X-Relm-S",
 								"type": "text",
 								"value": "{{relmSig}}"
 							},
 							{
+								"description": "Player ID",
 								"key": "X-Relm-Id",
 								"type": "text",
 								"value": "{{relmId}}"
 							}
 						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"playerId\": \"0dce4601-0a92-4c52-ad4a-f355ede669c6\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
 						"url": {
-							"raw": "{{serverUrl}}/relms",
+							"raw": "{{serverUrl}}/relms/all",
 							"host": [
 								"{{serverUrl}}"
 							],
 							"path": [
-								"relms"
+								"relms",
+								"all"
 							]
 						}
 					},
@@ -434,6 +467,57 @@
 							"value": "setup",
 							"description": "Token"
 						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Make Admin",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"description": "Signed Player ID",
+						"key": "X-Relm-S",
+						"type": "text",
+						"value": "{{relmSig}}"
+					},
+					{
+						"description": "Player ID",
+						"key": "X-Relm-Id",
+						"type": "text",
+						"value": "{{relmId}}"
+					},
+					{
+						"description": "X Component of Public Key",
+						"key": "X-Relm-X",
+						"type": "text",
+						"value": "{{relmX}}"
+					},
+					{
+						"description": "Y Component of Public Key",
+						"key": "X-Relm-Y",
+						"type": "text",
+						"value": "{{relmY}}"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"playerId\": \"0dce4601-0a92-4c52-ad4a-f355ede669c6\"\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{serverUrl}}/mkadmin",
+					"host": [
+						"{{serverUrl}}"
+					],
+					"path": [
+						"mkadmin"
 					]
 				}
 			},

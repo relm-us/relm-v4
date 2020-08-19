@@ -80,10 +80,17 @@ const Relm = (module.exports = {
     )
   },
 
-  getAllRelms: async (client) => {
+  getAllRelms: async ({ prefix, isPublic = true }) => {
+    const filter = {
+      is_public: isPublic,
+    }
+    if (prefix) {
+      filter.relm_name = { like: `${prefix}%` }
+    }
     return (
       await db.manyOrNone(sql`
         SELECT * FROM relms
+        ${WHERE(filter)}
       `)
     ).map((row) => mkRelmSummary(row))
   },

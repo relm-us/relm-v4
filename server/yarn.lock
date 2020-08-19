@@ -3715,10 +3715,9 @@ pg-protocol@^1.2.5:
   resolved "https://registry.yarnpkg.com/pg-protocol/-/pg-protocol-1.2.5.tgz#28a1492cde11646ff2d2d06bdee42a3ba05f126c"
   integrity sha512-1uYCckkuTfzz/FCefvavRywkowa6M5FohNMF5OjKrqo9PSR8gYc8poVmwwYQaBxhmQdBjhtP514eXy9/Us2xKg==
 
-pg-sql-helpers@^0.3.1:
+pg-sql-helpers@canadaduane/pg-sql-helpers#release:
   version "0.3.1"
-  resolved "https://registry.yarnpkg.com/pg-sql-helpers/-/pg-sql-helpers-0.3.1.tgz#2cda70cb3ed05ad0941a53e238c47e1d5bf5b4ff"
-  integrity sha512-NMnCzI5qKJiVDNpFANEf0LphcyghkfCwo00TajplA+FvXW6iOBIOeT4TjSC3fH0AQ2duXGd+YfEImkG0zlpqGg==
+  resolved "https://codeload.github.com/canadaduane/pg-sql-helpers/tar.gz/8105604f28137d5dd4263e045ee57c8b083f5e70"
   dependencies:
     is "^3.2.1"
     is-plain-object "^2.0.4"
