@@ -22,7 +22,6 @@
     "dompurify": "^2.0.11",
     "dropzone": "^5.7.0",
     "flatqueue": "^1.2.1",
-    "janus-gateway": "meetecho/janus-gateway#v0.9.1",
     "keycode-js": "^2.0.3",
     "partykals": "^1.0.1",
     "queue": "^6.0.1",
