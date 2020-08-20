@@ -253,7 +253,7 @@ const Stage = stampit(
         this.editorMode = true
         localStorage.setItem('editorMode', true)
         this.forEachEntityOfType('camcon', (entity) => {
-          entity.offsetFar = new THREE.Vector3(0, 12000, 15000)
+          entity.offsetFar = new THREE.Vector3().copy(config.CAMERA_EDITOR)
         })
       },
 
@@ -261,7 +261,7 @@ const Stage = stampit(
         this.editorMode = false
         localStorage.setItem('editorMode', false)
         this.forEachEntityOfType('camcon', (entity) => {
-          entity.offsetFar = new THREE.Vector3(0, 4000, 5000)
+          entity.offsetFar = new THREE.Vector3().copy(config.CAMERA_FAR)
         })
       },
 
@@ -299,5 +299,10 @@ const Stage = stampit(
     },
   }
 )
+// The Stage is where all the THREE.js things come together, e.g. camera, lights
+const stage = (window.stage = Stage({
+  width: window.innerWidth,
+  height: window.innerHeight,
+}))
 
-export { Stage }
+export { stage }

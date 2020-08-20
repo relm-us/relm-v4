@@ -778,7 +778,7 @@ const commands = {
     switch (subCommand) {
       case 'info':
         return (env) => {
-          getRelmMetadata(env.player.uuid, env.cfg.ROOM)
+          getRelmMetadata(env.player.uuid, env.config.ROOM)
             .then((md) => {
               showToast(`
                 <b>Public?</b>: ${md.isPublic}<br>
@@ -805,7 +805,7 @@ const commands = {
         }
       case 'truncate':
         return (env) => {
-          const relmName = env.cfg.ROOM
+          const relmName = env.config.ROOM
           truncateRelm(env.player.uuid, relmName)
             .then(() => {
               showToast(`History truncated for relm '${relmName}'.`)
@@ -1023,7 +1023,7 @@ const parseCommand = (commandString) => {
   }
 }
 
-const runCommand = (text, { network, stage, cfg, position }) => {
+const runCommand = (text, { network, stage, config, position }) => {
   try {
     const command = parseCommand(text)
     const objects = stage.selection.getAllEntities()
@@ -1035,7 +1035,7 @@ const runCommand = (text, { network, stage, cfg, position }) => {
         player,
         objects,
         position: position || stage.player.object.position,
-        cfg,
+        config,
       })
     } else {
       showToast('Should there be a command after the `/`?')

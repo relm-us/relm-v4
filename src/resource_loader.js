@@ -6,11 +6,11 @@ import { manifest } from './manifest.js'
 
 const NUMBER_OF_THINGS_TO_LOAD_AT_A_TIME = 4
 
-const ResourceLoader = window.ResourceLoader = stampit(EventEmittable, {
+const ResourceLoader = (window.ResourceLoader = stampit(EventEmittable, {
   name: 'ResourceLoader',
 
   props: {
-    resources: {}
+    resources: {},
   },
 
   init() {
@@ -19,7 +19,7 @@ const ResourceLoader = window.ResourceLoader = stampit(EventEmittable, {
     this.resources = {}
     this.added = {}
     this.q = queue({
-      concurrency: NUMBER_OF_THINGS_TO_LOAD_AT_A_TIME
+      concurrency: NUMBER_OF_THINGS_TO_LOAD_AT_A_TIME,
     })
   },
 
@@ -28,7 +28,7 @@ const ResourceLoader = window.ResourceLoader = stampit(EventEmittable, {
     add(id, loader, path) {
       if (!this.added[id]) {
         const sizeInBytes = manifest[path]
-        this.maxProgress += (sizeInBytes || 0)
+        this.maxProgress += sizeInBytes || 0
         this.added[id] = { loader, path, sizeInBytes }
         // console.log('resource added', id, this.added[id])
       }
@@ -38,9 +38,9 @@ const ResourceLoader = window.ResourceLoader = stampit(EventEmittable, {
     enqueue(ids) {
       for (let id of ids) {
         const { loader, path, sizeInBytes } = this.added[id]
-        this.q.push(cb => {
-          loader.load(path, loadedResource => {
-            this.currentProgress += (sizeInBytes || 0)
+        this.q.push((cb) => {
+          loader.load(path, (loadedResource) => {
+            this.currentProgress += sizeInBytes || 0
             this.resources[id] = loadedResource
             this.emit('loaded', {
               id,
@@ -56,47 +56,54 @@ const ResourceLoader = window.ResourceLoader = stampit(EventEmittable, {
       }
     },
 
-    load (fn) {
+    load(fn) {
       return new Promise((resolve, reject) => {
         this.q.start(resolve)
       })
     },
 
-    get (id) {
+    get(id) {
       if (!(id in this.resources)) {
-        console.trace('Unable to get resource', id, '(key not present in this.resources)')
+        console.trace(
+          'Unable to get resource',
+          id,
+          '(key not present in this.resources)'
+        )
       }
       return this.resources[id]
     },
-    
-    getAsync (id) {
+
+    getAsync(id) {
       return new Promise((resolve, reject) => {
         if (!(id in this.resources)) {
           const { loader, path } = this.added[id]
-          loader.load(path, (loadedResource) => {
-            this.resources[id] = loadedResource
-            resolve(this.resources[id])
-          }, null, reject)
+          loader.load(
+            path,
+            (loadedResource) => {
+              this.resources[id] = loadedResource
+              resolve(this.resources[id])
+            },
+            null,
+            reject
+          )
         } else {
           resolve(this.resources[id])
         }
       })
     },
 
-    getObject (id, objectName) {
+    getObject(id, objectName) {
       let resource = this.get(id).scene
       let object
-      resource.traverse(o => {
+      resource.traverse((o) => {
         if (o.name === objectName) {
           object = o
           return
         }
       })
       return object
-    }
-  }
-
-})
+    },
+  },
+}))
 
 export { ResourceLoader }
-

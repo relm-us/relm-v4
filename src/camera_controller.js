@@ -2,6 +2,7 @@ import stampit from 'stampit'
 
 import { Entity } from './entity.js'
 import { Component } from './components/component.js'
+import { config } from './config.js'
 
 const { Vector3 } = THREE
 
@@ -16,8 +17,8 @@ const CameraController = stampit(Entity, Component, {
     // and one for when the camera is near to the ground ("zoomed in"). We lerp
     // between the two as zoom goes in and out.
     this.target = target
-    this.offsetNear = offsetNear || new Vector3(0, 2000, 2500)
-    this.offsetFar = offsetFar || new Vector3(0, 4000, 5000)
+    this.offsetNear = offsetNear || new Vector3().copy(config.CAMERA_NEAR)
+    this.offsetFar = offsetFar || new Vector3().copy(config.CAMERA_FAR)
     this.getRatio =
       getRatio ||
       (() => {

@@ -1,14 +1,10 @@
-import { ShowLoadingProgress } from './show_loading_progress.js'
-import { ResourceLoader } from './resource_loader.js'
-import { Stage } from './stage.js'
-
 /**
  * Uses the window.location as a way to distinguish which server environment we are in.
  *
  * @param {Location} location The window.location of this web page
  * @returns {Object}
  */
-function config(location) {
+function Config(location) {
   let ENV
   let SERVER_URL
   let SERVER_YJS_URL
@@ -53,7 +49,11 @@ function config(location) {
 
   let SINGLE_PLAYER_MODE = location.hash === '#1'
 
-  window.config = {
+  let CAMERA_NEAR = { x: 0, y: 2000, z: 2500 }
+  let CAMERA_FAR = { x: 0, y: 6000, z: 7500 }
+  let CAMERA_EDITOR = { x: 0, y: 14000, z: 17500 }
+
+  return {
     SERVER_URL,
     SERVER_YJS_URL,
     SERVER_UPLOAD_URL,
@@ -61,21 +61,12 @@ function config(location) {
     ROOM,
     LANDING_COORDS,
     SINGLE_PLAYER_MODE,
+    CAMERA_NEAR,
+    CAMERA_FAR,
+    CAMERA_EDITOR,
   }
-
-  return window.config
 }
 
-// Show progress as we load resources
-const resources = (window.resources = ResourceLoader())
-// resources.on('loaded', ({ id, currentProgress, maxProgress }) => {
-//   ShowLoadingProgress(id, currentProgress, maxProgress)
-// })
+const config = (window.config = Config(window.location))
 
-// The Stage is where all the THREE.js things come together, e.g. camera, lights
-const stage = (window.stage = Stage({
-  width: window.innerWidth,
-  height: window.innerHeight,
-}))
-
-export { config, resources, stage }
+export { config }

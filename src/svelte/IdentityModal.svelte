@@ -1,14 +1,11 @@
 <script>
   import { identityModalState } from './stores.js'
 
-  import { config } from '../config.js'
   import { showToast } from '../lib/Toast.js'
   import { Security } from '../security.js'
 
   export let stage
   export let network
-
-  const cfg = config(window.location)
 
   let isOpen
   let text

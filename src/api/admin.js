@@ -3,7 +3,6 @@ import axios from 'axios'
 import { config } from '../config.js'
 import { Security } from '../security.js'
 
-const cfg = config(window.location)
 const security = Security()
 
 const headersForPlayerId = async (playerId) => {
@@ -14,7 +13,7 @@ const headersForPlayerId = async (playerId) => {
 }
 
 async function createRelm(playerId, relmName, isPublic = true) {
-  let url = `${cfg.SERVER_URL}/relm/${relmName}/create`
+  let url = `${config.SERVER_URL}/relm/${relmName}/create`
   try {
     const res = await axios.post(
       url,
@@ -36,7 +35,7 @@ async function createRelm(playerId, relmName, isPublic = true) {
 }
 
 async function truncateRelm(playerId, relmName) {
-  let url = `${cfg.SERVER_URL}/relm/${relmName}/truncate`
+  let url = `${config.SERVER_URL}/relm/${relmName}/truncate`
   try {
     const res = await axios.post(
       url,
@@ -56,7 +55,7 @@ async function truncateRelm(playerId, relmName) {
 }
 
 async function getRelmMetadata(playerId, relmName) {
-  let url = `${cfg.SERVER_URL}/relm/${relmName}/meta`
+  let url = `${config.SERVER_URL}/relm/${relmName}/meta`
   try {
     const res = await axios.get(url, {
       headers: await headersForPlayerId(playerId),

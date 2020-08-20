@@ -1,19 +1,21 @@
-
 <script>
   import {
-    KEY_UP, KEY_DOWN, KEY_LEFT, KEY_RIGHT,
-    KEY_TAB, KEY_RETURN, KEY_ESCAPE,
+    KEY_UP,
+    KEY_DOWN,
+    KEY_LEFT,
+    KEY_RIGHT,
+    KEY_TAB,
+    KEY_RETURN,
+    KEY_ESCAPE,
   } from 'keycode-js'
-  
+
   import { config } from '../config.js'
   import { runCommand } from '../commands.js'
-  
+
   export let stage
   export let network
 
   let thought = null
-  
-  const cfg = config(window.location)
 
   // Allow TAB and ESC keys to switch from text input to game view
   const handleKeydown = (e) => {
@@ -27,9 +29,9 @@
       stage.player.setThought(null)
       stage.focusOnGame()
     } else if (e.keyCode === KEY_RETURN) {
-      if (text.substring(0,1) === '/') {
+      if (text.substring(0, 1) === '/') {
         thought = text.substring(1)
-        runCommand(thought, { network, stage, cfg })
+        runCommand(thought, { network, stage, config })
         e.target.value = ''
         stage.focusOnGame()
       } else if (text !== '') {
@@ -47,8 +49,8 @@
         e.target.setSelectionRange(thought.length, thought.length)
       }, 50)
     } else if (
-      (e.keyCode === KEY_DOWN) ||
-      ((e.keyCode === KEY_LEFT || e.keyCode === KEY_RIGHT) && text === "")
+      e.keyCode === KEY_DOWN ||
+      ((e.keyCode === KEY_LEFT || e.keyCode === KEY_RIGHT) && text === '')
     ) {
       // If the player has typed nothing, but uses the arrow keys, go back to the game
       stage.focusOnGame()
@@ -84,7 +86,8 @@
   .thought-bar > input::placeholder {
     color: white;
   }
-  .thought-bar:focus-within > input::placeholder, .thought-bar:focus-within > input {
+  .thought-bar:focus-within > input::placeholder,
+  .thought-bar:focus-within > input {
     color: black;
     background-color: #eee;
   }
@@ -98,7 +101,9 @@
   }
   /* easier to read font size on mobile */
   @media only screen and (max-width: 900px) {
-    .thought-bar > input {font-size:24px !important;}
+    .thought-bar > input {
+      font-size: 24px !important;
+    }
   }
 </style>
 
@@ -107,6 +112,5 @@
     id="input"
     type="text"
     placeholder="What's on your mind? ..."
-    on:keydown={ handleKeydown }
-  >
+    on:keydown={handleKeydown} />
 </div>

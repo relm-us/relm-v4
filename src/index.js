@@ -1,9 +1,5 @@
 // Import external libraries and helpers
-import {
-  guestNameFromPlayerId,
-  avatarOptionFromPlayerId,
-  avatarOptionsOfGender,
-} from './avatars.js'
+import { guestNameFromPlayerId, avatarOptionFromPlayerId } from './avatars.js'
 import { Security } from './security.js'
 import { initializeAVChat, muteAudio, unmuteAudio } from './avchat2.js'
 import { normalizeWheel } from './lib/normalizeWheel.js'
@@ -40,8 +36,9 @@ import {
   delta,
   distance,
 } from './util.js'
-import { config, stage } from './config.js'
+import { config } from './config.js'
 import { network } from './network.js'
+import { stage } from './stage.js'
 import { GoalGroup } from './goals/goal_group.js'
 import { addManifestTo } from './manifest_loaders.js'
 import { runCommand } from './commands.js'
@@ -65,7 +62,6 @@ import {
 import App from './svelte/App.svelte'
 import { showToast } from './lib/Toast.js'
 
-const cfg = config(window.location)
 let previousMousedownIndex = 0
 
 // Enable three.js cache for textures and meshes
@@ -146,10 +142,10 @@ const start = async () => {
   network
     .connect({
       params,
-      room: cfg.ROOM,
-      serverUrl: cfg.SERVER_URL,
-      serverYjsUrl: cfg.SERVER_YJS_URL,
-      connectTransients: !cfg.SINGLE_PLAYER_MODE,
+      room: config.ROOM,
+      serverUrl: config.SERVER_URL,
+      serverYjsUrl: config.SERVER_YJS_URL,
+      connectTransients: !config.SINGLE_PLAYER_MODE,
       onTransientsSynced: () => {
         const color = randomPastelColor()
         // If we don't find ourselves in the transients document, we need to create ourselves
@@ -239,9 +235,9 @@ const start = async () => {
     // Ignore stored video state
     delete playerJSON['vid']
     // Ignore player position if LANDING_COORDS given
-    if (cfg.LANDING_COORDS) {
-      console.log('setting landing coords', cfg.LANDING_COORDS)
-      playerJSON.p = Object.assign({ '@due': 0 }, cfg.LANDING_COORDS)
+    if (config.LANDING_COORDS) {
+      console.log('setting landing coords', config.LANDING_COORDS)
+      playerJSON.p = Object.assign({ '@due': 0 }, config.LANDING_COORDS)
     }
     try {
       network.transients.fromJSON(playerJSON, true)
@@ -250,9 +246,9 @@ const start = async () => {
     }
   } else {
     console.log('New Player!', playerId)
-    if (cfg.LANDING_COORDS) {
-      console.log('setting landing coords (new player)', cfg.LANDING_COORDS)
-      player.goals.position.update(cfg.LANDING_COORDS, 0)
+    if (config.LANDING_COORDS) {
+      console.log('setting landing coords (new player)', config.LANDING_COORDS)
+      player.goals.position.update(config.LANDING_COORDS, 0)
     }
   }
 
@@ -626,7 +622,8 @@ const start = async () => {
     dragLock = false
   })
 
-  const runCommandSimple = (text) => runCommand(text, { network, stage, cfg })
+  const runCommandSimple = (text) =>
+    runCommand(text, { network, stage, config })
 
   // Do it once when the page finishes loading, too:
   stage.focusOnGame()
@@ -719,7 +716,7 @@ const start = async () => {
         runCommand('select paste', {
           network,
           stage,
-          cfg,
+          config,
           position: mousePointer.object.position,
         })
       }
@@ -731,7 +728,7 @@ const start = async () => {
       }
       // Mute/unmute
       else if (e.keyCode === KEY_M) {
-        const env = { network, stage, cfg }
+        const env = { network, stage, config }
         if (stage.player.videoBubble.object.muted) {
           runCommand('unmute', env)
         } else {
@@ -790,10 +787,11 @@ const start = async () => {
     player.goals.animationSpeed.update({ v: 1.5 })
   })
 
+  // Initialize the single camera object
   stage.create('camcon', {
     target: player.object.position,
     offsetNear: cameraPlayerOffset,
-    offsetFar: new THREE.Vector3(0, 4000, 5000),
+    offsetFar: new THREE.Vector3().copy(config.CAMERA_FAR),
     getRatio: () => {
       return mouseWheelScale / mouseWheelScaleMax
     },
@@ -813,10 +811,10 @@ const start = async () => {
     playerId: player.uuid,
     room:
       'relm-' +
-      cfg.ENV +
+      config.ENV +
       '-' +
-      cfg.ROOM +
-      (cfg.SINGLE_PLAYER_MODE ? `-${playerId}` : ''),
+      config.ROOM +
+      (config.SINGLE_PLAYER_MODE ? `-${playerId}` : ''),
     onMuteChanged: (track, playerId) => {
       const muted = track.isMuted()
       const otherPlayer = stage.entities[playerId]

@@ -8,8 +8,6 @@
   export let stage
   export let network
 
-  const cfg = config(window.location)
-
   let isOpen
   let text
 
@@ -22,7 +20,11 @@
   }
 
   function exportSelected() {
-    text = JSON.stringify(exportRelm(stage, network, true, cfg.ROOM), null, 2)
+    text = JSON.stringify(
+      exportRelm(stage, network, true, config.ROOM),
+      null,
+      2
+    )
   }
 
   function closeWindow() {
