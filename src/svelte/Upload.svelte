@@ -37,6 +37,8 @@
 
       console.log('Uploaded file variants:', response.files)
       // Add the asset to the network so everyone can see it
+      const uuid = uuidv4()
+      let entity
       if ('png' in response.files || 'webp' in response.files) {
         const webp = config.SERVER_UPLOAD_URL + '/' + response.files.webp
         const png = config.SERVER_UPLOAD_URL + '/' + response.files.png
@@ -45,6 +47,7 @@
         const position = stage.player.object.position
         network.permanents.create({
           type: 'decoration',
+          uuid,
           goals: {
             position: {
               x: position.x,
@@ -57,13 +60,16 @@
             },
           },
         })
+        entity = await stage.awaitEntity({
+          uuid,
+          condition: (ent) => ent.mesh,
+        })
       } else if ('gltf' in response.files) {
         const url = config.SERVER_UPLOAD_URL + '/' + response.files.gltf
-        const uuid = uuidv4()
         const position = stage.player.object.position
         network.permanents.create({
           type: 'thing3d',
-          uuid: uuid,
+          uuid,
           goals: {
             position: {
               x: position.x,
@@ -73,28 +79,23 @@
             asset: { url },
           },
         })
-        const thing3d = await stage.awaitEntity({
+        entity = await stage.awaitEntity({
           uuid,
-          condition: (entity) => entity.child,
+          condition: (ent) => ent.child,
         })
-
-        // The `normalize` step happens just once after loading
-        thing3d.normalize()
-
-        // Select the thing that was just uploaded
-        stage.selection.select([thing3d])
-
-        showToast(
-          `Uploaded with scale normalized to ${parseInt(
-            thing3d.goals.scale.get('x'),
-            10
-          )}`
-        )
       } else {
         const ext = /(?:\.([^.]+))?$/.exec(response.file)[1] || 'unknown'
         showToast(
           `Upload canceled. We don't know how to use files of type ${ext}`
         )
+      }
+
+      if (entity) {
+        // The `normalize` step happens just once after loading
+        entity.normalize()
+
+        // Select the thing that was just uploaded
+        stage.selection.select([entity])
       }
     })
     dropzone.on('complete', (a) => {

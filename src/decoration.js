@@ -11,6 +11,24 @@ import { AnimatesScale } from './components/animates_scale.js'
 import { AnimatesRotation } from './components/animates_rotation.js'
 import { AnimatesPosition } from './components/animates_position.js'
 import { UsesAssetAsImage } from './components/uses_asset_as_image.js'
+import { config } from './config.js'
+
+/**
+ * Returns a ratio that can be used to multiply by the object's current size so as to
+ * scale it up or down to the desired largestSide size.
+ *
+ * @param {Image} image The image with width and height
+ * @param {number} largestSide The size of the desired "largest side" after scaling
+ */
+const getScaleRatio = (image, largestSide) => {
+  let ratio
+  if (image.width > image.height) {
+    ratio = largestSide / image.width
+  } else {
+    ratio = largestSide / image.height
+  }
+  return ratio
+}
 
 const Decoration = stampit(
   EntityShared,
@@ -36,6 +54,16 @@ const Decoration = stampit(
       this.on('deselect', () => {
         this.edges.disable()
       })
+    },
+
+    methods: {
+      normalize() {
+        const ratio = getScaleRatio(
+          this.texture.image,
+          config.DEFAULT_OBJECT_SIZE
+        )
+        this.goals.normalizedScale.update({ v: ratio })
+      },
     },
   })
 ).setType('decoration')

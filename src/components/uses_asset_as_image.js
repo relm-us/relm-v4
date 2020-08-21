@@ -4,7 +4,7 @@ import { Component } from './component.js'
 import { PhotoMaterial } from '../materials/photo_material.js'
 import { defineGoal } from '../goals/goal.js'
 
-const IMAGE_DEFAULT_COLOR = 0xFFFFFF
+const IMAGE_DEFAULT_COLOR = 0xffffff
 const IMAGE_DEFAULT_ALPHA_TEST = 0.05
 
 const UsesAssetAsImage = stampit(Component, {
@@ -14,16 +14,17 @@ const UsesAssetAsImage = stampit(Component, {
       flip: defineGoal('flp', { x: false, y: false }),
       material: defineGoal('mat', { type: 'default' }),
       renderOrder: defineGoal('ro', { v: 100 }),
-    }
+      normalizedScale: defineGoal('nsc', { v: 1.0 }),
+    },
   },
-  
+
   init() {
     this.geometry = null
     this.material = null
     this.mesh = null
-    
+
     this.texture = null
-    
+
     this.on('asset-loaded', this._setTexture)
   },
 
@@ -31,7 +32,7 @@ const UsesAssetAsImage = stampit(Component, {
     _setTexture(texture) {
       if (texture) {
         this.texture = texture.clone()
-        
+
         /**
          * Since we aren't using `repeat`, we can use LinearFilter with ClampToEdgeWrapping, and
          * textures will not need to be resized to power-of-two. This prevents "Texture has been resized"
@@ -42,7 +43,7 @@ const UsesAssetAsImage = stampit(Component, {
         this.texture.wrapS = THREE.ClampToEdgeWrapping
         this.texture.wrapT = THREE.ClampToEdgeWrapping
         this.texture.encoding = THREE.sRGBEncoding
-        
+
         // Since we're using a clone, and updating its properties, we need to set this flag or risk being ignored
         this.texture.needsUpdate = true
 
@@ -51,26 +52,32 @@ const UsesAssetAsImage = stampit(Component, {
         this.texture = null
       }
     },
-    
+
     _createImageMeshFromLoadedTexture(texture) {
       const w = texture.image.width
       const h = texture.image.height
       const flip = this.goals.flip
       const fold = this.goals.fold.get('v')
       const materialType = this.goals.material.get('type')
-      
-      const geometry = this._createFoldingPlaneBufferGeometry(w, h, flip.get('x'), flip.get('y'), fold)
+
+      const geometry = this._createFoldingPlaneBufferGeometry(
+        w,
+        h,
+        flip.get('x'),
+        flip.get('y'),
+        fold
+      )
       const material = this._createMaterialWithDefaults(texture, materialType)
       const mesh = new THREE.Mesh(geometry, material)
-    
+
       this._setMesh(mesh)
     },
-    
+
     /**
      * Creates a "FoldingPlaneBufferGeometry" which is basically an L-shaped PlaneBuffer. This is used
      * to create the illusion that part of an image can be walked on ("below the fold") while part of
      * the image is standing up ("above the fold").
-     * 
+     *
      * @param {number} w - width of the image (texture)
      * @param {number} h - height of the image (texture)
      * @param {number} fold - a number from 0.0 to 1.0: the point at which the image should "fold".
@@ -81,9 +88,9 @@ const UsesAssetAsImage = stampit(Component, {
     _createFoldingPlaneBufferGeometry(w, h, flipx, flipy, fold) {
       const top = h * (1.0 - fold)
       const bot = h * fold
-      
+
       const geometry = new THREE.BufferGeometry()
-      
+
       const vertices = new Float32Array([
         -w/2, 1.0, 0.0, // lower-left
          w/2, 1.0, 0.0, // to lower-right
@@ -92,7 +99,7 @@ const UsesAssetAsImage = stampit(Component, {
         -w/2, 1.0, bot, // protruding bottom left
          w/2, 1.0, bot, // protruding bottom right
       ])
-      
+
       // Each triplet of the 4 triangles described by these indices is in counter-clockwise order
       const indices = [
         0, 1, 2,
@@ -110,12 +117,12 @@ const UsesAssetAsImage = stampit(Component, {
         (flipx ? 1.0 : 0.0), (flipy ? 1.0 : 0.0),
         (flipx ? 0.0 : 1.0), (flipy ? 1.0 : 0.0),
       ])
-      
+
       geometry.setIndex(indices)
       geometry.setAttribute('position', new THREE.BufferAttribute(vertices, 3))
       geometry.setAttribute('uv', new THREE.BufferAttribute(uvs, 2))
       geometry.computeVertexNormals()
-      
+
       return geometry
     },
 
@@ -136,7 +143,7 @@ const UsesAssetAsImage = stampit(Component, {
           })
       }
     },
-    
+
     _createMaterialWithDefaults(texture, materialType) {
       const material = this._createMaterial(texture, materialType)
 
@@ -144,32 +151,46 @@ const UsesAssetAsImage = stampit(Component, {
       material.premultipliedAlpha = true
       material.transparent = true
       material.needsUpdate = true
-      
+
       return material
     },
 
     _setMesh(mesh) {
-      if (this.mesh) { this.object.remove(this.mesh) }
+      if (this.mesh) {
+        this.object.remove(this.mesh)
+      }
       this.mesh = mesh
       this.object.add(this.mesh)
       this.emit('mesh-updated')
     },
-    
+
     update(_delta) {
       const foldGoal = this.goals.fold
       const flipGoal = this.goals.flip
       const materialGoal = this.goals.material
       const orderGoal = this.goals.renderOrder
-      if (this.texture && (!foldGoal.achieved || !flipGoal.achieved || !materialGoal.achieved || (!orderGoal.achieved && this.object.children.length > 0))) {
+      const normScaleGoal = this.goals.normalizedScale
+      if (
+        this.texture &&
+        (!foldGoal.achieved ||
+          !flipGoal.achieved ||
+          !materialGoal.achieved ||
+          !normScaleGoal.achieved ||
+          (!orderGoal.achieved && this.object.children.length > 0))
+      ) {
         this._createImageMeshFromLoadedTexture(this.texture)
-        this.object.traverse(o => o.renderOrder = orderGoal.get('v'))
+        this.object.traverse((o) => (o.renderOrder = orderGoal.get('v')))
         foldGoal.markAchieved()
         flipGoal.markAchieved()
         materialGoal.markAchieved()
         orderGoal.markAchieved()
+
+        const n = normScaleGoal.get('v')
+        this.mesh.scale.set(n, n, n)
+        normScaleGoal.markAchieved()
       }
-    }
-  }
+    },
+  },
 })
 
 export { UsesAssetAsImage }

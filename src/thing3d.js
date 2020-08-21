@@ -11,13 +11,12 @@ import { AnimatesRotation } from './components/animates_rotation.js'
 import { AnimatesPosition } from './components/animates_position.js'
 import { UsesAssetAsGltf } from './components/uses_asset_as_gltf.js'
 import { VisibleEdges } from './visible_edges.js'
-
-const DEFAULT_SIZE = 100
+import { config } from './config.js'
 
 /**
  * Returns a ratio that can be used to multiply by the object's current size so as to
  * scale it up or down to the desired largestSide size.
- * 
+ *
  * @param {Object3D} object3d The THREE.Object3D whose size is of interest
  * @param {number} largestSide The size of the desired "largest side" after scaling
  */
@@ -65,10 +64,10 @@ const Thing3D = stampit(
 
     methods: {
       normalize() {
-        const ratio = getScaleRatio(this.object, DEFAULT_SIZE)
+        const ratio = getScaleRatio(this.object, config.DEFAULT_OBJECT_SIZE)
         this.goals.normalizedScale.update({ v: ratio })
       },
-    }
+    },
   })
 ).setType('thing3d')
 

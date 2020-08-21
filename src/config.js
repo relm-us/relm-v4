@@ -53,6 +53,8 @@ function Config(location) {
   let CAMERA_FAR = { x: 0, y: 6000, z: 7500 }
   let CAMERA_EDITOR = { x: 0, y: 14000, z: 17500 }
 
+  let DEFAULT_OBJECT_SIZE = 200
+
   return {
     SERVER_URL,
     SERVER_YJS_URL,
@@ -64,6 +66,7 @@ function Config(location) {
     CAMERA_NEAR,
     CAMERA_FAR,
     CAMERA_EDITOR,
+    DEFAULT_OBJECT_SIZE,
   }
 }
 
