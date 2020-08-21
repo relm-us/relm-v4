@@ -101,6 +101,19 @@
     dropzone.on('complete', (a) => {
       dropzone.removeAllFiles()
     })
+
+    document.addEventListener('paste', (event) => {
+      console.log('paste', event)
+      const items = (event.clipboardData || event.originalEvent.clipboardData)
+        .items
+      for (let index in items) {
+        const item = items[index]
+        if (item.kind === 'file') {
+          // adds the file to your dropzone instance
+          dropzone.addFile(item.getAsFile())
+        }
+      }
+    })
   })
 
   /*
