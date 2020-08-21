@@ -103,7 +103,6 @@
     })
 
     document.addEventListener('paste', (event) => {
-      console.log('paste', event)
       const items = (event.clipboardData || event.originalEvent.clipboardData)
         .items
       for (let index in items) {
