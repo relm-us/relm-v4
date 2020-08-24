@@ -1,4 +1,4 @@
-import { switchVideo } from './avchat2.js'
+import { switchVideo } from './chat.js'
 
 function toggleScreenShare(stage) {
   switchVideo().then((isCamera) => {

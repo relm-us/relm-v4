@@ -1,9 +1,8 @@
 <script>
-  import { chooseAvatarState } from './stores.js'
-  import { toggleScreenShare } from '../screenshare.js'
   import CameraSetup from './CameraSetup.svelte'
   import HelpContent from './HelpContent.svelte'
   import ChooseAvatar from './ChooseAvatar.svelte'
+  import { toggleScreenShare } from '../audiovideo/screenshare.js'
 
   export let stage
 

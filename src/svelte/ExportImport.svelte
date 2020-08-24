@@ -1,5 +1,5 @@
 <script>
-  import { exportImportState } from './stores.js'
+  import State from './stores.js'
 
   import { config } from '../config.js'
   import { showToast } from '../lib/Toast.js'
@@ -11,7 +11,7 @@
   let isOpen
   let text
 
-  exportImportState.subscribe((value) => {
+  State.editModalVisible.subscribe((value) => {
     isOpen = value
   })
 
@@ -28,7 +28,7 @@
   }
 
   function closeWindow() {
-    exportImportState.update(() => false)
+    State.editModalVisible.update(() => false)
   }
 
   function handleClose() {

@@ -1,7 +1,7 @@
 // Import external libraries and helpers
 import { guestNameFromPlayerId, avatarOptionFromPlayerId } from './avatars.js'
 import { Security } from './security.js'
-import { initializeAVChat, muteAudio, unmuteAudio } from './avchat2.js'
+import { initializeAVChat, muteAudio, unmuteAudio } from './audiovideo/chat.js'
 import { normalizeWheel } from './lib/normalizeWheel.js'
 import 'toastify-js/src/toastify.css'
 
@@ -45,7 +45,7 @@ import { runCommand } from './commands.js'
 import { recordCoords } from './record_coords.js'
 import { getRef } from './dom_reference.js'
 
-import { pressTabHelpState, exportImportState } from './svelte/stores.js'
+import State from './svelte/stores.js'
 
 import {
   KEY_A,
@@ -680,7 +680,7 @@ const start = async () => {
     // Provide a slight delay so player can visually confirm that they
     // selected the thing they thought they did
     setTimeout(() => {
-      exportImportState.update(() => true)
+      State.editModalVisible.update(() => true)
     }, 300)
   })
 
@@ -764,7 +764,7 @@ const start = async () => {
   kbController.on('done', stage.focusOnInput)
   kbController.on('switch', () => {
     stage.focusOnInput()
-    pressTabHelpState.update(() => false)
+    State.pressTabHelpVisible.update(() => false)
   })
   kbController.on('close', () => {
     player.setThought(null)
@@ -772,9 +772,9 @@ const start = async () => {
   kbController.on('unknown', (keyCode, opts) => {
     // If the player presses a letter of the alphabet on the keyboard, give them a hint
     if (keyCode >= 65 && keyCode <= 90 && !opts.ctrl && !opts.meta) {
-      pressTabHelpState.update(() => true)
+      State.pressTabHelpVisible.update(() => true)
       setTimeout(() => {
-        pressTabHelpState.update(() => false)
+        State.pressTabHelpVisible.update(() => false)
       }, 7500)
     }
   })

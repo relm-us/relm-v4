@@ -1,12 +1,12 @@
 import { showToast } from './lib/Toast.js'
 import { showInfoAboutObject } from './show_info_about_object.js'
 
-import { exportImportState, identityModalState } from './svelte/stores.js'
-import { muteAudio, unmuteAudio } from './avchat2.js'
+import State from './svelte/stores.js'
 import { avatarOptionsOfGender } from './avatars.js'
 import { teleportToOtherRelm } from './teleportal.js'
 import { createRelm, truncateRelm, getRelmMetadata } from './api/admin.js'
-import { toggleScreenShare } from './screenshare.js'
+import { muteAudio, unmuteAudio } from './audiovideo/chat.js'
+import { toggleScreenShare } from './audiovideo/screenshare.js'
 
 import {
   take,
@@ -280,7 +280,7 @@ const commands = {
   },
   edit: (args) => {
     return (env) => {
-      exportImportState.update(() => true)
+      State.editModalVisible.update(() => true)
     }
   },
   go: (args) => {
@@ -364,7 +364,7 @@ const commands = {
   },
   identity: (args) => {
     return (env) => {
-      identityModalState.update(() => true)
+      State.identityModalVisible.update(() => true)
     }
   },
   mode: (args) => {

@@ -1,9 +1,9 @@
 import { writable } from 'svelte/store'
 
-export const exportImportState = writable(false)
-
-export const chooseAvatarState = writable(false)
-
-export const pressTabHelpState = writable(false)
-
-export const identityModalState = writable(false)
+export default {
+  editModalVisible: writable(false),
+  identityModalVisible: writable(false),
+  // TOOD: make avatar modal use this state so we can choreograph initial experience
+  selectAvatarModalVisible: writable(false),
+  pressTabHelpVisible: writable(false),
+}

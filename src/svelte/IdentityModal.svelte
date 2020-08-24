@@ -1,5 +1,5 @@
 <script>
-  import { identityModalState } from './stores.js'
+  import State from './stores.js'
 
   import { showToast } from '../lib/Toast.js'
   import { Security } from '../security.js'
@@ -12,7 +12,7 @@
 
   const security = Security()
 
-  identityModalState.subscribe((value) => {
+  State.identityModalVisible.subscribe((value) => {
     isOpen = value
   })
 
@@ -35,7 +35,7 @@
   }
 
   function closeWindow() {
-    identityModalState.update(() => false)
+    State.identityModalVisible.update(() => false)
   }
 
   function handleClose() {
