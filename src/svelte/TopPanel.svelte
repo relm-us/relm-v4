@@ -1,8 +1,8 @@
 <script>
   import { chooseAvatarState } from './stores.js'
+  import { toggleScreenShare } from '../screenshare.js'
   import HelpContent from './HelpContent.svelte'
   import ChooseAvatar from './ChooseAvatar.svelte'
-  import { toggleScreenShare } from '../screenshare.js'
 
   export let stage
 
@@ -22,6 +22,7 @@
   function handleClickAvatar(event) {
     avatarPanelOpen = !avatarPanelOpen
     helpPanelOpen = false
+    stage.focusOnGame()
     if (event) {
       event.preventDefault()
     }
@@ -49,6 +50,7 @@
     display: flex;
     flex-direction: column;
     align-items: center;
+    justify-content: flex-end;
 
     border-radius: 8px;
     border: 3px solid #eebb11;
@@ -63,13 +65,25 @@
     pointer-events: all;
   }
 
-  .button > .icon {
+  .icon {
     display: flex;
     align-items: center;
     justify-content: center;
+    flex-grow: 1;
+  }
 
+  .icon img {
     width: 48px;
     height: 48px;
+  }
+  .icon img.medium {
+    width: 32px;
+    height: 32px;
+  }
+
+  .icon img.small {
+    width: 24px;
+    height: 24px;
   }
 
   .button > .label {
@@ -106,20 +120,26 @@
 
 <div class="panel">
 
+  <div
+    class="button"
+    class:opaque={avatarPanelOpen}
+    on:click={handleClickAvatar}>
+    <div class="icon">
+      <img src="/select-avatar-icon.svg" alt="Select Avatar" />
+    </div>
+    <div class="label">Select Avatar</div>
+  </div>
+
   <div class="button" on:click={handleClickShareScreen}>
     <div class="icon">
-      <img
-        src="/screenshare-icon.svg"
-        alt="Share screen"
-        width="32"
-        height="32" />
+      <img src="/screenshare-icon.svg" alt="Share screen" class="medium" />
     </div>
     <div class="label">Share Screen</div>
   </div>
 
   <button class="button" id="upload-button" on:mousedown={preventDefault}>
     <div class="icon">
-      <img src="/upload-icon.svg" alt="Upload asset" width="24" height="24" />
+      <img src="/upload-icon.svg" alt="Upload asset" class="small" />
     </div>
     <div class="label">Upload</div>
   </button>
@@ -131,14 +151,6 @@
     <div class="label">Help Docs</div>
   </div>
 
-  <div
-    class="button"
-    class:opaque={avatarPanelOpen}
-    on:click={handleClickAvatar}>
-    <div class="icon">
-      <img src="/select-avatar-icon.svg" alt="Select Avatar" />
-    </div>
-    <div class="label">Select Avatar</div>
   </div>
 
   <div class="scrollable-panel" class:show={helpPanelOpen}>
