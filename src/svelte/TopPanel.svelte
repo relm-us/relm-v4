@@ -72,8 +72,12 @@
     cursor: pointer;
     pointer-events: all;
   }
-  .button:first-of-type {
+  .button.first {
     border-left: 0;
+    border-bottom-left-radius: 8px;
+  }
+  .button.last {
+    border-bottom-right-radius: 8px;
   }
 
   .icon {
@@ -152,7 +156,7 @@
 <div class="panel">
 
   <div
-    class="button"
+    class="button first"
     class:opaque={cameraPanelOpen}
     on:click={toggleShowCameraSetup}>
     <div class="icon">
@@ -185,7 +189,10 @@
     <div class="label">Upload</div>
   </div>
 
-  <div class="button" class:opaque={helpPanelOpen} on:click={toggleShowHelp}>
+  <div
+    class="button last"
+    class:opaque={helpPanelOpen}
+    on:click={toggleShowHelp}>
     <div class="icon">
       <img src="/help-icon.svg" alt="Help" />
     </div>
