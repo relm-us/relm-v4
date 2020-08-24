@@ -5,8 +5,8 @@ import { exportImportState, identityModalState } from './svelte/stores.js'
 import { muteAudio, unmuteAudio } from './avchat2.js'
 import { avatarOptionsOfGender } from './avatars.js'
 import { teleportToOtherRelm } from './teleportal.js'
-import { switchVideo } from './avchat2.js'
 import { createRelm, truncateRelm, getRelmMetadata } from './api/admin.js'
+import { toggleScreenShare } from './screenshare.js'
 
 import {
   take,
@@ -871,9 +871,7 @@ const commands = {
   },
   share: (args) => {
     return (env) => {
-      switchVideo().then((isCamera) => {
-        env.stage.player.goals.video.update({ cam: isCamera })
-      })
+      toggleScreenShare(env.stage)
     }
   },
   skybox: (args) => {
