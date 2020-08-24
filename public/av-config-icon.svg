@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<svg width="100%" height="100%" viewBox="0 0 334 334" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xml:space="preserve" xmlns:serif="http://www.serif.com/" style="fill-rule:evenodd;clip-rule:evenodd;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:1.5;">
+    <g transform="matrix(1,0,0,1,-768.536,-537.957)">
+        <g transform="matrix(0.687736,0,0,0.687736,193.066,504.341)">
+            <path d="M1023.13,193.359C1045.17,193.72 1054.16,213.244 1054,221.5C1053.84,229.756 1054.42,311.234 1054.22,318.142C1053.98,326.637 1042.73,346.332 1023.43,346.389C1004.45,346.446 991.21,329.214 991.097,318.721C990.982,308.101 991.236,228.621 991.333,220.498C991.431,212.375 1001.55,193.006 1023.13,193.359Z" style="fill:none;stroke:black;stroke-width:12.12px;"/>
+            <path d="M991.714,388.047L1053.59,388.047L1022.79,388.047L1022.79,367.219" style="fill:none;stroke:black;stroke-width:12.12px;"/>
+            <g>
+                <path d="M1022.79,367.219C1042.01,367.219 1074.91,349.993 1074.91,320.149C1074.91,290.306 1074.94,262.001 1074.94,262.001L1084.39,262.001L1084.39,277.808L1075.16,277.808" style="fill:none;stroke:black;stroke-width:12.12px;"/>
+                <rect x="1074.96" y="261.987" width="9.617" height="15.777"/>
+            </g>
+            <g transform="matrix(-1,0,0,1,2045.73,0)">
+                <path d="M1022.79,367.219C1042.01,367.219 1074.91,349.993 1074.91,320.149C1074.91,290.306 1074.94,262.001 1074.94,262.001L1084.39,262.001L1084.39,277.808L1075.16,277.808" style="fill:none;stroke:black;stroke-width:12.12px;"/>
+                <rect x="1074.96" y="261.987" width="9.617" height="15.777"/>
+            </g>
+        </g>
+        <g transform="matrix(4.16667,0,0,4.16667,935.202,704.624)">
+            <g transform="matrix(1,0,0,1,-40,-40)">
+                <path d="M10,16C7.25,16 5,18.25 5,21L5,59C5,61.75 7.25,64 10,64L52,64C54.75,64 57,61.75 57,59L57,50.748L72.729,60L75,60L75,20L72.729,20L57,29.252L57,21C57,18.25 54.75,16 52,16L10,16ZM10,18L52,18C53.668,18 55,19.332 55,21L55,59C55,60.668 53.668,62 52,62L10,62C8.332,62 7,60.668 7,59L7,21C7,19.332 8.332,18 10,18ZM73,22.16L73,57.84L57,48.428L57,31.572L73,22.16Z" style="fill-rule:nonzero;"/>
+            </g>
+        </g>
+    </g>
+</svg>

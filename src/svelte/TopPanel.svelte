@@ -1,11 +1,13 @@
 <script>
   import { chooseAvatarState } from './stores.js'
   import { toggleScreenShare } from '../screenshare.js'
+  import CameraSetup from './CameraSetup.svelte'
   import HelpContent from './HelpContent.svelte'
   import ChooseAvatar from './ChooseAvatar.svelte'
 
   export let stage
 
+  let cameraPanelOpen = false
   let helpPanelOpen = false
   let avatarPanelOpen = false
 
@@ -13,15 +15,24 @@
     event.preventDefault()
   }
 
+  function toggleShowCameraSetup(event) {
+    cameraPanelOpen = !cameraPanelOpen
+    helpPanelOpen = false
+    avatarPanelOpen = false
+    event.preventDefault()
+  }
+
   function toggleShowHelp(event) {
     helpPanelOpen = !helpPanelOpen
     avatarPanelOpen = false
+    cameraPanelOpen = false
     event.preventDefault()
   }
 
   function handleClickAvatar(event) {
     avatarPanelOpen = !avatarPanelOpen
     helpPanelOpen = false
+    cameraPanelOpen = false
     stage.focusOnGame()
     if (event) {
       event.preventDefault()
@@ -38,7 +49,6 @@
     display: flex;
     justify-content: center;
 
-    margin-top: 8px;
     width: 100%;
     position: absolute;
     top: 0;
@@ -52,17 +62,18 @@
     align-items: center;
     justify-content: flex-end;
 
-    border-radius: 8px;
-    border: 3px solid #eebb11;
     background: #eee;
+    border-left: 1px solid #666;
     color: #333;
     padding: 5px 10px;
-    margin-left: 8px;
 
     opacity: 0.7;
 
     cursor: pointer;
     pointer-events: all;
+  }
+  .button:first-of-type {
+    border-left: 0;
   }
 
   .icon {
@@ -91,10 +102,30 @@
     text-align: center;
   }
 
+  @media only screen and (max-width: 400px) {
+    .icon img {
+      width: 32px;
+      height: 32px;
+    }
+    .icon img.medium {
+      width: 24px;
+      height: 24px;
+    }
+
+    .icon img.small {
+      width: 18px;
+      height: 18px;
+    }
+
+    .button > .label {
+      font-size: 10px;
+      text-align: center;
+    }
+  }
+
   .button:hover,
   .button.opaque {
     background: #fff;
-    border-color: #ef9911;
     opacity: 1;
   }
 
@@ -122,6 +153,16 @@
 
   <div
     class="button"
+    class:opaque={cameraPanelOpen}
+    on:click={toggleShowCameraSetup}>
+    <div class="icon">
+      <img src="/av-config-icon.svg" alt="Microphone/Camera Settings" />
+    </div>
+    <div class="label">Camera Setup</div>
+  </div>
+
+  <div
+    class="button"
     class:opaque={avatarPanelOpen}
     on:click={handleClickAvatar}>
     <div class="icon">
@@ -137,12 +178,12 @@
     <div class="label">Share Screen</div>
   </div>
 
-  <button class="button" id="upload-button" on:mousedown={preventDefault}>
+  <div class="button" id="upload-button">
     <div class="icon">
       <img src="/upload-icon.svg" alt="Upload asset" class="small" />
     </div>
     <div class="label">Upload</div>
-  </button>
+  </div>
 
   <div class="button" class:opaque={helpPanelOpen} on:click={toggleShowHelp}>
     <div class="icon">
@@ -151,6 +192,8 @@
     <div class="label">Help Docs</div>
   </div>
 
+  <div class="scrollable-panel" class:show={cameraPanelOpen}>
+    <CameraSetup />
   </div>
 
   <div class="scrollable-panel" class:show={helpPanelOpen}>
