@@ -154,7 +154,7 @@
 
 <div class="panel">
 
-  <div
+  <!-- <div
     class="button first"
     class:opaque={cameraPanelOpen}
     on:click={toggleShowCameraSetup}>
@@ -162,10 +162,10 @@
       <img src="/av-config-icon.svg" alt="Microphone/Camera Settings" />
     </div>
     <div class="label">Camera Setup</div>
-  </div>
+  </div> -->
 
   <div
-    class="button"
+    class="button first"
     class:opaque={avatarPanelOpen}
     on:click={handleClickAvatar}>
     <div class="icon">
