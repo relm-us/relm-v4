@@ -1,5 +1,14 @@
-import App from './sandbox/App.svelte'
+import Sandbox from './Sandbox.svelte'
 
-new App({
-  target: document.body
+const JitsiMeetJS = window.JitsiMeetJS
+console.log('Jitsi', JitsiMeetJS)
+
+JitsiMeetJS.setLogLevel(JitsiMeetJS.logLevels.ERROR)
+
+JitsiMeetJS.init({
+  disableAudioLevels: true,
+})
+
+new Sandbox({
+  target: document.body,
 })

@@ -47,13 +47,33 @@ function Config(location) {
     }
   }
 
-  let SINGLE_PLAYER_MODE = location.hash === '#1'
+  const SINGLE_PLAYER_MODE = location.hash === '#1'
 
-  let CAMERA_NEAR = { x: 0, y: 2000, z: 2500 }
-  let CAMERA_FAR = { x: 0, y: 6000, z: 7500 }
-  let CAMERA_EDITOR = { x: 0, y: 14000, z: 17500 }
+  const CAMERA_NEAR = { x: 0, y: 2000, z: 2500 }
+  const CAMERA_FAR = { x: 0, y: 6000, z: 7500 }
+  const CAMERA_EDITOR = { x: 0, y: 14000, z: 17500 }
 
-  let DEFAULT_OBJECT_SIZE = 200
+  const DEFAULT_OBJECT_SIZE = 200
+
+  const JITSI_CONFIG = {
+    hosts: {
+      domain: 'meet.jit.si',
+      muc: 'conference.meet.jit.si',
+      focus: 'focus.meet.jit.si',
+    },
+    externalConnectUrl: 'https://meet.jit.si/http-pre-bind',
+    enableP2P: true,
+    p2p: {
+      enabled: true,
+      preferH264: true,
+      disableH264: true,
+      useStunTurn: true,
+    },
+    useStunTurn: true,
+    bosh: `https://meet.jit.si/http-bind`,
+    websocket: 'wss://meet.jit.si/xmpp-websocket',
+    clientNode: 'http://jitsi.org/jitsimeet',
+  }
 
   return {
     SERVER_URL,
@@ -67,6 +87,7 @@ function Config(location) {
     CAMERA_FAR,
     CAMERA_EDITOR,
     DEFAULT_OBJECT_SIZE,
+    JITSI_CONFIG,
   }
 }
 
