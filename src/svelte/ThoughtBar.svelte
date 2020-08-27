@@ -59,6 +59,14 @@
   }
 </script>
 
+<div class="thought-bar">
+  <input
+    id="input"
+    type="text"
+    placeholder="What's on your mind? ..."
+    on:keydown={handleKeydown} />
+</div>
+
 <style>
   .thought-bar {
     position: absolute;
@@ -106,11 +114,3 @@
     }
   }
 </style>
-
-<div class="thought-bar">
-  <input
-    id="input"
-    type="text"
-    placeholder="What's on your mind? ..."
-    on:keydown={handleKeydown} />
-</div>

@@ -17,6 +17,35 @@
   const options = [0, 1, 2, 3, 4, 5, 6, 7, 8]
 </script>
 
+<div class="avatars">
+  <h2>Select your avatar:</h2>
+
+  <div class="avatars-row">
+    {#each genders as g}
+      {#each options as opt}
+        <button
+          class="avatar-button {g}"
+          on:click={(e) => handleSelect(g, opt)}
+          on:mousedown|preventDefault
+          data-gender={g}
+          data-index={opt}>
+          <img src="avatars/{g}{opt}.jpg" alt="gender {g} option {opt}" />
+        </button>
+      {/each}
+    {/each}
+  </div>
+
+  <div class="button-panel">
+    <button
+      class="button"
+      on:mousedown|preventDefault
+      on:mouseup|preventDefault={handleClose}>
+      Close
+    </button>
+  </div>
+
+</div>
+
 <style>
   .avatars {
     display: flex;
@@ -25,11 +54,6 @@
     align-items: center;
     overflow-y: auto;
     z-index: 4;
-  }
-  .avatars .title {
-    font-size: 22px;
-    font-weight: bold;
-    padding: 20px;
   }
   .avatars .avatars-row {
     min-width: 380px;
@@ -68,32 +92,3 @@
     margin-top: 15px;
   }
 </style>
-
-<div class="avatars">
-  <h2>Select your avatar:</h2>
-
-  <div class="avatars-row">
-    {#each genders as g}
-      {#each options as opt}
-        <button
-          class="avatar-button {g}"
-          on:click={(e) => handleSelect(g, opt)}
-          on:mousedown|preventDefault
-          data-gender={g}
-          data-index={opt}>
-          <img src="avatars/{g}{opt}.jpg" alt="gender {g} option {opt}" />
-        </button>
-      {/each}
-    {/each}
-  </div>
-
-  <div class="button-panel">
-    <button
-      class="button"
-      on:mousedown|preventDefault
-      on:mouseup|preventDefault={handleClose}>
-      Close
-    </button>
-  </div>
-
-</div>

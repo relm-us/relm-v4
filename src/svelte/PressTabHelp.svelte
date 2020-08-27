@@ -6,6 +6,17 @@
   State.pressTabHelpVisible.subscribe((value) => (visible = value))
 </script>
 
+<div
+  on:mousedown|preventDefault
+  class="press-tab-help"
+  class:show={visible}
+  class:hide={!visible}>
+  <i
+    class="down"
+    style="border-color:#efef22; position: absolute; bottom: -10px;" />
+  Press Enter to Type
+</div>
+
 <style>
   .press-tab-help {
     position: absolute;
@@ -74,14 +85,3 @@
     transform: rotate(45deg) scale(2);
   }
 </style>
-
-<div
-  on:mousedown|preventDefault
-  class="press-tab-help"
-  class:show={visible}
-  class:hide={!visible}>
-  <i
-    class="down"
-    style="border-color:#efef22; position: absolute; bottom: -10px;" />
-  Press Enter to Type
-</div>
