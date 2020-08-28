@@ -15,6 +15,15 @@
       window.THREE ||
         document.write('<script src="vendor/three-r114.min.js"><\/script>')
     </script>
+    <!-- JQuery is a dependency of lib-jitsi-meet -->
+    <script src="https://cdn.jsdelivr.net/npm/jquery@3.5.0/dist/jquery.min.js"></script>
+    <!-- If the CDN fails (e.g. offline mode, server down, internet down?) load locally -->
+    <script>
+      window.THREE ||
+        document.write('<script src="vendor/jquery.min.js"><\/script>')
+    </script>
+
+    <script src="vendor/lib-jitsi-meet.min.js"></script>
 
     <link rel="stylesheet" type="text/css" href="./dropzone.css" />
     <link rel="stylesheet" type="text/css" href="./index.css" />
@@ -54,14 +63,10 @@
       gtag('config', 'UA-166245735-1')
     </script>
   </head>
-  <body style="margin: 0px; background-color: #bbbbbb; overflow: hidden;">
+  <body style="margin: 0px; background-color: #bbbbbb; overflow: hidden">
     <!-- The GL Canvas element goes inside here -->
     <div id="game"></div>
 
     <script src="./index.js"></script>
-
-    <!-- Lib Jitsi Meet is available as an include from their site -->
-    <script src="https://cdn.jsdelivr.net/npm/jquery@3.5.0/dist/jquery.min.js"></script>
-    <script src="https://meet.jit.si/libs/lib-jitsi-meet.min.js"></script>
   </body>
 </html>

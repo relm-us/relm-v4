@@ -2,7 +2,7 @@
   import { onMount } from 'svelte'
   import { config } from '../config.js'
   import { onInterval } from '../svelte/util.js'
-  import Conference from './Conference.svelte'
+  // import Conference from './Conference.svelte'
 
   // @type {Array<string>} conferenceIds - the unique name of the Jitsi conference (room) to join
   export let conferenceIds
@@ -53,12 +53,12 @@
   })
 
   // If we fail to connect, retry until we succeed (if network conditions allow)
-  onInterval(() => {
-    if (connectState === ConnectState.FAILED) {
-      console.log('Trying to reconnect to Jitsi server...')
-      connection.connect()
-    }
-  }, 5000)
+  // onInterval(() => {
+  //   if (connectState === ConnectState.FAILED) {
+  //     console.log('Trying to reconnect to Jitsi server...')
+  //     connection.connect()
+  //   }
+  // }, 5000)
 </script>
 
 <style>
@@ -67,7 +67,7 @@
     font-weight: bold;
   }
   .conferences {
-    margin-top: 15px;
+    margin: 15px 4px;
   }
   .conferences > .heading {
     font-size: 24px;
@@ -84,6 +84,8 @@
   .state {
     font-weight: bold;
   }
+  .config {
+  }
 </style>
 
 <div class="connection">
@@ -95,9 +97,13 @@
   <div class="conferences">
     <div class="heading">Conferences:</div>
     {#if connectState === ConnectState.CONNECTED}
-      {#each conferenceIds as conferenceId}
+      <!-- {#each conferenceIds as conferenceId}
         <Conference {connection} {conferenceId} />
-      {/each}
+      {/each} -->
     {/if}
+  </div>
+  <div class="heading">Config</div>
+  <div class="config">
+    <pre>{JSON.stringify(config.JITSI_CONFIG, null, 2)}</pre>
   </div>
 </div>

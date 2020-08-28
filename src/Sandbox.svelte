@@ -1,6 +1,7 @@
 <script>
   import Connection from './audiovideo/Connection.svelte'
   import Video from './audiovideo/Video.svelte'
+  // import Devices from './audiovideo/Devices.svelte'
 
   const JitsiMeetJS = window.JitsiMeetJS
 
@@ -13,15 +14,15 @@
   const hideVideo = () => {
     videoVisible = false
   }
-
-  const joinConference = (name) => {}
 </script>
 
-<Connection conferenceIds={['relm-test']} />
+<Connection conferenceIds={['r2d2tst']} />
 
 {#if showVideo}
   <Video {track} />
 {/if}
+
+<!-- <Devices /> -->
 
 <button on:click={showVideo}>Show Video</button>
 <button on:click={hideVideo}>Hide Video</button>
