@@ -2,33 +2,6 @@
   import Thought from './Thought.svelte'
 </script>
 
-<style>
-  h2 {
-    margin-top: 45px;
-  }
-  div {
-    margin-top: 25px;
-  }
-  div.p {
-    margin-top: 5px;
-    margin-bottom: 5px;
-  }
-  pre {
-    font-size: 16px;
-    background-color: #e0e0e0;
-    padding: 3px 5px;
-    margin-left: 15px;
-  }
-  pre.inline {
-    margin-left: 0px !important;
-    display: inline;
-  }
-  .wrapper > * {
-    margin-left: 20px;
-    margin-right: 20px;
-  }
-</style>
-
 <div class="wrapper">
 
   <h2>Welcome!</h2>
@@ -403,3 +376,30 @@
 
   <div style="margin-bottom:150px" />
 </div>
+
+<style>
+  h2 {
+    margin-top: 45px;
+  }
+  div {
+    margin-top: 25px;
+  }
+  div.p {
+    margin-top: 5px;
+    margin-bottom: 5px;
+  }
+  pre {
+    font-size: 16px;
+    background-color: #e0e0e0;
+    padding: 3px 5px;
+    margin-left: 15px;
+  }
+  pre.inline {
+    margin-left: 0px !important;
+    display: inline;
+  }
+  .wrapper > * {
+    margin-left: 20px;
+    margin-right: 20px;
+  }
+</style>

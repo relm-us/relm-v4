@@ -70,7 +70,7 @@ function Config(location) {
       useStunTurn: true,
     },
     useStunTurn: true,
-    bosh: `https://meet.jit.si/http-bind`,
+    bosh: `https://meet.jit.si/http-bind?room=${ROOM}`,
     websocket: 'wss://meet.jit.si/xmpp-websocket',
     clientNode: 'http://jitsi.org/jitsimeet',
   }

@@ -1,5 +1,4 @@
 <script>
-  // import Device from './Device.js'
   let available = JitsiMeetJS.mediaDevices.isDeviceListAvailable()
 
   const canChangeOutputDevice = JitsiMeetJS.mediaDevices.isDeviceChangeAvailable(
@@ -22,16 +21,8 @@
   })
 </script>
 
-<style>
-  .devices {
-    border: 2px solid #888;
-    border-radius: 8px;
-    padding: 8px 15px;
-  }
-</style>
-
 <div class="devices">
-  <div class="heading">Device List</div>
+  <h1>Device List</h1>
   <div class="available">
     Input:
     <span class="setting">
@@ -60,3 +51,22 @@
     <div class="available">Not available</div>
   {/if}
 </div>
+
+<style>
+  h1 {
+    font-size: 32px;
+    font-weight: bold;
+    margin: 0;
+  }
+  h2 {
+    font-size: 24px;
+    font-weight: bold;
+    margin: 0;
+  }
+  .devices {
+    border: 2px solid #888;
+    border-radius: 8px;
+    padding: 8px 15px;
+    margin-top: 15px;
+  }
+</style>

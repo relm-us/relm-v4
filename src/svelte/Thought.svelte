@@ -2,6 +2,10 @@
   export let text = null
 </script>
 
+<div class="thought">
+  <input placeholder="What's on your mind? ..." value={text} disabled />
+</div>
+
 <style>
   .thought {
     opacity: 0.8;
@@ -22,8 +26,3 @@
     color: white;
   }
 </style>
-
-
-<div class="thought">
-  <input placeholder="What's on your mind? ..." value={ text } disabled>
-</div>

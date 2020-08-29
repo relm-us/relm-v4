@@ -1,6 +1,6 @@
 import Sandbox from './Sandbox.svelte'
 
-// JitsiMeetJS.setLogLevel(JitsiMeetJS.logLevels.ERROR)
+JitsiMeetJS.setLogLevel(JitsiMeetJS.logLevels.ERROR)
 
 JitsiMeetJS.init({
   disableAudioLevels: true,

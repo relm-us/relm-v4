@@ -2,10 +2,12 @@
   import { onMount } from 'svelte'
   import { config } from '../config.js'
   import { onInterval } from '../svelte/util.js'
-  // import Conference from './Conference.svelte'
+  import Conference from './Conference.svelte'
 
   // @type {Array<string>} conferenceIds - the unique name of the Jitsi conference (room) to join
   export let conferenceIds
+
+  let configVisible = false
 
   const ConnectState = {
     INITIAL: 'initial',
@@ -38,6 +40,7 @@
   }
 
   onMount(() => {
+    console.log('onMount new connection')
     connection = new JitsiMeetJS.JitsiConnection(
       null,
       null,
@@ -48,8 +51,8 @@
       connection.addEventListener(JitsiMeetJS.events.connection[eventName], fn)
     }
 
-    connection.connect()
     connectState = ConnectState.CONNECTING
+    connection.connect()
   })
 
   // If we fail to connect, retry until we succeed (if network conditions allow)
@@ -61,22 +64,50 @@
   // }, 5000)
 </script>
 
+<div class="connection">
+  <h1>Connection</h1>
+  <div class="status">
+    Status:
+    <span class="state">{connectState}</span>
+  </div>
+  <div class="conferences">
+    <h2>Conferences:</h2>
+    {#if connectState === ConnectState.CONNECTED}
+      {#each conferenceIds as conferenceId}
+        <Conference {connection} {conferenceId} />
+      {/each}
+    {/if}
+  </div>
+  <h2>Config</h2>
+  {#if configVisible}
+    <button on:click={() => (configVisible = false)}>Hide Config</button>
+    <div class="config">
+      <pre>{JSON.stringify(config.JITSI_CONFIG, null, 2)}</pre>
+    </div>
+  {:else}
+    <button on:click={() => (configVisible = true)}>Show Config</button>
+  {/if}
+</div>
+
 <style>
-  .heading {
+  h1 {
     font-size: 32px;
     font-weight: bold;
+    margin: 0;
   }
-  .conferences {
-    margin: 15px 4px;
-  }
-  .conferences > .heading {
+  h2 {
     font-size: 24px;
     font-weight: bold;
+    margin: 0;
   }
   .connection {
     border: 2px solid #888;
     border-radius: 8px;
     padding: 8px 15px;
+    margin-top: 15px;
+  }
+  .conferences {
+    margin: 15px 4px;
   }
   .status {
     font-size: 18px;
@@ -87,23 +118,3 @@
   .config {
   }
 </style>
-
-<div class="connection">
-  <div class="heading">Connection</div>
-  <div class="status">
-    Status:
-    <span class="state">{connectState}</span>
-  </div>
-  <div class="conferences">
-    <div class="heading">Conferences:</div>
-    {#if connectState === ConnectState.CONNECTED}
-      <!-- {#each conferenceIds as conferenceId}
-        <Conference {connection} {conferenceId} />
-      {/each} -->
-    {/if}
-  </div>
-  <div class="heading">Config</div>
-  <div class="config">
-    <pre>{JSON.stringify(config.JITSI_CONFIG, null, 2)}</pre>
-  </div>
-</div>

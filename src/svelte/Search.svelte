@@ -3,6 +3,22 @@
   let promise = listPublicRelms()
 </script>
 
+<h1>Relms</h1>
+
+{#await promise}
+  Loading...
+{:then relms}
+  <div class="results">
+    {#each relms as relm}
+      <div class="result">
+        <a href="/{relm.relmName}">{relm.relmName}</a>
+      </div>
+    {/each}
+  </div>
+{:catch err}
+  {console.error(err)} There was a problem loading the results.
+{/await}
+
 <style>
   h1 {
     text-align: center;
@@ -46,19 +62,3 @@
     }
   }
 </style>
-
-<h1>Relms</h1>
-
-{#await promise}
-  Loading...
-{:then relms}
-  <div class="results">
-    {#each relms as relm}
-      <div class="result">
-        <a href="/{relm.relmName}">{relm.relmName}</a>
-      </div>
-    {/each}
-  </div>
-{:catch err}
-  {console.error(err)} There was a problem loading the results.
-{/await}

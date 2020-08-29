@@ -70,31 +70,6 @@
   })
 </script>
 
-<style>
-  .participant {
-    border-top: 2px solid #888;
-  }
-  .field {
-    display: flex;
-    margin: 4px 15px;
-  }
-  .key {
-    font-weight: bold;
-  }
-  .value {
-    padding-left: 15px;
-    word-wrap: anywhere;
-  }
-  .buttons {
-    display: flex;
-    justify-content: center;
-  }
-  button {
-    margin: 8px;
-    padding: 4px 8px;
-  }
-</style>
-
 <div class="participant">
   <div class="field identifier">
     <div class="key">ID</div>
@@ -147,3 +122,28 @@
     <button on:click={refresh}>Refresh</button>
   </div>
 </div>
+
+<style>
+  .participant {
+    border-top: 2px solid #888;
+  }
+  .field {
+    display: flex;
+    margin: 4px 15px;
+  }
+  .key {
+    font-weight: bold;
+  }
+  .value {
+    padding-left: 15px;
+    word-wrap: anywhere;
+  }
+  .buttons {
+    display: flex;
+    justify-content: center;
+  }
+  button {
+    margin: 8px;
+    padding: 4px 8px;
+  }
+</style>

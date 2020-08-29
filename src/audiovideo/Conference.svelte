@@ -117,6 +117,18 @@
   // }
 </script>
 
+<div class="conference">
+  <div class="header">{conferenceId}</div>
+  <div class="state">{conferenceState}</div>
+  <div class="state">My ID: {myParticipantId}</div>
+  <div class="state">My Role: {myRole}</div>
+  <div class="participants">
+    {#each Object.values(participants) as participant}
+      <Participant {participant} role={participantRoles[participant.getId()]} />
+    {/each}
+  </div>
+</div>
+
 <style>
   .conference {
     border: 2px solid #888;
@@ -132,15 +144,3 @@
     padding: 8px 15px;
   }
 </style>
-
-<div class="conference">
-  <div class="header">{conferenceId}</div>
-  <div class="state">{conferenceState}</div>
-  <div class="state">My ID: {myParticipantId}</div>
-  <div class="state">My Role: {myRole}</div>
-  <div class="participants">
-    {#each Object.values(participants) as participant}
-      <Participant {participant} role={participantRoles[participant.getId()]} />
-    {/each}
-  </div>
-</div>
