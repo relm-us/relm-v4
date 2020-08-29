@@ -45,12 +45,15 @@
   - playsinline
   - disablepictureinpicture
 -->
-<div>
-  <video
-    bind:this={videoElement}
-    {id}
-    autoPlay={autoPlay ? true : undefined}
-    playsInline={playsInline ? true : undefined}
-    disablePictureInPicture="" />
-</div>
-<div>{videoElement && videoElement.id}</div>
+<video
+  bind:this={videoElement}
+  {id}
+  autoPlay={autoPlay ? true : undefined}
+  playsInline={playsInline ? true : undefined}
+  disablePictureInPicture="" />
+
+<style>
+  video {
+    object-fit: cover;
+  }
+</style>
