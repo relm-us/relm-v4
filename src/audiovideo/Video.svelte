@@ -7,6 +7,7 @@
   // iOS needs this so the video doesn't automatically play full screen
   export let playsInline = true
   export let track = undefined
+  export let mirror = false
 
   let attachedTrack
   let videoElement
@@ -47,6 +48,7 @@
 -->
 <video
   bind:this={videoElement}
+  class:mirror
   {id}
   autoPlay={autoPlay ? true : undefined}
   playsInline={playsInline ? true : undefined}
@@ -55,5 +57,8 @@
 <style>
   video {
     object-fit: cover;
+  }
+  video.mirror {
+    transform: rotateY(180deg);
   }
 </style>

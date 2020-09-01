@@ -55,11 +55,6 @@
     overflow-y: auto;
     z-index: 4;
   }
-  .avatars .title {
-    font-size: 22px;
-    font-weight: bold;
-    padding: 20px;
-  }
   .avatars .avatars-row {
     min-width: 380px;
     max-width: 660px;

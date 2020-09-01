@@ -10,20 +10,10 @@
 
     <!-- THREEjs is a core dependency, load it first -->
     <script src="//cdn.jsdelivr.net/npm/three@0.114.0/build/three.js"></script>
-    <!-- If the CDN fails (e.g. offline mode, server down, internet down?) load locally -->
-    <script>
-      window.THREE ||
-        document.write('<script src="vendor/three-r114.min.js"><\/script>')
-    </script>
     <!-- JQuery is a dependency of lib-jitsi-meet -->
-    <script src="https://cdn.jsdelivr.net/npm/jquery@3.5.0/dist/jquery.min.js"></script>
-    <!-- If the CDN fails (e.g. offline mode, server down, internet down?) load locally -->
-    <script>
-      window.THREE ||
-        document.write('<script src="vendor/jquery.min.js"><\/script>')
-    </script>
-
-    <script src="vendor/lib-jitsi-meet.min.js"></script>
+    <script src="//cdn.jsdelivr.net/npm/jquery@3.5.0/dist/jquery.min.js"></script>
+    <!-- Jitsi video conference library lib-jitsi-meet -->
+    <script src="//meet.jit.si/libs/lib-jitsi-meet.min.js"></script>
 
     <link rel="stylesheet" type="text/css" href="./dropzone.css" />
     <link rel="stylesheet" type="text/css" href="./index.css" />

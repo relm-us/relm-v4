@@ -1,6 +1,7 @@
 <script>
-  import State from '../svelte/stores.js'
+  import { onMount } from 'svelte'
   import { spring } from 'svelte/motion'
+  import State from '../svelte/stores.js'
   import Video from './Video.svelte'
 
   // Global state
@@ -80,32 +81,40 @@
     hasPermission = true
   }
 
+  const joinGame = () => {
+    alert('TODO')
+  }
+
   const handleHelp = () => {
     alert('TODO')
   }
 
-  if (JitsiMeetJS.mediaDevices.isDeviceListAvailable()) {
-    JitsiMeetJS.mediaDevices.enumerateDevices((deviceList) => {
-      let autoPermit = false
-      for (const device of deviceList) {
-        console.log('device', device)
-        if (device.label) autoPermit = true
-      }
-
-      if (autoPermit) {
-        requestPermissions()
-      }
-    })
-  }
+  onMount(() => {
+    // If the browser allows us to enumerate any of the devices, then
+    // there is at least some "permission" granted by the user from
+    // the last time they visited. Take the hint and attempt to request
+    // full permission to use audio & video.
+    if (JitsiMeetJS.mediaDevices.isDeviceListAvailable()) {
+      // JitsiMeetJS.mediaDevices.enumerateDevices((deviceList) => {
+      //   let autoPermit = false
+      //   for (const device of deviceList) {
+      //     console.log('device', device)
+      //     if (device.label) autoPermit = true
+      //   }
+      //   if (autoPermit) {
+      //     requestPermissions()
+      //   }
+      // })
+    }
+  })
 </script>
 
 <div class="mirror">
-  <h1>Relm</h1>
   <p>You're about to join a video meeting</p>
 
   {#if hasPermission}
     <div class="video-box">
-      <Video track={videoTrack} />
+      <Video track={videoTrack} mirror={true} />
       <div class="video-stack overlay">
         {#if !audioRequested && !videoRequested}
           <div class="message">Join with cam and mic off</div>
@@ -138,6 +147,7 @@
         </div>
       </div>
     </div>
+    <button class="main-action" on:click={joinGame}>Join meeting</button>
   {:else}
     <div
       class="video-stack filled"
@@ -158,7 +168,7 @@
       cam and mic.
     </p>
 
-    <button class="request-permissions" on:click={requestPermissions}>
+    <button class="main-action" on:click={requestPermissions}>
       {#if requestBlocked}Try Again{:else}Request Permissions{/if}
     </button>
     {#if requestBlocked}
@@ -175,6 +185,11 @@
     display: flex;
     flex-direction: column;
     align-items: center;
+    width: 500px;
+  }
+  p {
+    width: 375px;
+    text-align: center;
   }
   .video-box {
     display: flex;
@@ -202,9 +217,6 @@
   }
   .video-stack.filled {
     background-color: #555;
-  }
-  .video-stack :global(video) {
-    transform: rotateY(180deg);
   }
   .video-stack.blocked {
     background-color: #f55;
@@ -258,17 +270,18 @@
   button:active {
     transform: translateY(1px);
   }
-  button.request-permissions {
+  button.main-action {
     color: white;
     background-color: #4682b4;
     border: 0;
     border-radius: 8px;
+    margin-top: 15px;
     padding: 8px 15px;
     font-size: 18px;
     font-weight: bold;
     cursor: pointer;
   }
-  button.request-permissions:hover {
+  button.main-action:hover {
     background-color: #6798c1;
   }
   .help {
