@@ -55,6 +55,10 @@
     console.log('trackRemoved', track)
   }
 
+  const trackAudioLevelChanged = (participantId, audioLevel) => {
+    console.log('audio level', participantId, audioLevel)
+  }
+
   const events = {
     CONFERENCE_JOINED: () => (conferenceState = ConferenceState.JOINED),
     CONFERENCE_LEFT: () => (conferenceState = ConferenceState.LEFT),
@@ -68,6 +72,7 @@
 
     TRACK_ADDED: trackAdded,
     TRACK_REMOVED: trackRemoved,
+    TRACK_AUDIO_LEVEL_CHANGED: trackAudioLevelChanged,
   }
 
   onMount(() => {

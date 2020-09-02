@@ -19,7 +19,7 @@
 
 <Devices />
 
-<Connection conferenceIds={['relm-test']} />
+<!-- <Connection conferenceIds={['relm-test']} /> -->
 
 {#if videoVisible}
   <Video {track} />

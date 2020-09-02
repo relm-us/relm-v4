@@ -1,8 +1,13 @@
 <script>
   import { onMount } from 'svelte'
   import { spring } from 'svelte/motion'
+  import { canAutoPermit } from './avutil.js'
   import State from '../svelte/stores.js'
   import Video from './Video.svelte'
+  import Audio from './Audio.svelte'
+  import Select from './Select.svelte'
+
+  const AUDIO_LEVEL_MINIMUM = 0.0
 
   // Global state
   let videoTrack
@@ -16,34 +21,40 @@
   let enterMessage = null
   let videoRequested = true
   let audioRequested = true
+  let letMeHearMyself = false
 
   // State.videoRequested.subscribe((bool) => (videoRequested = bool))
   // State.audioRequested.subscribe((bool) => (audioRequested = bool))
 
   let hasPermission = false
+  let advancedSettings = false
 
   let videoError = false
   let audioError = false
 
-  let videoShakePos = spring(0, {
+  let videoCount = 0
+
+  let audioLevelSpring = spring(0, {
+    stiffness: 0.3,
+    damping: 0.8,
+  })
+
+  let videoPositionSpring = spring(0, {
     stiffness: 0.5,
     damping: 0.3,
   })
   const shakeInactiveVideo = () => {
-    videoShakePos.set(10)
-    setTimeout(() => videoShakePos.set(0), 100)
+    videoPositionSpring.set(10)
+    setTimeout(() => videoPositionSpring.set(0), 100)
   }
 
-  const toggleAudioRequested = () => {
-    audioRequested = !audioRequested
-  }
+  const toggleAudioRequested = () => (audioRequested = !audioRequested)
 
-  const toggleVideoRequested = () => {
-    videoRequested = !videoRequested
-  }
+  const toggleVideoRequested = () => (videoRequested = !videoRequested)
+
+  const toggleAdvancedSettings = () => (advancedSettings = !advancedSettings)
 
   const requestPermissions = async () => {
-    console.log('requestPermissions')
     let tracks
     const requestAlreadyBlocked = requestBlocked
 
@@ -74,10 +85,17 @@
         audioError = true
       }
     }
-    console.log('requestPermissions tracks', tracks)
 
     videoTrack = tracks.find((track) => track.type === 'video')
     audioTrack = tracks.find((track) => track.type === 'audio')
+    audioTrack.addEventListener(
+      JitsiMeetJS.events.track.TRACK_AUDIO_LEVEL_CHANGED,
+      (level) => {
+        // audioLevel = level
+        audioLevelSpring.set(level)
+      }
+    )
+
     hasPermission = true
   }
 
@@ -89,22 +107,10 @@
     alert('TODO')
   }
 
-  onMount(() => {
-    // If the browser allows us to enumerate any of the devices, then
-    // there is at least some "permission" granted by the user from
-    // the last time they visited. Take the hint and attempt to request
-    // full permission to use audio & video.
-    if (JitsiMeetJS.mediaDevices.isDeviceListAvailable()) {
-      // JitsiMeetJS.mediaDevices.enumerateDevices((deviceList) => {
-      //   let autoPermit = false
-      //   for (const device of deviceList) {
-      //     console.log('device', device)
-      //     if (device.label) autoPermit = true
-      //   }
-      //   if (autoPermit) {
-      //     requestPermissions()
-      //   }
-      // })
+  onMount(async () => {
+    const autoPermit = await canAutoPermit()
+    if (autoPermit) {
+      requestPermissions()
     }
   })
 </script>
@@ -114,7 +120,10 @@
 
   {#if hasPermission}
     <div class="video-box">
-      <Video track={videoTrack} mirror={true} />
+      {#if letMeHearMyself}
+        <Audio track={audioTrack} />
+      {/if}
+      <Video track={videoTrack} mirror={true} onSuspend={requestPermissions} />
       <div class="video-stack overlay">
         {#if !audioRequested && !videoRequested}
           <div class="message">Join with cam and mic off</div>
@@ -137,7 +146,9 @@
           </button>
           <button
             on:click={toggleAudioRequested}
-            class:track-disabled={!audioRequested}>
+            class:audio-level={audioRequested && $audioLevelSpring > AUDIO_LEVEL_MINIMUM}
+            class:track-disabled={!audioRequested}
+            style="--audio-level:{($audioLevelSpring * 85 + 15).toFixed(2) + '%'}">
             {#if audioRequested}
               <img src="/audio-enabled.svg" width="32" alt="Audio Enabled" />
             {:else}
@@ -148,11 +159,31 @@
       </div>
     </div>
     <button class="main-action" on:click={joinGame}>Join meeting</button>
+    {#if advancedSettings}
+      <div class="advanced-settings">
+        <Select
+          selected={0}
+          options={[{ value: 0, label: 'Camera 1' }, { value: 1, label: 'Camera 2' }]}
+          icon="/video-enabled.svg" />
+        <Select
+          selected={1}
+          options={[{ value: 0, label: 'Mic 1' }, { value: 1, label: 'Mic 2' }]}
+          icon="/audio-enabled.svg" />
+        <Select
+          selected={0}
+          options={[{ value: 0, label: 'Speaker 1' }, { value: 1, label: 'Speaker 2' }]}
+          icon="/speaker-icon.svg" />
+      </div>
+    {:else}
+      <div class="minor-action">
+        <button on:click={toggleAdvancedSettings}>Advanced Settings</button>
+      </div>
+    {/if}
   {:else}
     <div
       class="video-stack filled"
       class:blocked={requestBlocked}
-      style="transform: translate({$videoShakePos}px, 0)">
+      style="transform: translate({$videoPositionSpring}px, 0)">
       <div class="image">
         <img src="/video-disabled.svg" width="75" alt="Video Disabled" />
       </div>
@@ -172,7 +203,7 @@
       {#if requestBlocked}Try Again{:else}Request Permissions{/if}
     </button>
     {#if requestBlocked}
-      <div class="help">
+      <div class="minor-action">
         <button on:click={handleHelp}>Need help?</button>
       </div>
     {/if}
@@ -255,6 +286,9 @@
     font-family: Arial, Helvetica, sans-serif;
     padding: 8px 15px;
   }
+  .button-tray button img {
+    z-index: 1;
+  }
   .button-tray button.track-disabled {
     background-color: rgba(255, 85, 85, 0.7);
   }
@@ -272,7 +306,7 @@
   }
   button.main-action {
     color: white;
-    background-color: #4682b4;
+    background-color: rgba(70, 130, 180, 1);
     border: 0;
     border-radius: 8px;
     margin-top: 15px;
@@ -282,14 +316,31 @@
     cursor: pointer;
   }
   button.main-action:hover {
-    background-color: #6798c1;
+    background-color: rgba(103, 152, 193, 1);
   }
-  .help {
+  .minor-action {
     margin-top: 8px;
   }
-  .help button {
+  .minor-action button {
     border: none;
     background: none;
     text-decoration: underline;
+    cursor: pointer;
+  }
+  .audio-level {
+    position: relative;
+  }
+  .audio-level:before {
+    content: ' ';
+    display: block;
+    position: absolute;
+    width: 100%;
+    height: var(--audio-level);
+    max-height: 100%;
+    bottom: 0;
+    left: 0;
+    background-color: rgba(70, 180, 74, 0.7);
+    border-bottom-right-radius: 8px;
+    border-bottom-left-radius: 8px;
   }
 </style>

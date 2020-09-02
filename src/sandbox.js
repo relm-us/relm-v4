@@ -3,7 +3,7 @@ import Sandbox from './Sandbox.svelte'
 JitsiMeetJS.setLogLevel(JitsiMeetJS.logLevels.ERROR)
 
 JitsiMeetJS.init({
-  disableAudioLevels: true,
+  audioLevelsInterval: 40,
 })
 
 new Sandbox({
