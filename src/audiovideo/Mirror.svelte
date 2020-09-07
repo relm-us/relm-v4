@@ -1,7 +1,7 @@
 <script>
   import { onMount } from 'svelte'
   import { spring } from 'svelte/motion'
-  import { canAutoPermit } from './avutil.js'
+  import { canAutoPermit, getDefaultDeviceId, getDeviceList } from './avutil.js'
   import State from '../svelte/stores.js'
   import Video from './Video.svelte'
   import Audio from './Audio.svelte'
@@ -17,6 +17,7 @@
   State.audioTrack.subscribe((track) => (audioTrack = track))
 
   // Local state
+  let localTracks
   let requestBlocked = false
   let enterMessage = null
   let videoRequested = true
@@ -34,6 +35,49 @@
 
   let videoCount = 0
 
+  const canChangeOutputDevice = JitsiMeetJS.mediaDevices.isDeviceChangeAvailable(
+    'output'
+  )
+  const canChangeInputDevice = JitsiMeetJS.mediaDevices.isDeviceChangeAvailable(
+    'input'
+  )
+
+  let deviceList = []
+  let devices = {
+    audioinput: {},
+    audiooutput: {},
+    videoinput: {},
+  }
+
+  // Camera Configuration
+  let cameraOptions = []
+  let cameraDefaultId
+  let cameraSelectedId
+
+  $: cameraOptions = Object.values(devices['videoinput']).map((input) => ({
+    value: input.deviceId,
+    label: input.label,
+  }))
+
+  $: cameraDefaultId = getDefaultDeviceId(devices, 'videoinput')
+
+  // Microphone Configuration
+  let microphoneOptions = []
+  let microphoneDefaultId
+  let microphoneSelectedId
+
+  $: microphoneOptions = Object.values(devices['audioinput']).map((input) => ({
+    value: input.deviceId,
+    label: input.label,
+  }))
+
+  $: microphoneDefaultId = getDefaultDeviceId(devices, 'audioinput')
+
+  $: if (cameraSelectedId || microphoneSelectedId) {
+    requestPermissions()
+  }
+
+  // Animation springs
   let audioLevelSpring = spring(0, {
     stiffness: 0.3,
     damping: 0.8,
@@ -54,47 +98,96 @@
 
   const toggleAdvancedSettings = () => (advancedSettings = !advancedSettings)
 
+  const audioLevelChanged = (level) => audioLevelSpring.set(level)
+
+  const deviceListChanged = (deviceList_) => (deviceList = deviceList_)
+
   const requestPermissions = async () => {
-    let tracks
     const requestAlreadyBlocked = requestBlocked
+
+    // Clean up from past local track creation
+    if (localTracks) {
+      for (const track of localTracks) {
+        track.detach()
+        track.removeEventListener(
+          JitsiMeetJS.events.track.TRACK_AUDIO_LEVEL_CHANGED,
+          audioLevelChanged
+        )
+      }
+    }
 
     videoError = false
     audioError = false
     requestBlocked = false
     try {
-      tracks = await JitsiMeetJS.createLocalTracks({
+      const options = {
         devices: ['video', 'audio'],
-      })
+      }
+      if (cameraSelectedId) {
+        options.cameraDeviceId = cameraSelectedId
+      }
+      if (microphoneSelectedId) {
+        options.micDeviceId = microphoneSelectedId
+      }
+      console.log('requestPermissions', options)
+      localTracks = await JitsiMeetJS.createLocalTracks(options)
     } catch (err) {
       console.warn(
         'Video & audio requested, but unable to create both local tracks'
       )
-      videoError = true
+
+      // Try requesting just camera if requesting both camera & mic failed
       try {
-        // Try just audio if requesting both camera & mic failed
-        tracks = await JitsiMeetJS.createLocalTracks({
+        const options = {
+          devices: ['video'],
+        }
+        if (cameraSelectedId) {
+          options.cameraDeviceId = cameraSelectedId
+        }
+        localTracks = await JitsiMeetJS.createLocalTracks(options)
+      } catch (err) {
+        console.warn('Video requested, but unable to create local track')
+        // Only shake the div if it's already bright red
+        if (requestAlreadyBlocked) {
+          shakeInactiveVideo()
+        }
+        videoError = true
+      }
+
+      // Try requesting just mic if requesting both camera & mic failed
+      try {
+        const options = {
           devices: ['audio'],
-        })
+        }
+        if (microphoneSelectedId) {
+          options.micDeviceId = microphoneSelectedId
+        }
+        // Try just audio if requesting both camera & mic failed
+        localTracks = await JitsiMeetJS.createLocalTracks(options)
       } catch (err) {
         console.warn('Audio requested, but unable to create local track')
         // Only shake the div if it's already bright red
         if (requestAlreadyBlocked) {
           shakeInactiveVideo()
         }
-        requestBlocked = true
         audioError = true
+      }
+      if (audioError && videoError) {
+        requestBlocked = true
       }
     }
 
-    videoTrack = tracks.find((track) => track.type === 'video')
-    audioTrack = tracks.find((track) => track.type === 'audio')
-    audioTrack.addEventListener(
-      JitsiMeetJS.events.track.TRACK_AUDIO_LEVEL_CHANGED,
-      (level) => {
-        // audioLevel = level
-        audioLevelSpring.set(level)
-      }
-    )
+    videoTrack = localTracks.find((track) => track.type === 'video')
+    audioTrack = localTracks.find((track) => track.type === 'audio')
+
+    if (audioTrack) {
+      audioTrack.addEventListener(
+        JitsiMeetJS.events.track.TRACK_AUDIO_LEVEL_CHANGED,
+        audioLevelChanged
+      )
+    }
+
+    deviceList = await getDeviceList()
 
     hasPermission = true
   }
@@ -112,7 +205,37 @@
     if (autoPermit) {
       requestPermissions()
     }
+
+    try {
+      deviceList = await getDeviceList()
+    } catch (err) {
+      console.warn(err)
+    }
+
+    JitsiMeetJS.mediaDevices.addEventListener(
+      JitsiMeetJS.events.mediaDevices.DEVICE_LIST_CHANGED,
+      deviceListChanged
+    )
+
+    return () => {
+      JitsiMeetJS.mediaDevices.removeEventListener(
+        JitsiMeetJS.events.mediaDevices.DEVICE_LIST_CHANGED,
+        deviceListChanged
+      )
+    }
   })
+
+  // Convert `deviceList` to `devices` Object, sorted by source type
+  $: for (const device of deviceList) {
+    devices[device.kind][device.deviceId] = device
+  }
+
+  $: console.log(
+    'deviceList',
+    deviceList,
+    JitsiMeetJS.mediaDevices.getAudioOutputDevice()
+  )
+  $: console.log('cameraSelectedId', cameraSelectedId)
 </script>
 
 <div class="mirror">
@@ -148,7 +271,7 @@
             on:click={toggleAudioRequested}
             class:audio-level={audioRequested && $audioLevelSpring > AUDIO_LEVEL_MINIMUM}
             class:track-disabled={!audioRequested}
-            style="--audio-level:{($audioLevelSpring * 85 + 15).toFixed(2) + '%'}">
+            style="--audio-level:{audioError ? '0' : ($audioLevelSpring * 85 + 15).toFixed(2) + '%'}">
             {#if audioRequested}
               <img src="/audio-enabled.svg" width="32" alt="Audio Enabled" />
             {:else}
@@ -162,16 +285,22 @@
     {#if advancedSettings}
       <div class="advanced-settings">
         <Select
-          selected={0}
-          options={[{ value: 0, label: 'Camera 1' }, { value: 1, label: 'Camera 2' }]}
+          selected={cameraSelectedId || cameraDefaultId}
+          options={cameraOptions}
+          onSelect={(option) => {
+            cameraSelectedId = option.value
+          }}
           icon="/video-enabled.svg" />
         <Select
-          selected={1}
-          options={[{ value: 0, label: 'Mic 1' }, { value: 1, label: 'Mic 2' }]}
+          selected={microphoneSelectedId || microphoneDefaultId}
+          options={microphoneOptions}
+          onSelect={(option) => {
+            microphoneSelectedId = option.value
+          }}
           icon="/audio-enabled.svg" />
         <Select
           selected={0}
-          options={[{ value: 0, label: 'Speaker 1' }, { value: 1, label: 'Speaker 2' }]}
+          options={[{ value: 0, label: 'Default Speakers' }]}
           icon="/speaker-icon.svg" />
       </div>
     {:else}
@@ -208,7 +337,6 @@
       </div>
     {/if}
   {/if}
-
 </div>
 
 <style>

@@ -67,3 +67,35 @@ export async function canAutoPermit() {
     }
   })
 }
+
+export async function getDeviceList() {
+  return new Promise((resolve, reject) => {
+    if (JitsiMeetJS.mediaDevices.isDeviceListAvailable()) {
+      JitsiMeetJS.mediaDevices.enumerateDevices((deviceList) =>
+        resolve(deviceList)
+      )
+    } else {
+      reject(new Error('Device List not available'))
+    }
+  })
+}
+
+export function getDefaultDeviceId(devices, kind) {
+  const deviceListOfKind = Object.values(devices[kind] || {})
+  const defaultDevice = deviceListOfKind.find((d) => d.deviceId === 'default')
+
+  let matchingDevice
+
+  if (defaultDevice) {
+    // Find the device with a matching group id.
+    matchingDevice = deviceListOfKind.find(
+      (d) => d.deviceId !== 'default' && d.groupId === defaultDevice.groupId
+    )
+  }
+
+  if (matchingDevice) {
+    return matchingDevice.deviceId
+  } else if (deviceListOfKind.length >= 1) {
+    return deviceListOfKind[0].deviceId
+  }
+}

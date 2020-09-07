@@ -2,6 +2,8 @@
   import { onMount, afterUpdate, onDestroy } from 'svelte'
   import { uuidv4 } from '../util.js'
 
+  const ENABLE_CHROME_RESUME = false
+
   export let id = uuidv4()
   export let autoPlay = true
   // iOS needs this so the video doesn't automatically play full screen
@@ -44,28 +46,31 @@
 
   onMount(() => {
     window.video = videoElement
-    /**
-     * On Chrome, the video stream is cut (goes black) whenever the OS suspends/
-     * resumes. We use a little hack here to restore the video stream on resume.
-     *
-     * Since Chrome uses the 'suspend' callback after the OS resumes, we can use
-     * it to restore the video stream. However, on Firefox the 'suspend' callback
-     * happens whenever the `video` tag is mounted. So we ignore 'suspend' events
-     * that occur right after mount, and heed 'suspend' events that happen there-
-     * after.
-     */
-    setTimeout(() => {
-      videoElement.addEventListener('suspend', () => {
-        if (onSuspend) {
-          console.log(
-            `Attempting to restore video after ${
-              SUSPEND_CALLBACK_DELAY / 1000
-            } seconds...`
-          )
-          setTimeout(onSuspend, SUSPEND_CALLBACK_DELAY)
-        }
-      })
-    }, ATTACH_AFTER_MOUNT_DELAY)
+
+    if (ENABLE_CHROME_RESUME) {
+      /**
+       * On Chrome, the video stream is cut (goes black) whenever the OS suspends/
+       * resumes. We use a little hack here to restore the video stream on resume.
+       *
+       * Since Chrome uses the 'suspend' callback after the OS resumes, we can use
+       * it to restore the video stream. However, on Firefox the 'suspend' callback
+       * happens whenever the `video` tag is mounted. So we ignore 'suspend' events
+       * that occur right after mount, and heed 'suspend' events that happen there-
+       * after.
+       */
+      setTimeout(() => {
+        videoElement.addEventListener('suspend', () => {
+          if (onSuspend) {
+            console.log(
+              `Attempting to restore video after ${
+                SUSPEND_CALLBACK_DELAY / 1000
+              } seconds...`
+            )
+            setTimeout(onSuspend, SUSPEND_CALLBACK_DELAY)
+          }
+        })
+      }, ATTACH_AFTER_MOUNT_DELAY)
+    }
   })
 </script>
 

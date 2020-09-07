@@ -3,7 +3,7 @@
   import { element } from 'svelte/internal'
   import { avatarOptionFromPlayerId } from '../avatars'
   import {
-    KEY_ENTER,
+    KEY_RETURN,
     KEY_SPACE,
     KEY_UP,
     KEY_DOWN,
@@ -51,7 +51,7 @@
     if (event.keyCode === KEY_ESCAPE && popupVisible) {
       hoverIndex = null
       togglePopup()
-    } else if (event.keyCode === KEY_ENTER || event.keyCode === KEY_SPACE) {
+    } else if (event.keyCode === KEY_RETURN || event.keyCode === KEY_SPACE) {
       if (
         hoverIndex !== null &&
         hoverIndex >= 0 &&
@@ -89,9 +89,7 @@
     class:open={popupVisible}
     on:click={togglePopup}>
     {#if icon}
-      <div class="icon">
-        <img src={icon} width="24" alt="Icon" />
-      </div>
+      <div class="icon"><img src={icon} width="24" alt="Icon" /></div>
     {/if}
     <div class="selected">{selectedOption ? selectedOption.label : ''}</div>
     <div class="down-arrow" />
@@ -161,7 +159,7 @@
     display: inline-block;
     padding: 3px;
     transform: rotate(45deg);
-    margin-left: 8px;
+    margin: 0px 8px;
   }
 
   .popup {
