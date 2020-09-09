@@ -11,7 +11,7 @@
   } from 'keycode-js'
 
   export let selected = null
-  export let options = []
+  export let options = null
   export let icon = null
   export let onSelect = null
 
@@ -20,7 +20,11 @@
   let hoverIndex = null
   let selectedOption
 
-  $: selectedOption = options.find((opt) => opt.value === selected)
+  let optionsWithDefault
+
+  $: optionsWithDefault = options || []
+
+  $: selectedOption = optionsWithDefault.find((opt) => opt.value === selected)
 
   const hasAncestor = (element, ancestor) => {
     if (element === null) {
@@ -48,6 +52,7 @@
   }
 
   const handleKeypress = (event) => {
+    const options = optionsWithDefault
     if (event.keyCode === KEY_ESCAPE && popupVisible) {
       hoverIndex = null
       togglePopup()
@@ -96,7 +101,7 @@
   </div>
   {#if popupVisible}
     <div class="popup" on:mouseleave={() => (hoverIndex = null)}>
-      {#each options as option, i}
+      {#each optionsWithDefault as option, i}
         <div
           class="option"
           class:hover={hoverIndex === i}

@@ -1,11 +1,11 @@
 <script>
   import { onMount } from 'svelte'
   import { spring } from 'svelte/motion'
-  import { canAutoPermit, getDefaultDeviceId, getDeviceList } from './avutil.js'
-  import State from '../svelte/stores.js'
+  import { canAutoPermit, getDefaultDeviceId } from './avutil.js'
   import Video from './Video.svelte'
   import Audio from './Audio.svelte'
-  import Select from './Select.svelte'
+  import DeviceSelector from './DeviceSelector.svelte'
+  import { deviceList } from './DeviceListStore.js'
 
   const AUDIO_LEVEL_MINIMUM = 0.0
 
@@ -13,11 +13,12 @@
   let videoTrack
   let audioTrack
 
-  State.videoTrack.subscribe((track) => (videoTrack = track))
-  State.audioTrack.subscribe((track) => (audioTrack = track))
+  // State.videoTrack.subscribe((track) => (videoTrack = track))
+  // State.audioTrack.subscribe((track) => (audioTrack = track))
 
   // Local state
-  let localTracks
+  const localTracks = []
+  let selectedDevices = {}
   let requestBlocked = false
   let enterMessage = null
   let videoRequested = true
@@ -29,53 +30,17 @@
 
   let hasPermission = false
   let advancedSettings = false
+  let advancedSettingsSupported = JitsiMeetJS.util.browser.isChrome()
 
   let videoError = false
   let audioError = false
 
   let videoCount = 0
 
-  const canChangeOutputDevice = JitsiMeetJS.mediaDevices.isDeviceChangeAvailable(
-    'output'
-  )
-  const canChangeInputDevice = JitsiMeetJS.mediaDevices.isDeviceChangeAvailable(
-    'input'
-  )
-
-  let deviceList = []
-  let devices = {
-    audioinput: {},
-    audiooutput: {},
-    videoinput: {},
-  }
-
-  // Camera Configuration
-  let cameraOptions = []
-  let cameraDefaultId
-  let cameraSelectedId
-
-  $: cameraOptions = Object.values(devices['videoinput']).map((input) => ({
-    value: input.deviceId,
-    label: input.label,
-  }))
-
-  $: cameraDefaultId = getDefaultDeviceId(devices, 'videoinput')
-
-  // Microphone Configuration
-  let microphoneOptions = []
-  let microphoneDefaultId
-  let microphoneSelectedId
-
-  $: microphoneOptions = Object.values(devices['audioinput']).map((input) => ({
-    value: input.deviceId,
-    label: input.label,
-  }))
-
-  $: microphoneDefaultId = getDefaultDeviceId(devices, 'audioinput')
-
-  $: if (cameraSelectedId || microphoneSelectedId) {
-    requestPermissions()
-  }
+  // $: if (cameraSelectedId || microphoneSelectedId) {
+  //   requestPermissions()
+  // }
+  $: console.log('selectedDevices', selectedDevices)
 
   // Animation springs
   let audioLevelSpring = spring(0, {
@@ -100,37 +65,35 @@
 
   const audioLevelChanged = (level) => audioLevelSpring.set(level)
 
-  const deviceListChanged = (deviceList_) => (deviceList = deviceList_)
+  const createLocalTracks = async (devices) => {
+    const options = { devices }
+    if (devices.includes('video') && selectedDevices.videoinput) {
+      options.cameraDeviceId = selectedDevices.videoinput
+    }
+    if (devices.includes('audio') && selectedDevices.audioinput) {
+      options.micDeviceId = selectedDevices.audioinput
+    }
+    console.log('createLocalTracks', devices, options)
+    return await JitsiMeetJS.createLocalTracks(options)
+  }
 
   const requestPermissions = async () => {
-    const requestAlreadyBlocked = requestBlocked
-
     // Clean up from past local track creation
-    if (localTracks) {
-      for (const track of localTracks) {
-        track.detach()
-        track.removeEventListener(
-          JitsiMeetJS.events.track.TRACK_AUDIO_LEVEL_CHANGED,
-          audioLevelChanged
-        )
-      }
+    for (const track of localTracks) {
+      track.detach()
+      track.removeEventListener(
+        JitsiMeetJS.events.track.TRACK_AUDIO_LEVEL_CHANGED,
+        audioLevelChanged
+      )
     }
+    localTracks.length = 0
 
     videoError = false
     audioError = false
     requestBlocked = false
     try {
-      const options = {
-        devices: ['video', 'audio'],
-      }
-      if (cameraSelectedId) {
-        options.cameraDeviceId = cameraSelectedId
-      }
-      if (microphoneSelectedId) {
-        options.micDeviceId = microphoneSelectedId
-      }
-      console.log('requestPermissions', options)
-      localTracks = await JitsiMeetJS.createLocalTracks(options)
+      const newTracks = await createLocalTracks(['video', 'audio'])
+      localTracks.push(...newTracks)
     } catch (err) {
       console.warn(
         'Video & audio requested, but unable to create both local tracks'
@@ -138,58 +101,46 @@
 
       // Try requesting just camera if requesting both camera & mic failed
       try {
-        const options = {
-          devices: ['video'],
-        }
-        if (cameraSelectedId) {
-          options.cameraDeviceId = cameraSelectedId
-        }
-        localTracks = await JitsiMeetJS.createLocalTracks(options)
+        const newTracks = await createLocalTracks(['video'])
+        localTracks.push(...newTracks)
       } catch (err) {
         console.warn('Video requested, but unable to create local track')
-        // Only shake the div if it's already bright red
-        if (requestAlreadyBlocked) {
-          shakeInactiveVideo()
-        }
         videoError = true
       }
 
       // Try requesting just mic if requesting both camera & mic failed
       try {
-        const options = {
-          devices: ['audio'],
-        }
-        if (microphoneSelectedId) {
-          options.micDeviceId = microphoneSelectedId
-        }
-        // Try just audio if requesting both camera & mic failed
-        localTracks = await JitsiMeetJS.createLocalTracks(options)
+        const newTracks = await createLocalTracks(['audio'])
+        localTracks.push(...newTracks)
       } catch (err) {
         console.warn('Audio requested, but unable to create local track')
-        // Only shake the div if it's already bright red
-        if (requestAlreadyBlocked) {
-          shakeInactiveVideo()
-        }
         audioError = true
       }
       if (audioError && videoError) {
+        if (requestBlocked) {
+          // Visual feedback already indicates red, so shake it to emphasize error
+          shakeInactiveVideo()
+        }
         requestBlocked = true
       }
     }
 
-    videoTrack = localTracks.find((track) => track.type === 'video')
-    audioTrack = localTracks.find((track) => track.type === 'audio')
+    if (localTracks && localTracks.length >= 1) {
+      console.warn('localTracks', localTracks)
+      videoTrack = localTracks.find((track) => track.type === 'video')
+      audioTrack = localTracks.find((track) => track.type === 'audio')
 
-    if (audioTrack) {
-      audioTrack.addEventListener(
-        JitsiMeetJS.events.track.TRACK_AUDIO_LEVEL_CHANGED,
-        audioLevelChanged
-      )
+      if (audioTrack) {
+        audioTrack.addEventListener(
+          JitsiMeetJS.events.track.TRACK_AUDIO_LEVEL_CHANGED,
+          audioLevelChanged
+        )
+      }
+      hasPermission = true
+      await deviceList.requery()
+    } else {
+      // Oh dear, we can't get anything to work
     }
-
-    deviceList = await getDeviceList()
-
-    hasPermission = true
   }
 
   const joinGame = () => {
@@ -205,37 +156,7 @@
     if (autoPermit) {
       requestPermissions()
     }
-
-    try {
-      deviceList = await getDeviceList()
-    } catch (err) {
-      console.warn(err)
-    }
-
-    JitsiMeetJS.mediaDevices.addEventListener(
-      JitsiMeetJS.events.mediaDevices.DEVICE_LIST_CHANGED,
-      deviceListChanged
-    )
-
-    return () => {
-      JitsiMeetJS.mediaDevices.removeEventListener(
-        JitsiMeetJS.events.mediaDevices.DEVICE_LIST_CHANGED,
-        deviceListChanged
-      )
-    }
   })
-
-  // Convert `deviceList` to `devices` Object, sorted by source type
-  $: for (const device of deviceList) {
-    devices[device.kind][device.deviceId] = device
-  }
-
-  $: console.log(
-    'deviceList',
-    deviceList,
-    JitsiMeetJS.mediaDevices.getAudioOutputDevice()
-  )
-  $: console.log('cameraSelectedId', cameraSelectedId)
 </script>
 
 <div class="mirror">
@@ -278,34 +199,26 @@
               <img src="/audio-disabled.svg" width="32" alt="Audio Disabled" />
             {/if}
           </button>
+          {#if advancedSettingsSupported}
+            <button class="corner" on:click={toggleAdvancedSettings}><img
+                src="/settings.svg"
+                width="32"
+                alt="Settings" /></button>
+          {/if}
         </div>
       </div>
     </div>
     <button class="main-action" on:click={joinGame}>Join meeting</button>
     {#if advancedSettings}
       <div class="advanced-settings">
-        <Select
-          selected={cameraSelectedId || cameraDefaultId}
-          options={cameraOptions}
-          onSelect={(option) => {
-            cameraSelectedId = option.value
-          }}
-          icon="/video-enabled.svg" />
-        <Select
-          selected={microphoneSelectedId || microphoneDefaultId}
-          options={microphoneOptions}
-          onSelect={(option) => {
-            microphoneSelectedId = option.value
-          }}
-          icon="/audio-enabled.svg" />
-        <Select
-          selected={0}
-          options={[{ value: 0, label: 'Default Speakers' }]}
-          icon="/speaker-icon.svg" />
-      </div>
-    {:else}
-      <div class="minor-action">
-        <button on:click={toggleAdvancedSettings}>Advanced Settings</button>
+        <DeviceSelector
+          selected={selectedDevices}
+          on:selected={({ detail }) => {
+            if (detail.value !== selectedDevices[detail.kind]) {
+              selectedDevices[detail.kind] = detail.value
+              requestPermissions()
+            }
+          }} />
       </div>
     {/if}
   {:else}
@@ -318,7 +231,7 @@
       </div>
       <div class="message">
         {#if requestBlocked}
-          Cam and mic are blocked
+          Cam and mic are blocked <button on:click={handleHelp}>(Need help?)</button>
         {:else}Cam and mic are not active{/if}
       </div>
     </div>
@@ -331,12 +244,12 @@
     <button class="main-action" on:click={requestPermissions}>
       {#if requestBlocked}Try Again{:else}Request Permissions{/if}
     </button>
-    {#if requestBlocked}
-      <div class="minor-action">
-        <button on:click={handleHelp}>Need help?</button>
-      </div>
-    {/if}
   {/if}
+  <div style="border 1px solid black; ">
+    {#each $deviceList as device}
+      <div>{device.label}: {device.deviceId}</div>
+    {/each}
+  </div>
 </div>
 
 <style>
@@ -396,6 +309,13 @@
 
     font-family: Arial, Helvetica, sans-serif;
   }
+  .video-stack .message button {
+    border: none;
+    background: none;
+    text-decoration: underline;
+    cursor: pointer;
+    color: white;
+  }
   .video-stack .button-tray {
     display: flex;
     flex-direction: row;
@@ -425,6 +345,10 @@
   }
   .button-tray button.track-disabled:hover {
     background-color: rgba(255, 115, 115, 0.7);
+  }
+  .button-tray button.corner {
+    position: absolute;
+    right: 10px;
   }
   .video-stack.blocked .message {
     background-color: #822;

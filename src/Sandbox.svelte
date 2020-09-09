@@ -1,8 +1,8 @@
 <script>
   import Connection from './audiovideo/Connection.svelte'
   import Video from './audiovideo/Video.svelte'
-  import Devices from './audiovideo/Devices.svelte'
   import Mirror from './audiovideo/Mirror.svelte'
+  // import DeviceSelector from './audiovideo/DeviceSelector.svelte'
 
   let track
   let videoVisible = false
@@ -16,8 +16,7 @@
 </script>
 
 <Mirror />
-
-<Devices />
+<!-- <DeviceSelector /> -->
 
 <!-- <Connection conferenceIds={['relm-test']} /> -->
 
