@@ -1,10 +1,12 @@
 <script>
   import CameraSetup from './CameraSetup.svelte'
   import HelpContent from './HelpContent.svelte'
-  import ChooseAvatar from './ChooseAvatar.svelte'
+  import Personalize from './Personalize.svelte'
   import { toggleScreenShare } from '../audiovideo/screenshare.js'
 
   export let stage
+
+  let transparent = false
 
   let cameraPanelOpen = false
   let helpPanelOpen = false
@@ -28,14 +30,20 @@
     event.preventDefault()
   }
 
-  function handleClickAvatar(event) {
+  function handleClose(event) {
     avatarPanelOpen = !avatarPanelOpen
     helpPanelOpen = false
     cameraPanelOpen = false
+    transparent = false
     stage.focusOnGame()
     if (event) {
       event.preventDefault()
     }
+  }
+
+  function setTransparent(isTransparent) {
+    console.log('setTransparent', isTransparent)
+    transparent = isTransparent
   }
 
   function handleClickShareScreen(event) {
@@ -51,13 +59,10 @@
     <div class="icon">
       <img src="/av-config-icon.svg" alt="Microphone/Camera Settings" />
     </div>
-    <div class="label">Camera Setup</div>
+    <div class="label">Cam/Mic Setup</div>
   </div>
 
-  <div
-    class="button"
-    class:opaque={avatarPanelOpen}
-    on:click={handleClickAvatar}>
+  <div class="button" class:opaque={avatarPanelOpen} on:click={handleClose}>
     <div class="icon">
       <img src="/select-avatar-icon.svg" alt="Select Avatar" />
     </div>
@@ -86,16 +91,21 @@
     <div class="label">Help Docs</div>
   </div>
 
-  <div class="scrollable-panel" class:show={cameraPanelOpen}>
-    <CameraSetup />
-  </div>
+  <div
+    class="scrollable-panel"
+    class:transparent
+    class:show={cameraPanelOpen || avatarPanelOpen || helpPanelOpen}>
+    {#if cameraPanelOpen}
+      <CameraSetup />
+    {/if}
 
-  <div class="scrollable-panel" class:show={helpPanelOpen}>
-    <HelpContent />
-  </div>
+    {#if avatarPanelOpen}
+      <Personalize {stage} onClose={handleClose} {setTransparent} />
+    {/if}
 
-  <div class="scrollable-panel" class:show={avatarPanelOpen}>
-    <ChooseAvatar {stage} handleClose={handleClickAvatar} />
+    {#if helpPanelOpen}
+      <HelpContent />
+    {/if}
   </div>
 </div>
 
@@ -201,6 +211,9 @@
 
     background: #fff;
     border-radius: 4px;
+  }
+  .scrollable-panel.transparent {
+    background: none !important;
   }
 
   .show {

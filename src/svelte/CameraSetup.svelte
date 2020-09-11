@@ -3,11 +3,9 @@
 </script>
 
 <div class="setup">
-  <h2>Camera Setup</h2>
-  <h3>with microphone</h3>
+  <h2>Cam / Mic Setup</h2>
 
   <Mirror />
-
 </div>
 
 <style>
