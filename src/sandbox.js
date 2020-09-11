@@ -1,5 +1,11 @@
-import App from './sandbox/App.svelte'
+import Sandbox from './Sandbox.svelte'
 
-new App({
-  target: document.body
+JitsiMeetJS.setLogLevel(JitsiMeetJS.logLevels.ERROR)
+
+JitsiMeetJS.init({
+  audioLevelsInterval: 40,
+})
+
+new Sandbox({
+  target: document.body,
 })

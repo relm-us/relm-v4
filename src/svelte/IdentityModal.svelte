@@ -73,6 +73,35 @@
   }
 </script>
 
+<svelte:window on:keydown|capture={handleKeydown} />
+
+<div class="editor" class:hide={!isOpen}>
+  <textarea
+    value={text}
+    on:input={(e) => {
+      text = e.target.value
+    }} />
+
+  <div class="button-panel">
+
+    <div class="button-panel-wrap-left">
+      <button class="button" on:click={clearText}>Clear Editor</button>
+      <button class="button" on:click={copyIdentityToEditor}>
+        Reset Editor
+      </button>
+    </div>
+
+    <div class="button-panel-wrap-right">
+      <button class="button" on:click={handleImport}>Save</button>
+      <button class="button" on:mouseup|capture|stopPropagation={handleClose}>
+        Close
+      </button>
+    </div>
+
+  </div>
+
+</div>
+
 <style>
   .editor {
     display: flex;
@@ -112,32 +141,3 @@
     margin-left: 10px;
   }
 </style>
-
-<svelte:window on:keydown|capture={handleKeydown} />
-
-<div class="editor" class:hide={!isOpen}>
-  <textarea
-    value={text}
-    on:input={(e) => {
-      text = e.target.value
-    }} />
-
-  <div class="button-panel">
-
-    <div class="button-panel-wrap-left">
-      <button class="button" on:click={clearText}>Clear Editor</button>
-      <button class="button" on:click={copyIdentityToEditor}>
-        Reset Editor
-      </button>
-    </div>
-
-    <div class="button-panel-wrap-right">
-      <button class="button" on:click={handleImport}>Save</button>
-      <button class="button" on:mouseup|capture|stopPropagation={handleClose}>
-        Close
-      </button>
-    </div>
-
-  </div>
-
-</div>

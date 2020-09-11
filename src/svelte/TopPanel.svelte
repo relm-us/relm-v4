@@ -43,6 +43,62 @@
   }
 </script>
 
+<div class="panel">
+  <div
+    class="button first"
+    class:opaque={cameraPanelOpen}
+    on:click={toggleShowCameraSetup}>
+    <div class="icon">
+      <img src="/av-config-icon.svg" alt="Microphone/Camera Settings" />
+    </div>
+    <div class="label">Camera Setup</div>
+  </div>
+
+  <div
+    class="button"
+    class:opaque={avatarPanelOpen}
+    on:click={handleClickAvatar}>
+    <div class="icon">
+      <img src="/select-avatar-icon.svg" alt="Select Avatar" />
+    </div>
+    <div class="label">Select Avatar</div>
+  </div>
+
+  <div class="button" on:click={handleClickShareScreen}>
+    <div class="icon">
+      <img src="/screenshare-icon.svg" alt="Share screen" class="medium" />
+    </div>
+    <div class="label">Share Screen</div>
+  </div>
+
+  <div class="button" id="upload-button">
+    <div class="icon">
+      <img src="/upload-icon.svg" alt="Upload asset" class="small" />
+    </div>
+    <div class="label">Upload</div>
+  </div>
+
+  <div
+    class="button last"
+    class:opaque={helpPanelOpen}
+    on:click={toggleShowHelp}>
+    <div class="icon"><img src="/help-icon.svg" alt="Help" /></div>
+    <div class="label">Help Docs</div>
+  </div>
+
+  <div class="scrollable-panel" class:show={cameraPanelOpen}>
+    <CameraSetup />
+  </div>
+
+  <div class="scrollable-panel" class:show={helpPanelOpen}>
+    <HelpContent />
+  </div>
+
+  <div class="scrollable-panel" class:show={avatarPanelOpen}>
+    <ChooseAvatar {stage} handleClose={handleClickAvatar} />
+  </div>
+</div>
+
 <style>
   .panel {
     display: flex;
@@ -151,62 +207,3 @@
     display: block;
   }
 </style>
-
-<div class="panel">
-
-  <!-- <div
-    class="button first"
-    class:opaque={cameraPanelOpen}
-    on:click={toggleShowCameraSetup}>
-    <div class="icon">
-      <img src="/av-config-icon.svg" alt="Microphone/Camera Settings" />
-    </div>
-    <div class="label">Camera Setup</div>
-  </div> -->
-
-  <div
-    class="button first"
-    class:opaque={avatarPanelOpen}
-    on:click={handleClickAvatar}>
-    <div class="icon">
-      <img src="/select-avatar-icon.svg" alt="Select Avatar" />
-    </div>
-    <div class="label">Select Avatar</div>
-  </div>
-
-  <div class="button" on:click={handleClickShareScreen}>
-    <div class="icon">
-      <img src="/screenshare-icon.svg" alt="Share screen" class="medium" />
-    </div>
-    <div class="label">Share Screen</div>
-  </div>
-
-  <div class="button" id="upload-button">
-    <div class="icon">
-      <img src="/upload-icon.svg" alt="Upload asset" class="small" />
-    </div>
-    <div class="label">Upload</div>
-  </div>
-
-  <div
-    class="button last"
-    class:opaque={helpPanelOpen}
-    on:click={toggleShowHelp}>
-    <div class="icon">
-      <img src="/help-icon.svg" alt="Help" />
-    </div>
-    <div class="label">Help Docs</div>
-  </div>
-
-  <div class="scrollable-panel" class:show={cameraPanelOpen}>
-    <CameraSetup />
-  </div>
-
-  <div class="scrollable-panel" class:show={helpPanelOpen}>
-    <HelpContent />
-  </div>
-
-  <div class="scrollable-panel" class:show={avatarPanelOpen}>
-    <ChooseAvatar {stage} handleClose={handleClickAvatar} />
-  </div>
-</div>
