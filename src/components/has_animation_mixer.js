@@ -172,6 +172,8 @@ const HasAnimationMixer = stampit(Component, {
       }
       if (!color) {
         color = this.uvColorShift
+      } else {
+        this.uvColorShift = color
       }
 
       if (!this.uvSkintoneMask) {
@@ -180,6 +182,8 @@ const HasAnimationMixer = stampit(Component, {
       }
       if (!skintone) {
         skintone = this.uvSkintoneShift
+      } else {
+        this.uvSkintoneShift = skintone
       }
 
       this.uvReset()

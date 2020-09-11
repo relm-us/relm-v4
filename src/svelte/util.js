@@ -7,3 +7,13 @@ export function onInterval(callback, milliseconds) {
     clearInterval(interval)
   })
 }
+
+export function hasAncestor(element, ancestor) {
+  if (element === null) {
+    return false
+  } else if (element === ancestor) {
+    return true
+  } else {
+    return hasAncestor(element.parentNode, ancestor)
+  }
+}

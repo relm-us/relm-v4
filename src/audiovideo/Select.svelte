@@ -2,6 +2,7 @@
   import { onMount } from 'svelte'
   import { element } from 'svelte/internal'
   import { avatarOptionFromPlayerId } from '../avatars'
+  import { hasAncestor } from '../svelte/util.js'
   import {
     KEY_RETURN,
     KEY_SPACE,
@@ -25,16 +26,6 @@
   $: optionsWithDefault = options || []
 
   $: selectedOption = optionsWithDefault.find((opt) => opt.value === selected)
-
-  const hasAncestor = (element, ancestor) => {
-    if (element === null) {
-      return false
-    } else if (element === ancestor) {
-      return true
-    } else {
-      return hasAncestor(element.parentNode, ancestor)
-    }
-  }
 
   const togglePopup = () => (popupVisible = !popupVisible)
 

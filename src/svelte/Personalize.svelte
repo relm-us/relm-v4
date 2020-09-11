@@ -1,4 +1,5 @@
 <script>
+  import App from './App.svelte'
   import PersonalizeAvatar from './PersonalizeAvatar.svelte'
   import PersonalizeAvatarColors from './PersonalizeAvatarColors.svelte'
 
@@ -39,7 +40,12 @@
       </button>
     </div>
   {:else if screen === Screens.CUSTOM_COLORS}
-    <PersonalizeAvatarColors {onClose} {onPickColor} {onPickSkintone} />
+    <PersonalizeAvatarColors
+      color={stage.player.uvColorShift}
+      skintone={stage.player.uvSkintoneShift}
+      {onClose}
+      {onPickColor}
+      {onPickSkintone} />
   {/if}
 </div>
 
