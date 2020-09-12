@@ -247,6 +247,9 @@ const HasAnimationMixer = stampit(Component, {
 
     update(delta) {
       const animMeshGoal = this.goals.animationMesh
+      const skintoneGoal = this.goals.skintone
+      const clothtoneGoal = this.goals.clothtone
+
       if (!animMeshGoal.achieved) {
         const meshName = animMeshGoal.get('v')
         if (meshName) {
@@ -259,21 +262,25 @@ const HasAnimationMixer = stampit(Component, {
           )
         }
         animMeshGoal.markAchieved()
+
+        // If mesh changes, invalidate the UV translation
+        skintoneGoal.achieved = false
+        clothtoneGoal.achieved = false
       }
 
-      if (!this.goals.skintone.achieved || !this.goals.clothtone.achieved) {
+      if (!skintoneGoal.achieved || !clothtoneGoal.achieved) {
         this.uvTranslate({
           skintone: {
-            x: this.goals.skintone.get('x'),
-            y: this.goals.skintone.get('y'),
+            x: skintoneGoal.get('x'),
+            y: skintoneGoal.get('y'),
           },
           clothtone: {
-            x: this.goals.clothtone.get('x'),
-            y: this.goals.clothtone.get('y'),
+            x: clothtoneGoal.get('x'),
+            y: clothtoneGoal.get('y'),
           },
         })
-        this.goals.skintone.markAchieved()
-        this.goals.clothtone.markAchieved()
+        skintoneGoal.markAchieved()
+        clothtoneGoal.markAchieved()
       }
 
       const animSpeedGoal = this.goals.animationSpeed

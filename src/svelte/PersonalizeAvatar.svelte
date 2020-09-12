@@ -18,6 +18,9 @@
       v: avatarOptions[index].avatarId,
     })
 
+    player.goals.skintone.update({ x: 0, y: 0 })
+    player.goals.clothtone.update({ x: 0, y: 0 })
+
     onClose()
   }
 
