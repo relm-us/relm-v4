@@ -144,8 +144,11 @@ const HasAnimationMixer = stampit(Component, {
       this.object.add(this.animatedObject)
 
       if (this.skinnedMesh) {
-        const uvAttr = this.skinnedMesh.geometry.getAttribute('uv')
-        this.originalUvAttr = uvAttr.clone()
+        this.originalUvAttr = this.getUv().clone()
+        this.uvColorMask = null
+        this.uvColorShift = { x: 0, y: 0 }
+        this.uvSkintoneMask = null
+        this.uvSkintoneShift = { x: 0, y: 0 }
       }
     },
 
@@ -168,7 +171,6 @@ const HasAnimationMixer = stampit(Component, {
 
       if (!this.uvColorMask) {
         this.uvColorMask = createMask(uvAttr, maskAllowOtherColors)
-        this.uvColorShift = { x: 0, y: 0 }
       }
       if (!color) {
         color = this.uvColorShift
@@ -178,7 +180,6 @@ const HasAnimationMixer = stampit(Component, {
 
       if (!this.uvSkintoneMask) {
         this.uvSkintoneMask = createMask(uvAttr, maskAllowSkinTones)
-        this.uvSkintoneShift = { x: 0, y: 0 }
       }
       if (!skintone) {
         skintone = this.uvSkintoneShift
