@@ -1,5 +1,6 @@
 import stampit from 'stampit'
 
+import { AnimationMixer } from 'three'
 import { SkeletonUtils } from '../lib/SkeletonUtils.js'
 import { Component } from './component.js'
 import { defineGoal } from '../goals/goal.js'
@@ -9,8 +10,6 @@ import {
   maskAllowOtherColors,
   maskAllowSkinTones,
 } from '../uvMapUtils.js'
-
-const { AnimationMixer } = THREE
 
 const maleArmatures = {
   A: 0,

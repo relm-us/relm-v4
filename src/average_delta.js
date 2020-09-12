@@ -1,4 +1,4 @@
-const { MathUtils } = THREE
+import { MathUtils } from 'three'
 
 var lastTimeMsec = null
 
@@ -13,7 +13,7 @@ var bumpiness = 0
 var fastAvgBumpiness = 0.012
 var fastAvgBumpinessFrames = 20
 
-var slowAvgBumpiness = 0.010
+var slowAvgBumpiness = 0.01
 var slowAvgBumpinessFrames = 24
 
 var bumpinessDeviationTrigger = 1.02
@@ -26,17 +26,26 @@ function calculateAverageDelta(nowMsec) {
   var delta = deltaMsec / 1000
 
   // get a smoother delta by averaging a # of frame deltas (numberOfFramesToAverage)
-  avgDelta = (avgDelta * numberOfFramesToAverage + delta) / (numberOfFramesToAverage + 1)
+  avgDelta =
+    (avgDelta * numberOfFramesToAverage + delta) / (numberOfFramesToAverage + 1)
 
   // detect bumpiness levels in case the scene complexity changes rapidly
   bumpiness = Math.abs(delta - avgDelta)
-  fastAvgBumpiness = (fastAvgBumpiness * fastAvgBumpinessFrames + bumpiness) / (fastAvgBumpinessFrames + 1)
-  slowAvgBumpiness = (slowAvgBumpiness * slowAvgBumpinessFrames + bumpiness) / (slowAvgBumpinessFrames + 1)
+  fastAvgBumpiness =
+    (fastAvgBumpiness * fastAvgBumpinessFrames + bumpiness) /
+    (fastAvgBumpinessFrames + 1)
+  slowAvgBumpiness =
+    (slowAvgBumpiness * slowAvgBumpinessFrames + bumpiness) /
+    (slowAvgBumpinessFrames + 1)
 
   if (fastAvgBumpiness > slowAvgBumpiness * bumpinessDeviationTrigger) {
     numberOfFramesToAverage = 0
   } else {
-    numberOfFramesToAverage = MathUtils.clamp(numberOfFramesToAverage + 1, 1, numberOfFramesToAverageMax)
+    numberOfFramesToAverage = MathUtils.clamp(
+      numberOfFramesToAverage + 1,
+      1,
+      numberOfFramesToAverageMax
+    )
   }
 
   return avgDelta

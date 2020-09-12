@@ -1,5 +1,6 @@
 import stampit from 'stampit'
 import EventEmittable from '@stamp/eventemittable'
+import { Vector3, Matrix4, Box3, Frustum } from 'three'
 
 import { calculateAverageDelta } from './average_delta.js'
 
@@ -50,8 +51,8 @@ const Stage = stampit(
       this.entities = {}
       this.entitiesOnStage = []
       this.selection = Selection({ stage: this })
-      this.projScreenMatrix = new THREE.Matrix4()
-      this.frustum = new THREE.Frustum()
+      this.projScreenMatrix = new Matrix4()
+      this.frustum = new Frustum()
       this.updateFns = new Map()
       this.postrenderFns = new Map()
       this.gridSnap = null
@@ -208,7 +209,7 @@ const Stage = stampit(
         )
         this.frustum.setFromProjectionMatrix(this.projScreenMatrix)
         this.entitiesOnStage.length = 0
-        const bbox = new THREE.Box3()
+        const bbox = new Box3()
         for (let uuid in this.entities) {
           const entity = this.entities[uuid]
           // Record entities within camera view
@@ -253,7 +254,7 @@ const Stage = stampit(
         this.editorMode = true
         localStorage.setItem('editorMode', true)
         this.forEachEntityOfType('camcon', (entity) => {
-          entity.offsetFar = new THREE.Vector3().copy(config.CAMERA_EDITOR)
+          entity.offsetFar = new Vector3().copy(config.CAMERA_EDITOR)
         })
       },
 
@@ -261,7 +262,7 @@ const Stage = stampit(
         this.editorMode = false
         localStorage.setItem('editorMode', false)
         this.forEachEntityOfType('camcon', (entity) => {
-          entity.offsetFar = new THREE.Vector3().copy(config.CAMERA_FAR)
+          entity.offsetFar = new Vector3().copy(config.CAMERA_FAR)
         })
       },
 

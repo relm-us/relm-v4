@@ -1,16 +1,19 @@
 import stampit from 'stampit'
+import { Vector3 } from 'three'
 
 import { Component } from './component.js'
 import { Label } from '../label.js'
 
 const HasOffscreenIndicator = stampit(Component, {
   init() {
-    this.onScreenVector = new THREE.Vector3()
+    this.onScreenVector = new Vector3()
     this.offscreenIndicatorHidden = false
-    this.offscreenIndicatorText = ""
+    this.offscreenIndicatorText = ''
     this.offscreenIndicatorLabel = new Label()
-    
-    this.offscreenIndicatorLabel.domElement.classList.add('offscreen-indicator-label')
+
+    this.offscreenIndicatorLabel.domElement.classList.add(
+      'offscreen-indicator-label'
+    )
 
     this.on('visible', this.showOffscreenIndicator.bind(this))
     this.on('invisible', this.hideOffscreenIndicator.bind(this))
@@ -19,13 +22,15 @@ const HasOffscreenIndicator = stampit(Component, {
   methods: {
     isOnScreen() {
       this.onScreenVector.copy(this.object.position)
-      this.onScreenVector.project( this.stage.camera )
+      this.onScreenVector.project(this.stage.camera)
       return (
-        this.onScreenVector.x >= -1 && this.onScreenVector.x <= 1 &&
-        this.onScreenVector.y >= -1 && this.onScreenVector.y <= 1
+        this.onScreenVector.x >= -1 &&
+        this.onScreenVector.x <= 1 &&
+        this.onScreenVector.y >= -1 &&
+        this.onScreenVector.y <= 1
       )
     },
-    
+
     hideOffscreenIndicator() {
       this.offscreenIndicatorHidden = true
     },
@@ -43,12 +48,12 @@ const HasOffscreenIndicator = stampit(Component, {
         const bottom = 30
         const width = this.stage.width - left * 2
         const height = this.stage.height - bottom
-        const x = (this.onScreenVector.x + 1) * width / 2 + left
-        const y = -(this.onScreenVector.y - 1) * height / 2 - bottom
-        
+        const x = ((this.onScreenVector.x + 1) * width) / 2 + left
+        const y = (-(this.onScreenVector.y - 1) * height) / 2 - bottom
+
         const labelText = this.goals.label.get('text')
-        
-        this.offscreenIndicatorLabel.vector.copy({x, y, z: 0})
+
+        this.offscreenIndicatorLabel.vector.copy({ x, y, z: 0 })
         if (this.offscreenIndicatorText !== labelText) {
           this.offscreenIndicatorLabel.setText(labelText)
           this.offscreenIndicatorText = labelText
@@ -60,8 +65,8 @@ const HasOffscreenIndicator = stampit(Component, {
 
     teardown() {
       this.offscreenIndicatorLabel.destroyDomElement()
-    }
-  }
+    },
+  },
 })
 
 export { HasOffscreenIndicator }

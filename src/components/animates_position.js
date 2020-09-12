@@ -1,4 +1,5 @@
 import stampit from 'stampit'
+import { Vector3 } from 'three'
 
 import { Component } from './component.js'
 import { Equality, defineGoal } from '../goals/goal.js'
@@ -7,11 +8,11 @@ const AnimatesPosition = stampit(Component, {
   deepStatics: {
     goalDefinitions: {
       position: defineGoal('p', { x: 0, y: 0, z: 0 }, Equality.Distance(0.01)),
-    }
+    },
   },
-  
+
   init() {
-    this._position = new THREE.Vector3()
+    this._position = new Vector3()
   },
 
   methods: {
@@ -36,11 +37,13 @@ const AnimatesPosition = stampit(Component, {
             // safeguard because NaN will cause whole render process to fail
             throw Error('Position has NaN value')
           }
-          positionGoal.markAchievedIfEqual(new Map(Object.entries(this.object.position)))
+          positionGoal.markAchievedIfEqual(
+            new Map(Object.entries(this.object.position))
+          )
         }
       }
-    }
-  }
+    },
+  },
 })
 
 export { AnimatesPosition }

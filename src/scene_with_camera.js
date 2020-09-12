@@ -1,6 +1,5 @@
 import stampit from 'stampit'
-
-const { PerspectiveCamera, MathUtils, Vector3 } = THREE
+import { PerspectiveCamera, MathUtils } from 'three'
 
 const CAMERA_DEFAULT_ISOMETRY = 1.25 // a number between 0.25 - 16.0
 const CAMERA_DEFAULT_PERSPECTIVE_RATIO = 11.25 / CAMERA_DEFAULT_ISOMETRY

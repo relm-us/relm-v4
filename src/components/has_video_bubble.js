@@ -1,12 +1,11 @@
 import stampit from 'stampit'
 import EventEmittable from '@stamp/eventemittable'
+import { Vector3 } from 'three'
 
 import { Component } from './component.js'
 import { CanProject } from '../label.js'
 import { defineGoal } from '../goals/goal.js'
 import { setRef } from '../dom_reference.js'
-
-const { Vector3 } = THREE
 
 const WithVideoBubble = stampit(EventEmittable, {
   init({ body, diameter }) {

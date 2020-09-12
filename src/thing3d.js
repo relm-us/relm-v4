@@ -1,4 +1,5 @@
 import stampit from 'stampit'
+import { Vector3, Box3 } from 'three'
 
 import { EntityShared } from './entity_shared.js'
 import { Component } from './components/component.js'
@@ -21,8 +22,8 @@ import { config } from './config.js'
  * @param {number} largestSide The size of the desired "largest side" after scaling
  */
 const getScaleRatio = (object3d, largestSide) => {
-  const bbox = new THREE.Box3().setFromObject(object3d)
-  let size = new THREE.Vector3()
+  const bbox = new Box3().setFromObject(object3d)
+  let size = new Vector3()
   bbox.getSize(size)
   let ratio
   if (size.x > size.y && size.x > size.z) {

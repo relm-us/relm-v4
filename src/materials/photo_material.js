@@ -1,3 +1,9 @@
+import {
+  ShaderMaterial,
+  // Constants
+  NormalBlending,
+  DoubleSide,
+} from 'three'
 
 /**
  * Shader code from https://bl.ocks.org/duhaime/c8375f1c313587ac629e04e0253481f9
@@ -22,17 +28,17 @@ const fragmentShader = [
 
 // See https://threejs.org/docs/#api/en/materials/ShaderMaterial
 
-const PhotoMaterial = ({ texture, blending = THREE.NormalBlending }) => {
-  return new THREE.ShaderMaterial({
+const PhotoMaterial = ({ texture, blending = NormalBlending }) => {
+  return new ShaderMaterial({
     uniforms: {
       texture: {
         type: 't',
-        value: texture
-      }
+        value: texture,
+      },
     },
     vertexShader,
     fragmentShader,
-    side: THREE.DoubleSide,
+    side: DoubleSide,
     blending,
     transparent: true,
   })

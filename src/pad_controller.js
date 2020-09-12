@@ -1,21 +1,19 @@
 import stampit from 'stampit'
-// import EventEmittable from '@stamp/eventemittable'
+import { Vector3 } from 'three'
 
 import { Entity } from './entity.js'
 import { Component } from './components/component.js'
-
-const { Vector3 } = THREE
 
 const PadDirection = stampit(Component, {
   props: {
     /**
      * The Entity that this KeyboardController controls.
-     * 
+     *
      * @type {Entity}
      */
-    target: null
+    target: null,
   },
-  
+
   init({ target }) {
     if (!target) {
       throw new Error('PadController requires a target to control')
@@ -37,13 +35,10 @@ const PadDirection = stampit(Component, {
       if (this.target.addPosition) {
         this.target.addPosition(this.padDirection)
       }
-    }
-  }
+    },
+  },
 })
 
-const PadController = stampit(
-  Entity,
-  PadDirection
-).setType('padcon')
+const PadController = stampit(Entity, PadDirection).setType('padcon')
 
 export { PadController }

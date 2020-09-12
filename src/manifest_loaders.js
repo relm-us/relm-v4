@@ -1,3 +1,4 @@
+import { TextureLoader } from 'three'
 import { MeshoptGLTFLoader } from './lib/MeshoptGLTFLoader.js'
 import { GLTFLoader } from './lib/GLTFLoader.js'
 import { MeshoptDecoder } from './lib/meshopt_decoder.js'
@@ -8,28 +9,24 @@ const regularGLTFLoader = new GLTFLoader()
 // Loader for 'Compressed' GLTFs and GLBs
 // https://github.com/KhronosGroup/glTF/pull/1702
 const meshoptGLTFLoader = new MeshoptGLTFLoader()
-meshoptGLTFLoader.setMeshoptDecoder(MeshoptDecoder);
+meshoptGLTFLoader.setMeshoptDecoder(MeshoptDecoder)
 
 // Loader for Textures
-const textureLoader = new THREE.TextureLoader()
+const textureLoader = new TextureLoader()
 
 const manifestMeta = {
-  'TextureLoader': [
+  TextureLoader: [
     ['marble', 'marble-tile.jpg'],
     ['sparkle', 'sparkle_blue.png'],
   ],
-  'RegularGLTFLoader': [
-    ['interact', 'interact-diamond.glb'],
-  ],
-  'MeshoptGLTFLoader': [
-    ['people', 'people-packed.glb']
-  ]
+  RegularGLTFLoader: [['interact', 'interact-diamond.glb']],
+  MeshoptGLTFLoader: [['people', 'people-packed.glb']],
 }
 
 const loaderNameLookup = {
-  'TextureLoader': textureLoader,
-  'RegularGLTFLoader': regularGLTFLoader,
-  'MeshoptGLTFLoader': meshoptGLTFLoader,
+  TextureLoader: textureLoader,
+  RegularGLTFLoader: regularGLTFLoader,
+  MeshoptGLTFLoader: meshoptGLTFLoader,
 }
 
 const addManifestTo = (resourceLoader) => {

@@ -1,3 +1,5 @@
+import { Color } from 'three'
+
 /**
  * A simple way to mark some function parameters as required
  *
@@ -98,7 +100,7 @@ function mapToObject(map) {
 
 function randomPastelColor() {
   const hue = Math.floor(Math.random() * 360)
-  const color = new THREE.Color(`hsl(${hue}, 100%, 58%)`)
+  const color = new Color(`hsl(${hue}, 100%, 58%)`)
   return {
     r: color.r,
     g: color.g,

@@ -1,3 +1,4 @@
+import * as THREE from 'three'
 import { CSS3DRenderer, CSS3DObject } from './CSS3DRenderer.js'
 
 const HtmlMixer = {
@@ -11,7 +12,9 @@ const HtmlMixer = {
     // update functions
     var updateFuncs = []
     this.update = () => {
-      for (const fn of updateFuncs) { fn() }
+      for (const fn of updateFuncs) {
+        fn()
+      }
     }
 
     // build cssFactor to workaround bug due to no display
@@ -31,7 +34,12 @@ const HtmlMixer = {
     //    Handle Camera
     /// ///////////////////////////////////////////////////////////////////////////////
 
-    var cssCamera = new THREE.PerspectiveCamera(camera.fov, camera.aspect, camera.near * cssFactor, camera.far * cssFactor)
+    var cssCamera = new THREE.PerspectiveCamera(
+      camera.fov,
+      camera.aspect,
+      camera.near * cssFactor,
+      camera.far * cssFactor
+    )
     this.cssCamera = cssCamera
     cssCamera.zoom = camera.zoom
 
@@ -69,15 +77,17 @@ const HtmlMixer = {
     /// ///////////////////////////////////////////////////////////////////////////////
 
     this.autoUpdateObjects = true
-    updateFuncs.push(function () {
-      if (this.autoUpdateObjects !== true) return
-      cssScene.traverse(function (cssObject) {
-        if (cssObject instanceof THREE.Scene === true) return
-        var mixerPlane = cssObject.userData.mixerPlane
-        if (mixerPlane === undefined) return
-        mixerPlane.update()
-      })
-    }.bind(this))
+    updateFuncs.push(
+      function () {
+        if (this.autoUpdateObjects !== true) return
+        cssScene.traverse(function (cssObject) {
+          if (cssObject instanceof THREE.Scene === true) return
+          var mixerPlane = cssObject.userData.mixerPlane
+          if (mixerPlane === undefined) return
+          mixerPlane.update()
+        })
+      }.bind(this)
+    )
 
     /// ///////////////////////////////////////////////////////////////////////////////
     //    Render cssScene
@@ -118,7 +128,7 @@ const HtmlMixer = {
         opacity: 0,
         color: new THREE.Color('black'),
         blending: THREE.NoBlending,
-        side: THREE.DoubleSide
+        side: THREE.DoubleSide,
       })
       var geometry = new THREE.PlaneGeometry(opts.planeW, opts.planeH)
       object3d = new THREE.Mesh(geometry, planeMaterial)
@@ -147,7 +157,7 @@ const HtmlMixer = {
       // reset the size of the domElement
       setDomElementSize()
     }
-    function setDomElementSize () {
+    function setDomElementSize() {
       domElement.style.width = elementWidth + 'px'
       domElement.style.height = elementHeight + 'px'
     }
@@ -156,7 +166,8 @@ const HtmlMixer = {
     // create a CSS3DObject to display element
     var cssObject = new CSS3DObject(domElement)
     this.cssObject = cssObject
-    cssObject.scale.set(1, 1, 1)
+    cssObject.scale
+      .set(1, 1, 1)
       .multiplyScalar(mixerContext.cssFactor / (elementWidth / planeW))
 
     // hook cssObject to mixerPlane
@@ -185,14 +196,15 @@ const HtmlMixer = {
       cssObject.quaternion.copy(quaternion)
 
       // handle position
-      cssObject.position
-        .copy(position)
-        .multiplyScalar(mixerContext.cssFactor)
+      cssObject.position.copy(position).multiplyScalar(mixerContext.cssFactor)
       // handle scale
-      var scaleFactor = elementWidth / (object3d.geometry.parameters.width * scale.x)
-      cssObject.scale.set(1, 1, 1).multiplyScalar(mixerContext.cssFactor / scaleFactor)
+      var scaleFactor =
+        elementWidth / (object3d.geometry.parameters.width * scale.x)
+      cssObject.scale
+        .set(1, 1, 1)
+        .multiplyScalar(mixerContext.cssFactor / scaleFactor)
     })
-  }
+  },
 }
 
 const HtmlMixerHelpers = {
@@ -242,7 +254,9 @@ const HtmlMixerHelpers = {
     var domElement = mixerPlane.domElement
     // handle IOS special case
     var onIos = navigator.platform.match(/iP(hone|od|ad)/) !== null
-    if (onIos) { domElement = mixerPlane.domElement.firstChild }
+    if (onIos) {
+      domElement = mixerPlane.domElement.firstChild
+    }
 
     // sanity check
     console.assert(domElement instanceof HTMLIFrameElement)
@@ -275,7 +289,7 @@ const HtmlMixerHelpers = {
     css3dElement.style.top = '0px'
     css3dElement.style.width = '100%'
     css3dElement.style.height = '100%'
-	css3dElement.id = 'csscanvas'
+    css3dElement.id = 'csscanvas'
     parentNode.appendChild(css3dElement)
 
     // set up rendererWebgl
@@ -286,7 +300,7 @@ const HtmlMixerHelpers = {
     webglCanvas.style.height = '100%'
     webglCanvas.style.pointerEvents = 'none'
     css3dElement.appendChild(webglCanvas)
-  }
+  },
 }
 
 export { HtmlMixer, HtmlMixerHelpers }

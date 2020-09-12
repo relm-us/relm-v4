@@ -1,4 +1,15 @@
 import stampit from 'stampit'
+import {
+  Vector3,
+  Object3D,
+  Color,
+  Mesh,
+  MeshBasicMaterial,
+  SphereBufferGeometry,
+  BoxBufferGeometry,
+  BoxHelper,
+  MathUtils,
+} from 'three'
 
 import { ServerDate } from './lib/ServerDate.js'
 
@@ -36,7 +47,7 @@ const HasMaxSpeed = stampit(Component, {
         throw Error('speed is undefined')
       }
       const alpha = (speed * delta) / distance
-      return THREE.MathUtils.clamp(alpha, 0.00001, 0.5)
+      return MathUtils.clamp(alpha, 0.00001, 0.5)
     },
   },
 })
@@ -46,8 +57,8 @@ const FOLLOW_TARGET_SUFFICIENT_TIME = 5000.0
 
 const FollowsTarget2 = stampit(Component, {
   init() {
-    this._willVector = new THREE.Vector3()
-    this._forceVector = new THREE.Vector3()
+    this._willVector = new Vector3()
+    this._forceVector = new Vector3()
     this._followsTargetDebug = false
     this.autonomous = true
 
@@ -75,33 +86,33 @@ const FollowsTarget2 = stampit(Component, {
       }
 
       if (this._followsTargetDebug) {
-        const sphere1 = new THREE.SphereBufferGeometry(10)
-        this._source = new THREE.Mesh(
+        const sphere1 = new SphereBufferGeometry(10)
+        this._source = new Mesh(
           sphere1,
-          new THREE.MeshBasicMaterial({ color: 0xff7700 })
+          new MeshBasicMaterial({ color: 0xff7700 })
         )
         this.stage.scene.add(this._source)
 
-        this._sourceBox = new THREE.BoxHelper(this._source, 0xffffff)
+        this._sourceBox = new BoxHelper(this._source, 0xffffff)
         this.object.add(this._sourceBox)
 
-        const sphere2 = new THREE.SphereBufferGeometry(10)
-        this._target = new THREE.Mesh(
+        const sphere2 = new SphereBufferGeometry(10)
+        this._target = new Mesh(
           sphere2,
-          new THREE.MeshBasicMaterial({ color: 0x0000aa })
+          new MeshBasicMaterial({ color: 0x0000aa })
         )
         this.stage.scene.add(this._target)
 
-        const box1 = new THREE.BoxBufferGeometry(10, 10, 10)
-        this._goalPos = new THREE.Mesh(
+        const box1 = new BoxBufferGeometry(10, 10, 10)
+        this._goalPos = new Mesh(
           box1,
-          new THREE.MeshBasicMaterial({ color: 0xff0000 })
+          new MeshBasicMaterial({ color: 0xff0000 })
         )
         this.stage.scene.add(this._goalPos)
       } else {
-        this._source = new THREE.Object3D()
-        this._target = new THREE.Object3D()
-        this._goalPos = new THREE.Object3D()
+        this._source = new Object3D()
+        this._target = new Object3D()
+        this._goalPos = new Object3D()
       }
     },
 
@@ -143,7 +154,7 @@ const FollowsTarget2 = stampit(Component, {
       let addedForce = false
       if (this._forceVector.length() > 0.1) {
         addedForce = true
-        const pos = new THREE.Vector3()
+        const pos = new Vector3()
         pos.copy(this._target.position)
         pos.add(this._forceVector)
         this._target.position.lerp(pos, 0.2)
@@ -228,7 +239,7 @@ const Player = stampit(
       update(_delta) {
         const colorGoal = this.goals.color
         if (!colorGoal.achieved) {
-          const color = new THREE.Color(
+          const color = new Color(
             colorGoal.get('r'),
             colorGoal.get('g'),
             colorGoal.get('b')

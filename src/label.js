@@ -1,8 +1,9 @@
 import stampit from 'stampit'
+import { Vector3 } from 'three'
 
 const CanProject = stampit({
   init() {
-    this.vector = new THREE.Vector3()
+    this.vector = new Vector3()
     this.domElement = null
   },
 

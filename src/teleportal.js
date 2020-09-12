@@ -1,4 +1,13 @@
 import stampit from 'stampit'
+import {
+  Vector3,
+  Color,
+  Mesh,
+  MeshStandardMaterial,
+  CircleGeometry,
+  // Constants
+  DoubleSide,
+} from 'three'
 
 import { EntityShared } from './entity_shared.js'
 import { Component } from './components/component.js'
@@ -10,20 +19,18 @@ import { ReceivesPointer } from './receives_pointer.js'
 import { req } from './util.js'
 import { defineGoal } from './goals/goal.js'
 
-const { Mesh, MeshStandardMaterial, DoubleSide, Color } = THREE
-
 const PORTAL_COLOR = new Color(0x444444)
 const PORTAL_RADIUS = 50
 
-
-function teleportToOtherRelm({ relm, x = null, y = null, z = null}) {
+function teleportToOtherRelm({ relm, x = null, y = null, z = null }) {
   let url = window.location.origin + '/' + relm
   if (x !== null && z !== null) {
     url += `?x=${parseFloat(x)}&z=${parseFloat(z)}`
   }
-  setTimeout(() => { window.location = url }, 200)
+  setTimeout(() => {
+    window.location = url
+  }, 200)
 }
-
 
 const Teleports = stampit(Component, {
   deepStatics: {
@@ -33,8 +40,8 @@ const Teleports = stampit(Component, {
         dx: 0.0,
         dy: 0.0,
         dz: 0.0,
-      })
-    }
+      }),
+    },
   },
 
   init({ target }) {
@@ -49,29 +56,33 @@ const Teleports = stampit(Component, {
       if (this.mesh) {
         this.object.remove(this.mesh)
       }
-      const geometry = new THREE.CircleGeometry(PORTAL_RADIUS, 32)
-      const material = this.material = new MeshStandardMaterial({
+      const geometry = new CircleGeometry(PORTAL_RADIUS, 32)
+      const material = (this.material = new MeshStandardMaterial({
         color: PORTAL_COLOR,
         side: DoubleSide,
-      })
+      }))
       this.mesh = new Mesh(geometry, material)
       this.mesh.position.y = 1
       this.mesh.rotation.x = -Math.PI * 0.5
-      
+
       this.object.add(this.mesh)
-      
+
       this.emit('mesh-updated')
     },
-    
+
     setTarget(target) {
       this.target = target
-      
+
       if (target) {
-        if (!target.setOpacity) { throw Error('Teleportal target must have .setOpacity') }
-        if (!target.addPosition) { throw Error('Teleportal target must have .addPosition') }
+        if (!target.setOpacity) {
+          throw Error('Teleportal target must have .setOpacity')
+        }
+        if (!target.addPosition) {
+          throw Error('Teleportal target must have .addPosition')
+        }
       }
     },
-    
+
     setActive() {
       this.active = true
     },
@@ -79,7 +90,7 @@ const Teleports = stampit(Component, {
     setInactive() {
       this.active = false
     },
-    
+
     _isLocalTeleport() {
       return !this.goals.portal.get('relm')
     },
@@ -92,29 +103,34 @@ const Teleports = stampit(Component, {
       if (!this.target && this.stage.player) {
         this.setTarget(this.stage.player)
       }
-      
+
       const portalGoal = this.goals.portal
       if (!portalGoal.achieved) {
         this._createTeleportalMesh()
         portalGoal.markAchieved()
       }
-      
+
       // Skip processing if we don't have a target to which we can calculate distance
       if (!this.target) {
         return
       }
-      
+
       const radius = PORTAL_RADIUS * this.goals.scale.get('x')
-      const distance = this.object.position.distanceTo(this.target.object.position)
+      const distance = this.object.position.distanceTo(
+        this.target.object.position
+      )
       if (distance < 15) {
         if (this.active) {
           if (this._isLocalTeleport()) {
             this.target.setOpacity(1.0)
-            this.target.goals.position.update({
-              x: portalGoal.get('dx'),
-              y: portalGoal.get('dy'),
-              z: portalGoal.get('dz'),
-            }, 0)
+            this.target.goals.position.update(
+              {
+                x: portalGoal.get('dx'),
+                y: portalGoal.get('dy'),
+                z: portalGoal.get('dz'),
+              },
+              0
+            )
           } else {
             this.setInactive()
             teleportToOtherRelm({
@@ -128,11 +144,11 @@ const Teleports = stampit(Component, {
       } else if (distance < radius) {
         if (this.active) {
           this.target.setOpacity(distance / radius)
-          
-          const vectorToward = new THREE.Vector3()
+
+          const vectorToward = new Vector3()
           vectorToward.copy(this.object.position)
           vectorToward.sub(this.target.object.position)
-          
+
           this.target.addPosition(vectorToward)
         }
       } else if (distance < radius + 20) {
@@ -140,8 +156,8 @@ const Teleports = stampit(Component, {
         this.target.setOpacity(1.0)
         this.setActive()
       }
-    }
-  }
+    },
+  },
 })
 
 const Teleportal = stampit(
@@ -154,7 +170,4 @@ const Teleportal = stampit(
   HasEmissiveMaterial
 ).setType('teleportal')
 
-export {
-  Teleportal,
-  teleportToOtherRelm,
-}
+export { Teleportal, teleportToOtherRelm }

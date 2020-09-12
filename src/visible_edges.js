@@ -1,4 +1,5 @@
 import stampit from 'stampit'
+import { EdgesGeometry, LineSegments, LineBasicMaterial } from 'three'
 
 const VisibleEdges = stampit({
   init({ object, color = 0xffffff, enabled = false }) {
@@ -22,7 +23,7 @@ const VisibleEdges = stampit({
       this.enabled = false
       this._removeLineSegments()
     },
-    
+
     rebuild() {
       if (this.enabled) {
         this._createEdges()
@@ -38,7 +39,7 @@ const VisibleEdges = stampit({
     },
 
     _removeLineSegments() {
-      this.lines.forEach(line => {
+      this.lines.forEach((line) => {
         if (line.parent) {
           line.parent.remove(line)
         }
@@ -47,7 +48,7 @@ const VisibleEdges = stampit({
 
     _findMeshes() {
       const meshes = []
-      this.getObject().traverse(o => {
+      this.getObject().traverse((o) => {
         if (o.isMesh) {
           meshes.push(o)
         }
@@ -57,21 +58,24 @@ const VisibleEdges = stampit({
 
     _createEdges() {
       this._removeLineSegments()
-      
+
       const meshes = this._findMeshes()
       for (const mesh of meshes) {
-        const geometry = new THREE.EdgesGeometry(mesh.geometry)
-        const material = new THREE.LineBasicMaterial({ color: this._color})
-        const line = new THREE.LineSegments(geometry, material)
-        
+        const geometry = new EdgesGeometry(mesh.geometry)
+        const material = new LineBasicMaterial({ color: this._color })
+        const line = new LineSegments(geometry, material)
+
         mesh.add(line)
         this.lines.push(line)
       }
       if (meshes.length === 0) {
-        console.warn("Can't show VisibleEdges of object, no geometry found", object)
+        console.warn(
+          "Can't show VisibleEdges of object, no geometry found",
+          object
+        )
       }
-    }
-  }
+    },
+  },
 })
 
 export { VisibleEdges }

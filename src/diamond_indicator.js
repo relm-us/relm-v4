@@ -1,4 +1,11 @@
 import stampit from 'stampit'
+import {
+  Mesh,
+  SphereGeometry,
+  MeshStandardMaterial,
+  CircleBufferGeometry,
+  AdditiveBlending,
+} from 'three'
 
 import { EntityShared } from './entity_shared.js'
 import { Component } from './components/component.js'
@@ -11,15 +18,15 @@ import { HasLabel } from './components/has_label.js'
 import { HasThoughtBubble } from './components/has_thought_bubble.js'
 import { defineGoal } from './goals/goal.js'
 
-const DIAMOND_LIGHT_COLOR = 0xFFF5D9
+const DIAMOND_LIGHT_COLOR = 0xfff5d9
 
 const HasGlowingDiamond = stampit(Component, {
   deepStatics: {
     goalDefinitions: {
-      diamond: defineGoal('di', { open: true, text: null })
-    }
+      diamond: defineGoal('di', { open: true, text: null }),
+    },
   },
-  
+
   init() {
     this._lightCircleLayer = Math.floor(Math.random() * 100)
     this.on('position-changed', () => {
@@ -32,57 +39,58 @@ const HasGlowingDiamond = stampit(Component, {
       this._createDiamond()
       this._createGlow()
       this._createLightCircle()
-      
+
       this.emit('mesh-updated')
     },
-    
+
     _createDiamond() {
       const gltf = this.resources.get('interact')
-      this.material = new THREE.MeshStandardMaterial({
-        color: 0xFF6600,
-        transparent: true
+      this.material = new MeshStandardMaterial({
+        color: 0xff6600,
+        transparent: true,
       })
       this.geometry = gltf.scene.getObjectByName('Diamond').geometry
 
-      this.diamond = new THREE.Mesh(this.geometry, this.material)
+      this.diamond = new Mesh(this.geometry, this.material)
       this.diamond.scale.set(8, 8, 8)
       this.object.add(this.diamond)
     },
 
     _createGlow() {
       const material = GlowMaterial
-      const geometry = new THREE.SphereGeometry(2, 3, 2)
+      const geometry = new SphereGeometry(2, 3, 2)
 
-      this.glow = new THREE.Mesh(geometry, material)
+      this.glow = new Mesh(geometry, material)
       this.glow.scale.set(8, 24, 8)
       this.object.add(this.glow)
     },
-    
+
     // Fake light is a lot faster to render than real light
     _createLightCircle(height) {
-      if (this._lightCircle) { this.object.remove(this._lightCircle) }
-      
+      if (this._lightCircle) {
+        this.object.remove(this._lightCircle)
+      }
+
       const radius = height / 4
-      
-      const geometry = new THREE.CircleBufferGeometry(radius, 48)
-      
+
+      const geometry = new CircleBufferGeometry(radius, 48)
+
       if (!this._lightCircleMaterial) {
-        this._lightCircleMaterial = new THREE.MeshStandardMaterial({
+        this._lightCircleMaterial = new MeshStandardMaterial({
           color: DIAMOND_LIGHT_COLOR,
           transparent: true,
-          blending: THREE.AdditiveBlending,
+          blending: AdditiveBlending,
         })
       }
-      
-      this._lightCircle = new THREE.Mesh(geometry, this._lightCircleMaterial)
+
+      this._lightCircle = new Mesh(geometry, this._lightCircleMaterial)
       this._lightCircle.renderOrder = this._lightCircleLayer
-      this._lightCircle.rotation.x = -Math.PI/2
+      this._lightCircle.rotation.x = -Math.PI / 2
       this._lightCircle.position.y = -height + this._lightCircleLayer / 100
 
       this.object.add(this._lightCircle)
-      
     },
-    
+
     _setBoxStyles() {
       // Disable circle form of ThoughtBubble
       this.thoughtBubble.enableCircle = false
@@ -94,20 +102,20 @@ const HasGlowingDiamond = stampit(Component, {
     setMessage(text) {
       this.goals.diamond.set('text', text)
     },
-    
+
     onClick() {
       this.goals.diamond.update({ open: !this.goals.diamond.get('open') })
     },
-    
+
     setup() {
       this._createAll()
-      
+
       this.orbit = 0
     },
 
     update(delta) {
       this.orbit += Math.PI * delta
-      this.diamond.rotation.y -= Math.PI/2 * delta
+      this.diamond.rotation.y -= (Math.PI / 2) * delta
       this.diamond.scale.x = 8.0 + Math.sin(this.orbit) * 3
       this.diamond.scale.y = 12.0 + Math.sin(this.orbit) * 3
 
@@ -122,7 +130,7 @@ const HasGlowingDiamond = stampit(Component, {
         diamondGoal.markAchieved()
       }
     },
-  }
+  },
 })
 
 const DiamondIndicator = stampit(
@@ -139,7 +147,7 @@ const DiamondIndicator = stampit(
       this.thoughtBubbleOffset = { x: 0, y: 50 }
       this.thoughtBubble.enableCloseIcon = false
       this.thoughtBubble.enableActionIcon = false
-    }
+    },
   })
 ).setType('diamond')
 

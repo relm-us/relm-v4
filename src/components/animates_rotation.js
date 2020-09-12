@@ -1,4 +1,5 @@
 import stampit from 'stampit'
+import { Euler, Quaternion } from 'three'
 
 import { Component } from './component.js'
 import { defineGoal } from '../goals/goal.js'
@@ -6,18 +7,18 @@ import { defineGoal } from '../goals/goal.js'
 const AnimatesRotation = stampit(Component, {
   deepStatics: {
     goalDefinitions: {
-      rotation: defineGoal('r', { x: 0, y: 0, z: 0 })
-    }
+      rotation: defineGoal('r', { x: 0, y: 0, z: 0 }),
+    },
   },
-  
+
   init() {
-    this._rotation = new THREE.Euler()
-    this._quaternion = new THREE.Quaternion()
+    this._rotation = new Euler()
+    this._quaternion = new Quaternion()
   },
 
   methods: {
     update(_delta) {
-      const rotationGoal = this.goals.rotation;
+      const rotationGoal = this.goals.rotation
       if (!rotationGoal.achieved) {
         const r = rotationGoal
         if (rotationGoal.isPastDue()) {
@@ -27,15 +28,17 @@ const AnimatesRotation = stampit(Component, {
           this._rotation.set(r.get('x'), r.get('y'), r.get('z'))
           this._quaternion.setFromEuler(this._rotation)
           this.object.quaternion.slerp(this._quaternion, 0.1)
-          const angleDelta = Math.abs(this.object.quaternion.angleTo(this._quaternion))
+          const angleDelta = Math.abs(
+            this.object.quaternion.angleTo(this._quaternion)
+          )
           if (angleDelta < 0.01) {
             this.object.quaternion.copy(this._quaternion)
             rotationGoal.markAchieved()
           }
         }
       }
-    }
-  }
+    },
+  },
 })
 
 export { AnimatesRotation }

@@ -1,8 +1,11 @@
+import { Math as ThreeMath } from 'three'
+
 import { showToast } from './lib/Toast.js'
 
 const formatAttr = (attrType, key, value) => {
   switch (attrType) {
-    case 'rotation': return value / -THREE.Math.DEG2RAD
+    case 'rotation':
+      return value / -ThreeMath.DEG2RAD
     default:
       if (typeof value === 'number') {
         return value.toFixed(2)
@@ -12,7 +15,6 @@ const formatAttr = (attrType, key, value) => {
         return value
       }
   }
-
 }
 
 const makeAttrs = (attrType, attrs) => {
@@ -38,7 +40,9 @@ const makeGroup = (name, attrs) => {
   `
 }
 const showInfoAboutObject = (entity) => {
-  if (!entity) { return }
+  if (!entity) {
+    return
+  }
   const p = entity.object.position
   const infos = [
     `
@@ -46,14 +50,14 @@ const showInfoAboutObject = (entity) => {
         <div class="info-type">${entity.type}</div>
         <div class="info-uuid">${entity.uuid}</div>
       </div>
-    `
+    `,
   ]
-  
+
   const json = entity.goals.toDesc()
   for (const name of entity.goals.definitionKeys()) {
     infos.push(makeGroup(name, json[name]))
   }
-  
+
   showToast(infos.join(''))
 }
 

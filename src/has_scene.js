@@ -1,6 +1,5 @@
 import stampit from 'stampit'
-
-const { Scene, Fog, Color, AmbientLight, DirectionalLight } = THREE
+import { Scene, Fog, Color, AmbientLight, DirectionalLight } from 'three'
 
 const FOG_DEFAULT_COLOR = 0xffffff
 const FOG_DEFAULT_NEAR_DISTANCE = 6600

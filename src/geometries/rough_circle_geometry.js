@@ -4,132 +4,151 @@
  * @author hughes
  */
 
-const { Geometry, BufferGeometry, Float32BufferAttribute, Vector2, Vector3 } = THREE
-
 import { create, real53 } from 'lib0/prng'
+import {
+  Geometry,
+  BufferGeometry,
+  Float32BufferAttribute,
+  Vector2,
+  Vector3,
+} from 'three'
 
 // RoughCircleGeometry
 
-function RoughCircleGeometry( radius, segments, borderRadiusVariance, randomSeed, thetaStart, thetaLength ) {
+function RoughCircleGeometry(
+  radius,
+  segments,
+  borderRadiusVariance,
+  randomSeed,
+  thetaStart,
+  thetaLength
+) {
+  Geometry.call(this)
 
-	Geometry.call( this );
+  this.type = 'CircleGeometry'
 
-	this.type = 'CircleGeometry';
-
-	this.parameters = {
+  this.parameters = {
     radius: radius,
     borderRadiusVariance: borderRadiusVariance,
-		segments: segments,
-		thetaStart: thetaStart,
-		thetaLength: thetaLength
-	};
+    segments: segments,
+    thetaStart: thetaStart,
+    thetaLength: thetaLength,
+  }
 
-	this.fromBufferGeometry( new RoughCircleBufferGeometry( radius, segments, borderRadiusVariance, randomSeed, thetaStart, thetaLength ) );
-	this.mergeVertices();
-
+  this.fromBufferGeometry(
+    new RoughCircleBufferGeometry(
+      radius,
+      segments,
+      borderRadiusVariance,
+      randomSeed,
+      thetaStart,
+      thetaLength
+    )
+  )
+  this.mergeVertices()
 }
 
-RoughCircleGeometry.prototype = Object.create( Geometry.prototype );
-RoughCircleGeometry.prototype.constructor = RoughCircleGeometry;
+RoughCircleGeometry.prototype = Object.create(Geometry.prototype)
+RoughCircleGeometry.prototype.constructor = RoughCircleGeometry
 
 // RoughCircleBufferGeometry
 
-function RoughCircleBufferGeometry( radius, segments, borderRadiusVariance, randomSeed, thetaStart, thetaLength ) {
+function RoughCircleBufferGeometry(
+  radius,
+  segments,
+  borderRadiusVariance,
+  randomSeed,
+  thetaStart,
+  thetaLength
+) {
+  BufferGeometry.call(this)
 
-	BufferGeometry.call( this );
+  this.type = 'RoughCircleBufferGeometry'
 
-	this.type = 'RoughCircleBufferGeometry';
-
-	this.parameters = {
+  this.parameters = {
     radius: radius,
     borderRadiusVariance: borderRadiusVariance,
-		segments: segments,
-		thetaStart: thetaStart,
-		thetaLength: thetaLength
-	};
+    segments: segments,
+    thetaStart: thetaStart,
+    thetaLength: thetaLength,
+  }
 
-	radius = radius || 1;
-	segments = segments !== undefined ? Math.max( 3, segments ) : 8;
+  radius = radius || 1
+  segments = segments !== undefined ? Math.max(3, segments) : 8
 
-	thetaStart = thetaStart !== undefined ? thetaStart : 0;
-	thetaLength = thetaLength !== undefined ? thetaLength : Math.PI * 2;
+  thetaStart = thetaStart !== undefined ? thetaStart : 0
+  thetaLength = thetaLength !== undefined ? thetaLength : Math.PI * 2
 
-	// buffers
+  // buffers
 
-	var indices = [];
-	var vertices = [];
-	var normals = [];
-	var uvs = [];
+  var indices = []
+  var vertices = []
+  var normals = []
+  var uvs = []
 
-	// helper variables
+  // helper variables
 
-	var i, s;
-	var vertex = new Vector3();
-	var uv = new Vector2();
+  var i, s
+  var vertex = new Vector3()
+  var uv = new Vector2()
 
-	// center point
+  // center point
 
-	vertices.push( 0, 0, 0 );
-	normals.push( 0, 0, 1 );
-	uvs.push( 0.5, 0.5 );
+  vertices.push(0, 0, 0)
+  normals.push(0, 0, 1)
+  uvs.push(0.5, 0.5)
 
-	var variance;
-  var prng = create(randomSeed);
-  var rnd = real53(prng) - 0.5;
-  var firstRnd = rnd;
-	
-	for ( s = 0, i = 3; s <= segments; s ++, i += 3 ) {
+  var variance
+  var prng = create(randomSeed)
+  var rnd = real53(prng) - 0.5
+  var firstRnd = rnd
 
-		var segment = thetaStart + s / segments * thetaLength;
+  for (s = 0, i = 3; s <= segments; s++, i += 3) {
+    var segment = thetaStart + (s / segments) * thetaLength
 
-		// Use the same radius for first and last vertices
+    // Use the same radius for first and last vertices
 
-		if (s < segments) {
-	    variance = rnd * borderRadiusVariance;
-		} else {
-			variance = firstRnd * borderRadiusVariance;
-		}
-		rnd = real53(prng) - 0.5;
-		
-		// vertex
-		
-		vertex.x = (radius + variance) * Math.cos( segment );
-		vertex.y = (radius + variance) * Math.sin( segment );
+    if (s < segments) {
+      variance = rnd * borderRadiusVariance
+    } else {
+      variance = firstRnd * borderRadiusVariance
+    }
+    rnd = real53(prng) - 0.5
 
-		vertices.push( vertex.x, vertex.y, vertex.z );
+    // vertex
 
-		// normal
+    vertex.x = (radius + variance) * Math.cos(segment)
+    vertex.y = (radius + variance) * Math.sin(segment)
 
-		normals.push( 0, 0, 1 );
+    vertices.push(vertex.x, vertex.y, vertex.z)
 
-		// uvs
+    // normal
 
-		uv.x = ( vertices[ i ] / (radius) + 1 ) / 2;
-		uv.y = ( vertices[ i + 1 ] / (radius) + 1 ) / 2;
+    normals.push(0, 0, 1)
 
-		uvs.push( uv.x, uv.y );
+    // uvs
 
-	}
+    uv.x = (vertices[i] / radius + 1) / 2
+    uv.y = (vertices[i + 1] / radius + 1) / 2
 
-	// indices
+    uvs.push(uv.x, uv.y)
+  }
 
-	for ( i = 1; i <= segments; i ++ ) {
+  // indices
 
-		indices.push( i, i + 1, 0 );
+  for (i = 1; i <= segments; i++) {
+    indices.push(i, i + 1, 0)
+  }
 
-	}
+  // build geometry
 
-	// build geometry
-
-	this.setIndex( indices );
-	this.setAttribute( 'position', new Float32BufferAttribute( vertices, 3 ) );
-	this.setAttribute( 'normal', new Float32BufferAttribute( normals, 3 ) );
-	this.setAttribute( 'uv', new Float32BufferAttribute( uvs, 2 ) );
-
+  this.setIndex(indices)
+  this.setAttribute('position', new Float32BufferAttribute(vertices, 3))
+  this.setAttribute('normal', new Float32BufferAttribute(normals, 3))
+  this.setAttribute('uv', new Float32BufferAttribute(uvs, 2))
 }
 
-RoughCircleBufferGeometry.prototype = Object.create( BufferGeometry.prototype );
-RoughCircleBufferGeometry.prototype.constructor = RoughCircleBufferGeometry;
+RoughCircleBufferGeometry.prototype = Object.create(BufferGeometry.prototype)
+RoughCircleBufferGeometry.prototype.constructor = RoughCircleBufferGeometry
 
-
-export { RoughCircleGeometry, RoughCircleBufferGeometry };
+export { RoughCircleGeometry, RoughCircleBufferGeometry }

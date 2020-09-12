@@ -1,9 +1,11 @@
+import { Vector3 } from 'three'
+
 // Creates links out of URLs
 import anchorme from 'anchorme'
 // Prevents XSS attacks in shared text messages
 import DOMPurify from 'dompurify'
 
-import { checkOverflow } from "./util.js"
+import { checkOverflow } from './util.js'
 
 class ThoughtBubble {
   constructor(camera, actionCallback, closeCallback) {
@@ -15,17 +17,19 @@ class ThoughtBubble {
     this.enableCloseIcon = true
     this.enableActionIcon = true
     this.alignCenter = false
-    this.position = new THREE.Vector3(0, 0, 0)
-    this.screenPosition = new THREE.Vector3()
+    this.position = new Vector3(0, 0, 0)
+    this.screenPosition = new Vector3()
     this.createDomElement(actionCallback, closeCallback)
   }
 
   project(screenWidth, screenHeight, offsetX = 0, offsetY = 0) {
     this.screenPosition.copy(this.position)
-    
-    this.screenPosition.project( this.camera ); 
-    this.screenPosition.x = (this.screenPosition.x + 1) * screenWidth / 2 + offsetX
-    this.screenPosition.y = -(this.screenPosition.y - 1) * screenHeight / 2 + offsetY
+
+    this.screenPosition.project(this.camera)
+    this.screenPosition.x =
+      ((this.screenPosition.x + 1) * screenWidth) / 2 + offsetX
+    this.screenPosition.y =
+      (-(this.screenPosition.y - 1) * screenHeight) / 2 + offsetY
     this.screenPosition.z = 0
 
     this.domElement.style.left = this.screenPosition.x + 'px'
@@ -44,21 +48,22 @@ class ThoughtBubble {
     const ctx = this.getContext()
     const measurement = ctx.measureText(text)
     return {
-      width:  measurement.actualBoundingBoxRight - 
-              measurement.actualBoundingBoxLeft,
-      height: measurement.actualBoundingBoxAscent - 
-              measurement.actualBoundingBoxDescent,
-      measurement
+      width:
+        measurement.actualBoundingBoxRight - measurement.actualBoundingBoxLeft,
+      height:
+        measurement.actualBoundingBoxAscent -
+        measurement.actualBoundingBoxDescent,
+      measurement,
     }
   }
-  
+
   switchToCircle() {
     if (this.divElement) {
       this.divElement.classList.add('circle-text')
       this.divElement.classList.remove('rectangle-text')
     }
   }
-  
+
   switchToRectangle() {
     if (this.divElement) {
       this.divElement.classList.add('rectangle-text')
@@ -67,21 +72,21 @@ class ThoughtBubble {
   }
 
   showDots() {
-    [this.dot1, this.dot2].forEach(dot => {
+    ;[this.dot1, this.dot2].forEach((dot) => {
       if (dot) {
         dot.classList.remove('hide')
       }
     })
   }
-  
+
   hideDots() {
-    [this.dot1, this.dot2].forEach(dot => {
+    ;[this.dot1, this.dot2].forEach((dot) => {
       if (dot) {
         dot.classList.add('hide')
       }
     })
   }
-  
+
   showCloseIcon() {
     this.closeIcon.classList.remove('hide')
   }
@@ -89,7 +94,7 @@ class ThoughtBubble {
   hideCloseIcon() {
     this.closeIcon.classList.add('hide')
   }
-  
+
   showActionIcon() {
     this.actionIcon.classList.remove('hide')
   }
@@ -97,7 +102,7 @@ class ThoughtBubble {
   hideActionIcon() {
     this.actionIcon.classList.add('hide')
   }
-  
+
   switchToCenterAligned() {
     this.domElement.classList.add('centered')
   }
@@ -105,7 +110,7 @@ class ThoughtBubble {
   switchToLeftAligned() {
     this.domElement.classList.remove('centered')
   }
-  
+
   getDiameterForCircleOfText(text) {
     // W x H = area of a rectangle
     // PI * r^2 = area of a circle
@@ -114,7 +119,7 @@ class ThoughtBubble {
     const size = this.getTextDimensions(text)
     const area = size.width * size.height
     const extraSpace = 30 // add a little so bubbles are a bit bigger than they need to be
-    const radius = Math.ceil(Math.sqrt(area / Math.PI) + extraSpace) 
+    const radius = Math.ceil(Math.sqrt(area / Math.PI) + extraSpace)
 
     return radius * 2
   }
@@ -124,10 +129,10 @@ class ThoughtBubble {
       this.clearText()
       return
     }
-    
+
     this.text = text
     if (!this.spanElement) {
-      console.error("SPAN element must exist prior to setText call")
+      console.error('SPAN element must exist prior to setText call')
       return
     }
 
@@ -142,13 +147,13 @@ class ThoughtBubble {
     } else {
       this.hideCloseIcon()
     }
-    
+
     if (this.enableActionIcon) {
       this.showActionIcon()
     } else {
       this.hideActionIcon()
     }
-    
+
     if (this.alignCenter) {
       this.switchToCenterAligned()
     } else {
@@ -156,7 +161,8 @@ class ThoughtBubble {
     }
 
     const cleanText = DOMPurify.sanitize(text)
-    const clickableText = anchorme({input: cleanText,
+    const clickableText = anchorme({
+      input: cleanText,
       options: {
         truncate: 30,
         middleTruncation: true,
@@ -165,7 +171,7 @@ class ThoughtBubble {
         },
       },
     })
-    
+
     this.diameter = this.getDiameterForCircleOfText(text)
     if (this.enableCircle) {
       // Reset to 'circle' bubble, optimistic that text will fit
@@ -173,7 +179,7 @@ class ThoughtBubble {
       // This is the thought bubble element inside the domElement wrapper
       this.divElement.style.width = this.diameter + 'px'
       this.divElement.style.height = this.diameter + 'px'
-      
+
       const padding = 5
       // If it's a short message, try to center it inside the bubble
       if (text.length < 50) {
@@ -208,10 +214,10 @@ class ThoughtBubble {
   }
 
   createDomElement(actionCallback, closeCallback) {
-    const wrapper = document.createElement('div') 
+    const wrapper = document.createElement('div')
     wrapper.classList.add('thought-bubble')
-    
-    const div = document.createElement('div') 
+
+    const div = document.createElement('div')
     div.classList.add('circle-text')
     div.classList.add('speech-text')
     // NOTE: This event listener prevents users from highlighting text (not yet sure why)
@@ -221,7 +227,7 @@ class ThoughtBubble {
     // })
     wrapper.appendChild(div)
 
-    const closeIcon = this.closeIcon = document.createElement('div')
+    const closeIcon = (this.closeIcon = document.createElement('div'))
     closeIcon.classList.add('thought-bubble-close')
     closeIcon.classList.add('close')
     closeIcon.addEventListener('mousedown', (event) => {
@@ -229,21 +235,21 @@ class ThoughtBubble {
       closeCallback(this, event)
     })
     wrapper.appendChild(closeIcon)
-    
-    const actionIcon = this.actionIcon = document.createElement('div')
+
+    const actionIcon = (this.actionIcon = document.createElement('div'))
     actionIcon.classList.add('thought-bubble-action')
     actionIcon.addEventListener('mousedown', (event) => {
       event.preventDefault()
       actionCallback(this, event)
     })
     wrapper.appendChild(actionIcon)
-    
+
     // The "dots" here are the little visual thought bubble dots in comics
-    const dot1 = this.dot1 = document.createElement('div')
+    const dot1 = (this.dot1 = document.createElement('div'))
     dot1.classList.add('thought-dot-1')
     wrapper.appendChild(dot1)
 
-    const dot2 = this.dot2 = document.createElement('div')
+    const dot2 = (this.dot2 = document.createElement('div'))
     dot2.classList.add('thought-dot-2')
     wrapper.appendChild(dot2)
 

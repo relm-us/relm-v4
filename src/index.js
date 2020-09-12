@@ -1,3 +1,5 @@
+import * as THREE from 'three'
+
 // Import external libraries and helpers
 import { guestNameFromPlayerId, avatarOptionFromPlayerId } from './avatars.js'
 import { Security } from './security.js'

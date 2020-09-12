@@ -1,10 +1,9 @@
 import stampit from 'stampit'
+import { Vector3 } from 'three'
 
 import { Entity } from './entity.js'
 import { Component } from './components/component.js'
 import { config } from './config.js'
-
-const { Vector3 } = THREE
 
 const CameraController = stampit(Entity, Component, {
   props: {

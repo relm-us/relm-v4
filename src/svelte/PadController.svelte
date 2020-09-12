@@ -1,4 +1,6 @@
 <script>
+  import { Vector3 } from 'three'
+
   export let stage
 
   const padController = stage.create('padcon', { target: stage.player })
@@ -13,24 +15,24 @@
     const touchY = event.targetTouches[0].clientY - rect.y
     const x = (touchX - rect.width / 2) / (rect.width / 2)
     const y = (touchY - rect.height / 2) / (rect.height / 2)
-    const position = new THREE.Vector3(x * 100, 0, y * 100)
+    const position = new Vector3(x * 100, 0, y * 100)
     padController.padDirectionChanged(position)
   }
 
   function handleTouchEnd(event) {
-    padController.padDirectionChanged(new THREE.Vector3())
+    padController.padDirectionChanged(new Vector3())
   }
 
   function handleMouseMove(event) {
     const rect = controlPadEl.getBoundingClientRect()
     const x = (event.layerX - rect.width / 2) / (rect.width / 2)
     const y = (event.layerY - rect.height / 2) / (rect.height / 2)
-    const position = new THREE.Vector3(x * 100, 0, y * 100)
+    const position = new Vector3(x * 100, 0, y * 100)
     padController.padDirectionChanged(position)
   }
 
   function handleMouseEnd(event) {
-    padController.padDirectionChanged(new THREE.Vector3())
+    padController.padDirectionChanged(new Vector3())
   }
 
   function handleButtonDown(event) {

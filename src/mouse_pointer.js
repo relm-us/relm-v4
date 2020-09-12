@@ -1,4 +1,14 @@
 import stampit from 'stampit'
+import {
+  Mesh,
+  MeshBasicMaterial,
+  MeshStandardMaterial,
+  SphereGeometry,
+  RingGeometry,
+  Color,
+  // Constants
+  DoubleSide,
+} from 'three'
 
 import { EntityShared } from './entity_shared.js'
 import { Component } from './components/component.js'
@@ -17,13 +27,13 @@ const HasSphere = stampit(Component, {
     },
 
     setup() {
-      const geometry = new THREE.SphereGeometry(7)
-      const material = new THREE.MeshBasicMaterial({
+      const geometry = new SphereGeometry(7)
+      const material = new MeshBasicMaterial({
         color: 0xffffff,
         depthTest: true,
         transparent: true, // so that it shows up on top of images
       })
-      this.sphereMesh = new THREE.Mesh(geometry, material)
+      this.sphereMesh = new Mesh(geometry, material)
       this.object.renderOrder = 1
 
       this.showSphere()
@@ -44,17 +54,17 @@ const HasRing = stampit(Component, {
     setup() {
       const ringThickness = 10
       const radius = 7
-      const geometry = new THREE.RingGeometry(
+      const geometry = new RingGeometry(
         radius - ringThickness / 2,
         radius + ringThickness / 2,
         32,
         6
       )
-      const material = (this.material = new THREE.MeshStandardMaterial({
-        color: new THREE.Color(0xffffff),
-        side: THREE.DoubleSide,
+      const material = (this.material = new MeshStandardMaterial({
+        color: new Color(0xffffff),
+        side: DoubleSide,
       }))
-      this.ringMesh = new THREE.Mesh(geometry, material)
+      this.ringMesh = new Mesh(geometry, material)
       this.ringMesh.rotation.x = -Math.PI * 0.2
 
       this.showRing()
@@ -119,7 +129,7 @@ const MousePointer = stampit(
         const colorGoal = this.goals.color
         if (!colorGoal.achieved) {
           this.setRingColor(
-            new THREE.Color(
+            new Color(
               colorGoal.get('r'),
               colorGoal.get('g'),
               colorGoal.get('b')

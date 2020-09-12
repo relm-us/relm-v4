@@ -1,4 +1,4 @@
-const { MathUtils } = THREE
+import { MathUtils } from 'three'
 
 const PIXEL_STEP = 1
 const LINE_HEIGHT = 8

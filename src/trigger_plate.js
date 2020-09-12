@@ -1,4 +1,12 @@
 import stampit from 'stampit'
+import {
+  Color,
+  Mesh,
+  MeshStandardMaterial,
+  PlaneBufferGeometry,
+  // Constants
+  DoubleSide,
+} from 'three'
 
 import { EntityShared } from './entity_shared.js'
 import { Component } from './components/component.js'
@@ -10,16 +18,14 @@ import { ReceivesPointer } from './receives_pointer.js'
 import { defineGoal } from './goals/goal.js'
 import { importRelm } from './export.js'
 
-const { Mesh, MeshStandardMaterial, DoubleSide, Color } = THREE
-
 const TRIGGER_COLOR = new Color(0x222)
 const TRIGGER_SIZE = 50
 
 const Triggers = stampit(Component, {
   deepStatics: {
     goalDefinitions: {
-      trigger: defineGoal('trig', { json: null })
-    }
+      trigger: defineGoal('trig', { json: null }),
+    },
   },
 
   init({ target }) {
@@ -34,29 +40,33 @@ const Triggers = stampit(Component, {
       if (this.mesh) {
         this.object.remove(this.mesh)
       }
-      const geometry = new THREE.PlaneBufferGeometry(TRIGGER_SIZE, TRIGGER_SIZE)
-      const material = this.material = new MeshStandardMaterial({
+      const geometry = new PlaneBufferGeometry(TRIGGER_SIZE, TRIGGER_SIZE)
+      const material = (this.material = new MeshStandardMaterial({
         color: TRIGGER_COLOR,
         side: DoubleSide,
-      })
+      }))
       this.mesh = new Mesh(geometry, material)
       this.mesh.position.y = 1
       this.mesh.rotation.x = -Math.PI * 0.5
-      
+
       this.object.add(this.mesh)
-      
+
       this.emit('mesh-updated')
     },
-    
+
     setTarget(target) {
       this.target = target
-      
+
       if (target) {
-        if (!target.setOpacity) { throw Error('Teleportal target must have .setOpacity') }
-        if (!target.addPosition) { throw Error('Teleportal target must have .addPosition') }
+        if (!target.setOpacity) {
+          throw Error('Teleportal target must have .setOpacity')
+        }
+        if (!target.addPosition) {
+          throw Error('Teleportal target must have .addPosition')
+        }
       }
     },
-    
+
     setActive() {
       this.active = true
     },
@@ -64,32 +74,34 @@ const Triggers = stampit(Component, {
     setInactive() {
       this.active = false
     },
-    
+
     _triggerAction() {
       if (!this.goals.trigger.get('json')) return
       const json = JSON.parse(this.goals.trigger.get('json'))
       importRelm(this.network, json)
     },
-    
+
     update(delta) {
       // TriggerPlate tracks the player as the entity that can trigger.
       if (!this.target && this.stage.player) {
         this.setTarget(this.stage.player)
       }
-      
+
       const trigGoal = this.goals.trigger
       if (!trigGoal.achieved) {
         this._createMesh()
         trigGoal.markAchieved()
       }
-      
+
       // Skip processing if we don't have a target to which we can calculate distance
       if (!this.target) {
         return
       }
-      
+
       const radius = (TRIGGER_SIZE * this.goals.scale.get('x')) / 2
-      const distance = this.object.position.distanceTo(this.target.object.position)
+      const distance = this.object.position.distanceTo(
+        this.target.object.position
+      )
       if (distance < radius) {
         if (this.active) {
           this._triggerAction()
@@ -99,8 +111,8 @@ const Triggers = stampit(Component, {
         // Enable trigger when player is "outside" the zone
         this.setActive()
       }
-    }
-  }
+    },
+  },
 })
 
 const TriggerPlate = stampit(

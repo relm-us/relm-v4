@@ -1,14 +1,20 @@
 import stampit from 'stampit'
 
-const { WebGLRenderer, Color, sRGBEncoding, PCFSoftShadowMap } = THREE
+import {
+  Color,
+  WebGLRenderer,
+  // Constants
+  PCFSoftShadowMap,
+  sRGBEncoding,
+} from 'three'
 
 const SceneWithRenderer = stampit({
   name: 'SceneWithRenderer',
-  
+
   init() {
     this.renderer = new WebGLRenderer({
       alpha: true,
-      antialias: true
+      antialias: true,
     })
     this.renderer.setClearColor(new Color('black'), 0)
     // TODO: get pixelRatio through props rather than global 'window' object
@@ -19,8 +25,8 @@ const SceneWithRenderer = stampit({
 
     this.renderer.domElement.id = 'glcanvas'
     this.renderer.domElement.tabIndex = -1
-    
-    this.renderer.outputEncoding = THREE.sRGBEncoding;
+
+    this.renderer.outputEncoding = sRGBEncoding
 
     this.on('resize', ({ width, height }) => {
       this.renderer.setSize(width, height)
@@ -31,7 +37,7 @@ const SceneWithRenderer = stampit({
     render(delta) {
       this.renderer.render(this.scene, this.camera)
     },
-  }
+  },
 })
 
 export { SceneWithRenderer }

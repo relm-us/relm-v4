@@ -1,4 +1,18 @@
 import stampit from 'stampit'
+import {
+  Mesh,
+  MeshStandardMaterial,
+  BufferGeometry,
+  BufferAttribute,
+  // Constants
+  LinearFilter,
+  ClampToEdgeWrapping,
+  sRGBEncoding,
+  AdditiveBlending,
+  SubtractiveBlending,
+  MultiplyBlending,
+  DoubleSide,
+} from 'three'
 
 import { Component } from './component.js'
 import { PhotoMaterial } from '../materials/photo_material.js'
@@ -39,10 +53,10 @@ const UsesAssetAsImage = stampit(Component, {
          * warnings in the console and ultimately makes things faster since we don't need any pause-
          * the-world events to create power-of-two mipmapped textures.
          */
-        this.texture.minFilter = THREE.LinearFilter
-        this.texture.wrapS = THREE.ClampToEdgeWrapping
-        this.texture.wrapT = THREE.ClampToEdgeWrapping
-        this.texture.encoding = THREE.sRGBEncoding
+        this.texture.minFilter = LinearFilter
+        this.texture.wrapS = ClampToEdgeWrapping
+        this.texture.wrapT = ClampToEdgeWrapping
+        this.texture.encoding = sRGBEncoding
 
         // Since we're using a clone, and updating its properties, we need to set this flag or risk being ignored
         this.texture.needsUpdate = true
@@ -68,7 +82,7 @@ const UsesAssetAsImage = stampit(Component, {
         fold
       )
       const material = this._createMaterialWithDefaults(texture, materialType)
-      const mesh = new THREE.Mesh(geometry, material)
+      const mesh = new Mesh(geometry, material)
 
       this._setMesh(mesh)
     },
@@ -89,38 +103,51 @@ const UsesAssetAsImage = stampit(Component, {
       const top = h * (1.0 - fold)
       const bot = h * fold
 
-      const geometry = new THREE.BufferGeometry()
+      const geometry = new BufferGeometry()
 
       const vertices = new Float32Array([
-        -w/2, 1.0, 0.0, // lower-left
-         w/2, 1.0, 0.0, // to lower-right
-         w/2, top, 0.0, // to upper-right
-        -w/2, top, 0.0, // to upper-left
-        -w/2, 1.0, bot, // protruding bottom left
-         w/2, 1.0, bot, // protruding bottom right
+        -w / 2,
+        1.0,
+        0.0, // lower-left
+        w / 2,
+        1.0,
+        0.0, // to lower-right
+        w / 2,
+        top,
+        0.0, // to upper-right
+        -w / 2,
+        top,
+        0.0, // to upper-left
+        -w / 2,
+        1.0,
+        bot, // protruding bottom left
+        w / 2,
+        1.0,
+        bot, // protruding bottom right
       ])
 
       // Each triplet of the 4 triangles described by these indices is in counter-clockwise order
-      const indices = [
-        0, 1, 2,
-        2, 3, 0,
-        1, 0, 4,
-        4, 5, 1,
-      ]
-      
+      const indices = [0, 1, 2, 2, 3, 0, 1, 0, 4, 4, 5, 1]
+
       // Map the image to the folding plane
       const uvs = new Float32Array([
-        (flipx ? 1.0 : 0.0), (flipy ? (1.0 - fold) : fold),
-        (flipx ? 0.0 : 1.0), (flipy ? (1.0 - fold) : fold),
-        (flipx ? 0.0 : 1.0), (flipy ? 0.0 : 1.0),
-        (flipx ? 1.0 : 0.0), (flipy ? 0.0 : 1.0),
-        (flipx ? 1.0 : 0.0), (flipy ? 1.0 : 0.0),
-        (flipx ? 0.0 : 1.0), (flipy ? 1.0 : 0.0),
+        flipx ? 1.0 : 0.0,
+        flipy ? 1.0 - fold : fold,
+        flipx ? 0.0 : 1.0,
+        flipy ? 1.0 - fold : fold,
+        flipx ? 0.0 : 1.0,
+        flipy ? 0.0 : 1.0,
+        flipx ? 1.0 : 0.0,
+        flipy ? 0.0 : 1.0,
+        flipx ? 1.0 : 0.0,
+        flipy ? 1.0 : 0.0,
+        flipx ? 0.0 : 1.0,
+        flipy ? 1.0 : 0.0,
       ])
 
       geometry.setIndex(indices)
-      geometry.setAttribute('position', new THREE.BufferAttribute(vertices, 3))
-      geometry.setAttribute('uv', new THREE.BufferAttribute(uvs, 2))
+      geometry.setAttribute('position', new BufferAttribute(vertices, 3))
+      geometry.setAttribute('uv', new BufferAttribute(uvs, 2))
       geometry.computeVertexNormals()
 
       return geometry
@@ -131,15 +158,15 @@ const UsesAssetAsImage = stampit(Component, {
         case 'photo':
           return PhotoMaterial({ texture })
         case 'add':
-          return PhotoMaterial({ texture, blending: THREE.AdditiveBlending })
+          return PhotoMaterial({ texture, blending: AdditiveBlending })
         case 'subtract':
-          return PhotoMaterial({ texture, blending: THREE.SubtractiveBlending })
+          return PhotoMaterial({ texture, blending: SubtractiveBlending })
         case 'multiply':
-          return PhotoMaterial({ texture, blending: THREE.MultiplyBlending })
+          return PhotoMaterial({ texture, blending: MultiplyBlending })
         default:
-          return new THREE.MeshStandardMaterial({
+          return new MeshStandardMaterial({
             map: texture,
-            side: THREE.DoubleSide,
+            side: DoubleSide,
           })
       }
     },

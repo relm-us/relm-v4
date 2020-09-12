@@ -1,3 +1,5 @@
+import { Vector3, Math as ThreeMath } from 'three'
+
 import { showToast } from './lib/Toast.js'
 import { showInfoAboutObject } from './show_info_about_object.js'
 
@@ -16,6 +18,8 @@ import {
   actionToEachObject,
   numberOfObjects,
 } from './command_utils.js'
+
+const { DEG2RAD } = ThreeMath
 
 /**
  * @typedef CommandEnv
@@ -53,7 +57,7 @@ function triggerUpdate(json) {
 
 function diamondCreate(message) {
   return (env) => {
-    const position = new THREE.Vector3()
+    const position = new Vector3()
     position.copy(env.position)
     // Make it about head-height by default
     position.y += 130
@@ -223,9 +227,9 @@ function objectRotate(entity, { x, y, z }) {
   if (rotGoal) {
     rotGoal.update(
       {
-        x: x !== undefined ? x * -THREE.Math.DEG2RAD : rotGoal.get('x'),
-        y: y !== undefined ? y * -THREE.Math.DEG2RAD : rotGoal.get('y'),
-        z: z !== undefined ? z * -THREE.Math.DEG2RAD : rotGoal.get('z'),
+        x: x !== undefined ? x * -DEG2RAD : rotGoal.get('x'),
+        y: y !== undefined ? y * -DEG2RAD : rotGoal.get('y'),
+        z: z !== undefined ? z * -DEG2RAD : rotGoal.get('z'),
       },
       Date.now() + 2000
     )
@@ -600,7 +604,7 @@ const commands = {
               break
             case 'down':
               entity.goals.rotation.update(
-                { x: 90 * -THREE.Math.DEG2RAD, y: 0, z: 0 },
+                { x: 90 * -DEG2RAD, y: 0, z: 0 },
                 Date.now() + 2000
               )
               const y = entity.goals.position.get('y')
@@ -609,14 +613,14 @@ const commands = {
               break
             case 'left':
               entity.goals.rotation.update(
-                { x: 0, y: -45 * -THREE.Math.DEG2RAD, z: 0 },
+                { x: 0, y: -45 * -DEG2RAD, z: 0 },
                 Date.now() + 2000
               )
               entity.goals.renderOrder.update({ v: 100 })
               break
             case 'right':
               entity.goals.rotation.update(
-                { x: 0, y: 45 * -THREE.Math.DEG2RAD, z: 0 },
+                { x: 0, y: 45 * -DEG2RAD, z: 0 },
                 Date.now() + 2000
               )
               entity.goals.renderOrder.update({ v: 100 })

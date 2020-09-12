@@ -1,5 +1,6 @@
 import stampit from 'stampit'
 import EventEmittable from '@stamp/eventemittable'
+import { TextureLoader } from 'three'
 
 import { Component } from './component.js'
 import { defineGoal } from '../goals/goal.js'
@@ -25,7 +26,7 @@ const regularGLTFLoader = new GLTFLoader()
 const meshoptGLTFLoader = new MeshoptGLTFLoader()
 
 // Loader for Textures
-const textureLoader = new THREE.TextureLoader()
+const textureLoader = new TextureLoader()
 
 const getLoaderFromUrl = (url) => {
   if (!url.match) {

@@ -1,11 +1,9 @@
 import stampit from 'stampit'
-// import EventEmittable from '@stamp/eventemittable'
+import { Vector3, Color } from 'three'
 
 import { Component } from './component.js'
 import { Label } from '../label.js'
 import { defineGoal } from '../goals/goal.js'
-
-const { Vector3, Color } = THREE
 
 const HasLabel = stampit(Component, {
   deepStatics: {

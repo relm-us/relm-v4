@@ -1,10 +1,11 @@
 import stampit from 'stampit'
+import { Object3D } from 'three'
 
 import { Component } from './component.js'
 
 const HasObject = stampit(Component, {
   init() {
-    this.object = new THREE.Object3D()
+    this.object = new Object3D()
   },
 
   methods: {
@@ -24,8 +25,8 @@ const HasObject = stampit(Component, {
     hide() {
       this.object.visible = false
       this.emit('invisible')
-    }
-  }
+    },
+  },
 })
 
 export { HasObject }
