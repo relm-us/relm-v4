@@ -3,11 +3,11 @@
   import { hasAncestor } from './util.js'
   import UVPicker from './UVPicker.svelte'
 
-  export let color = { x: 0, y: 0 }
+  export let clothtone = { x: 0, y: 0 }
   export let skintone = { x: 0, y: 0 }
-  export let onClose
-  export let onPickColor
+  export let onPickClothtone
   export let onPickSkintone
+  export let onClose
 
   let panel
 
@@ -29,7 +29,7 @@
   <div class="row">
     <div class="box">
       <div class="label">Style:</div>
-      <UVPicker onPick={onPickColor} x={color.x} y={color.y} />
+      <UVPicker onPick={onPickClothtone} x={clothtone.x} y={clothtone.y} />
     </div>
     <div class="box">
       <div class="label">Skintone:</div>

@@ -68,6 +68,8 @@ const HasAnimationMixer = stampit(Component, {
       // Two independent goals because they can each be achieved separately
       animationMesh: defineGoal('anm', { v: null }),
       animationSpeed: defineGoal('ans', { v: 1.0 }),
+      skintone: defineGoal('skt', { x: 0, y: 0 }),
+      clothtone: defineGoal('clt', { x: 0, y: 0 }),
     },
   },
 
@@ -145,8 +147,8 @@ const HasAnimationMixer = stampit(Component, {
 
       if (this.skinnedMesh) {
         this.originalUvAttr = this.getUv().clone()
-        this.uvColorMask = null
-        this.uvColorShift = { x: 0, y: 0 }
+        this.uvClothtoneMask = null
+        this.uvClothtoneShift = { x: 0, y: 0 }
         this.uvSkintoneMask = null
         this.uvSkintoneShift = { x: 0, y: 0 }
       }
@@ -166,16 +168,16 @@ const HasAnimationMixer = stampit(Component, {
       }
     },
 
-    uvTranslate({ color, skintone }) {
+    uvTranslate({ clothtone, skintone }) {
       const uvAttr = this.getUv()
 
-      if (!this.uvColorMask) {
-        this.uvColorMask = createMask(uvAttr, maskAllowOtherColors)
+      if (!this.uvClothtoneMask) {
+        this.uvClothtoneMask = createMask(uvAttr, maskAllowOtherColors)
       }
-      if (!color) {
-        color = this.uvColorShift
+      if (!clothtone) {
+        clothtone = this.uvClothtoneShift
       } else {
-        this.uvColorShift = color
+        this.uvClothtoneShift = clothtone
       }
 
       if (!this.uvSkintoneMask) {
@@ -189,7 +191,7 @@ const HasAnimationMixer = stampit(Component, {
 
       this.uvReset()
 
-      uvTranslate(this.getUv(), color, this.uvColorMask)
+      uvTranslate(this.getUv(), clothtone, this.uvClothtoneMask)
       uvTranslate(this.getUv(), skintone, this.uvSkintoneMask)
     },
 
@@ -257,6 +259,21 @@ const HasAnimationMixer = stampit(Component, {
           )
         }
         animMeshGoal.markAchieved()
+      }
+
+      if (!this.goals.skintone.achieved || !this.goals.clothtone.achieved) {
+        this.uvTranslate({
+          skintone: {
+            x: this.goals.skintone.get('x'),
+            y: this.goals.skintone.get('y'),
+          },
+          clothtone: {
+            x: this.goals.clothtone.get('x'),
+            y: this.goals.clothtone.get('y'),
+          },
+        })
+        this.goals.skintone.markAchieved()
+        this.goals.clothtone.markAchieved()
       }
 
       const animSpeedGoal = this.goals.animationSpeed

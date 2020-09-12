@@ -3,7 +3,7 @@
   import { avatarOptionsOfGender } from '../avatars.js'
   import GenderButton from './GenderButton.svelte'
 
-  export let stage
+  export let player
   export let onClose
 
   const VARIANTS = [0, 1, 2, 3, 4, 5, 6, 7, 8]
@@ -14,7 +14,7 @@
   function handleSelect(gender, index) {
     const avatarOptions = avatarOptionsOfGender(gender)
 
-    stage.player.goals.animationMesh.update({
+    player.goals.animationMesh.update({
       v: avatarOptions[index].avatarId,
     })
 
@@ -28,7 +28,7 @@
   }
 
   onMount(() => {
-    ;[gender, variant] = stage.player.getAvatar()
+    ;[gender, variant] = player.getAvatar()
     if (gender) {
       selectedTab = gender
     }

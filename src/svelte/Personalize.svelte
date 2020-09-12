@@ -1,4 +1,6 @@
 <script>
+  import { get } from 'http'
+  import Audio from '../audiovideo/Audio.svelte'
   import App from './App.svelte'
   import PersonalizeAvatar from './PersonalizeAvatar.svelte'
   import PersonalizeAvatarColors from './PersonalizeAvatarColors.svelte'
@@ -14,18 +16,18 @@
 
   let screen = Screens.SELECT_AVATAR
 
-  function onPickColor(x, y) {
-    stage.player.uvTranslate({ color: { x, y } })
+  function onPickClothtone(x, y) {
+    stage.player.goals.clothtone.update({ x, y })
   }
 
   function onPickSkintone(x, y) {
-    stage.player.uvTranslate({ skintone: { x, y } })
+    stage.player.goals.skintone.update({ x, y })
   }
 </script>
 
 <div class="personalize">
   {#if screen === Screens.SELECT_AVATAR}
-    <PersonalizeAvatar {stage} {onClose} />
+    <PersonalizeAvatar player={stage.player} {onClose} />
     <div class="button-panel">
       <button
         on:mousedown|preventDefault
@@ -41,10 +43,10 @@
     </div>
   {:else if screen === Screens.CUSTOM_COLORS}
     <PersonalizeAvatarColors
-      color={stage.player.uvColorShift}
-      skintone={stage.player.uvSkintoneShift}
+      clothtone={{ x: stage.player.goals.clothtone.get('x'), y: stage.player.goals.clothtone.get('y') }}
+      skintone={{ x: stage.player.goals.skintone.get('x'), y: stage.player.goals.skintone.get('y') }}
       {onClose}
-      {onPickColor}
+      {onPickClothtone}
       {onPickSkintone} />
   {/if}
 </div>
