@@ -1,7 +1,8 @@
 import stampit from 'stampit'
+import { SkeletonUtils } from 'three/examples/jsm/utils/SkeletonUtils.js'
 
 import { AnimationMixer } from 'three'
-import { SkeletonUtils } from '../lib/SkeletonUtils.js'
+// import { SkeletonUtils } from '../lib/SkeletonUtils.js'
 import { Component } from './component.js'
 import { defineGoal } from '../goals/goal.js'
 import {
@@ -120,10 +121,14 @@ const HasAnimationMixer = stampit(Component, {
     },
 
     setMeshDefaults(mesh) {
-      console.warn('setMeshDefaults', mesh)
       mesh.castShadow = true
       mesh.receiveShadow = true
       if (mesh.material) {
+        // When using custom UV Maps (for skintone/clothtone) we need the geometry
+        // to be its own instance, so that the 'uv' attribute doesn't affect other
+        // players with the same avatar.
+        mesh.geometry = mesh.geometry.clone()
+
         mesh.material.metalness = 0.0
         mesh.material.transparent = true
       }
