@@ -1,6 +1,9 @@
 <script>
   import { onMount } from 'svelte'
+
   import { avatarOptionsOfGender } from '../avatars.js'
+  import { swatches, skintoneMap } from './skintoneMap.js'
+
   import GenderButton from './GenderButton.svelte'
 
   export let player
@@ -11,6 +14,8 @@
   let gender
   let variant
 
+  let skintoneName = null
+
   function handleSelect(gender, index) {
     const avatarOptions = avatarOptionsOfGender(gender)
 
@@ -18,10 +23,19 @@
       v: avatarOptions[index].avatarId,
     })
 
-    player.goals.skintone.update({ x: 0, y: 0 })
+    const skintone = skintoneName
+      ? skintoneMap[gender][index][skintoneName]
+      : { x: 0, y: 0 }
+    player.goals.skintone.update(skintone)
     player.goals.clothtone.update({ x: 0, y: 0 })
 
     onClose()
+  }
+
+  function selectSkintoneByName(name) {
+    return (_event) => {
+      skintoneName = name
+    }
   }
 
   function selectGender(gender_) {
@@ -40,6 +54,16 @@
 
 <h2>Select Your Avatar</h2>
 
+<div class="swatch-row">
+  <div class="label">Skin tone:</div>
+  {#each swatches as [name, color]}
+    <div
+      class="swatch"
+      class:selected={skintoneName === name}
+      style="--color:{color}"
+      on:mousedown|preventDefault={selectSkintoneByName(name)} />
+  {/each}
+</div>
 <div class="tabs">
   <div
     class="tab"
@@ -117,5 +141,26 @@
     flex-direction: row;
     flex-wrap: wrap;
     justify-content: center;
+  }
+
+  .swatch-row {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-evenly;
+    width: 240px;
+  }
+  .swatch {
+    border: 2px solid #eee;
+    border-radius: 5px;
+    background-color: var(--color);
+    width: 32px;
+    height: 32px;
+    padding: 3px;
+  }
+  .swatch:hover {
+    border-color: #ccc;
+  }
+  .swatch.selected {
+    border-color: red;
   }
 </style>

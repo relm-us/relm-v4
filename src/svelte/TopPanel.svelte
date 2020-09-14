@@ -1,7 +1,7 @@
 <script>
   import CameraSetup from './CameraSetup.svelte'
   import HelpContent from './HelpContent.svelte'
-  import Personalize from './Personalize.svelte'
+  import Personalize from '../personalization/Personalize.svelte'
   import { toggleScreenShare } from '../audiovideo/screenshare.js'
 
   export let stage

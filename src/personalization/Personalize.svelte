@@ -1,7 +1,4 @@
 <script>
-  import { get } from 'http'
-  import Audio from '../audiovideo/Audio.svelte'
-  import App from './App.svelte'
   import PersonalizeAvatar from './PersonalizeAvatar.svelte'
   import PersonalizeAvatarColors from './PersonalizeAvatarColors.svelte'
 

@@ -1,6 +1,6 @@
 <script>
   import { onMount } from 'svelte'
-  import { hasAncestor } from './util.js'
+  import { hasAncestor } from '../svelte/util.js'
   import UVPicker from './UVPicker.svelte'
 
   export let clothtone = { x: 0, y: 0 }
