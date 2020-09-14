@@ -81,6 +81,7 @@
   - playsinline
   - disablepictureinpicture
 -->
+<!-- svelte-ignore a11y-media-has-caption -->
 <video
   bind:this={videoElement}
   class:mirror
@@ -94,6 +95,6 @@
     object-fit: contain;
   }
   video.mirror {
-    transform: rotateY(180deg);
+    transform: scaleX(-1);
   }
 </style>
