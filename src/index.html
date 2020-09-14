@@ -3,39 +3,22 @@
   <head>
     <title>Relm - A Gameworld for Teamwork!</title>
     <meta charset="utf-8" />
-    <meta
+    <!-- <meta
       name="viewport"
       content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0"
-    />
+    /> -->
 
     <!-- JQuery is a dependency of lib-jitsi-meet -->
     <script src="//cdn.jsdelivr.net/npm/jquery@3.5.0/dist/jquery.min.js"></script>
     <!-- Jitsi video conference library lib-jitsi-meet -->
     <script src="//meet.jit.si/libs/lib-jitsi-meet.min.js"></script>
+    <script>
+      JitsiMeetJS.init({ audioLevelsInterval: 40 })
+      JitsiMeetJS.setLogLevel(JitsiMeetJS.logLevels.ERROR)
+    </script>
 
     <link rel="stylesheet" type="text/css" href="./dropzone.css" />
     <link rel="stylesheet" type="text/css" href="./index.css" />
-
-    <style>
-      html,
-      body {
-        width: 100%;
-        height: 100%;
-        font-family: Verdana, Geneva, Tahoma, sans-serif;
-      }
-      body::after {
-        /* Hide & pre-cache some CSS images: */
-        width: 0;
-        height: 0;
-        z-index: -1;
-        position: absolute;
-        overflow: hidden;
-        content: url(./icons/muted.png) url(./icons/unmuted.png);
-      }
-      .hide {
-        display: none !important;
-      }
-    </style>
 
     <!-- Global site tag (gtag.js) - Google Analytics -->
     <script
@@ -51,7 +34,7 @@
       gtag('config', 'UA-166245735-1')
     </script>
   </head>
-  <body style="margin: 0px; background-color: #bbbbbb; overflow: hidden">
+  <body>
     <!-- The GL Canvas element goes inside here -->
     <div id="game"></div>
 

@@ -57,7 +57,6 @@ const LoadsAsset = stampit(Component, EventEmittable, {
   methods: {
     loadAsset() {
       const url = this.goals.asset.get(hasWebpSupport ? 'url' : 'alt')
-      console.log('url', hasWebpSupport, url)
       if (url) {
         const loader = getLoaderFromUrl(url)
         if (!loader) return

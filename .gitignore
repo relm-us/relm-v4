@@ -1,6 +1,7 @@
 # Unwanted files
 target
 .cache/
+.parcel-cache/
 
 # Backup files
 .DS_Store

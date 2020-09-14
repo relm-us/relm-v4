@@ -27,11 +27,15 @@
   .button {
     padding: 8px;
     cursor: pointer;
+    border: 1px solid transparent;
   }
   .button:hover,
   .highlight {
     background-color: #fefefe;
     border-radius: 8px;
+  }
+  .highlight {
+    border-color: darkred;
   }
   .button.f img {
     border-bottom: 3px solid pink;

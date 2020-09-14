@@ -31,6 +31,7 @@
     "react-dom": "^16.8.0",
     "stampit": "^4.3.1",
     "stats.js": "^0.17.0",
+    "svelte-persistent-store": "^0.1.4",
     "three": "^0.120.1",
     "toastify-js": "^1.7.0",
     "y-indexeddb": "^9.0.3",
@@ -39,21 +40,29 @@
   },
   "devDependencies": {
     "@babel/core": "^7.0.0-0",
+    "@babel/plugin-transform-runtime": "^7.11.5",
     "@babel/preset-env": "^7.10.2",
     "jest": "^26.0.1",
     "parcel-bundler": "^1.12.4",
     "parcel-plugin-asset-copier": "^1.0.0",
     "parcel-plugin-externals": "^0.3.3",
     "parcel-plugin-html-externals": "^0.2.0",
-    "parcel-plugin-svelte": "^4.0.6",
+    "parcel-plugin-svelte": "https://gitpkg.now.sh/canadaduane/parcel-plugin-svelte/packages/parcel-plugin-svelte?master",
     "standard": "^14.3.1",
     "svelte": "^3.23.2"
+  },
+  "devDependenciesComments": {
+    "parcel-plugin-svelte": "We're currently using a custom build that fixes a duplicate inline CSS issue; the dup CSS in turn causes CSS url() assets to fail. Once merged, we should be able to use DeMoorJasper/parcel-plugin-svelte again."
   },
   "externals": {
     "vendor/**/*": false
   },
   "browserslist": [
-    "last 3 Chrome versions"
+    "last 4 versions"
   ],
+  "resolutions": {
+    "browserslist": "4.14.2",
+    "caniuse-lite": "1.0.30001131"
+  },
   "assetsPath": "public"
 }

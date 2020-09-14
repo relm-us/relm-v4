@@ -108,4 +108,18 @@ const defaultDevices = derived(deviceList, ($deviceList) => {
   }
 })
 
-export { deviceList, defaultDevices }
+function createSelectedDevicesStore() {
+  const { subscribe, set } = writable({})
+
+  function get() {
+    let selectedDevices
+    subscribe((selected) => (selectedDevices = selected))()
+    return selectedDevices
+  }
+
+  return { subscribe, get, set }
+}
+
+const selectedDevices = createSelectedDevicesStore()
+
+export { deviceList, defaultDevices, selectedDevices }

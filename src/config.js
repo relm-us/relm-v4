@@ -1,3 +1,5 @@
+import { uuidv4 } from './util'
+
 /**
  * Uses the window.location as a way to distinguish which server environment we are in.
  *
@@ -55,6 +57,8 @@ function Config(location) {
 
   const DEFAULT_OBJECT_SIZE = 200
 
+  const JITSI_CONFERENCE = SINGLE_PLAYER_MODE ? uuidv4() : `relm-${ENV}-${ROOM}`
+
   const JITSI_CONFIG = {
     hosts: {
       domain: 'meet.jit.si',
@@ -70,7 +74,7 @@ function Config(location) {
       useStunTurn: true,
     },
     useStunTurn: true,
-    bosh: `https://meet.jit.si/http-bind?room=${ROOM}`,
+    bosh: `https://meet.jit.si/http-bind?room=${JITSI_CONFERENCE}`,
     websocket: 'wss://meet.jit.si/xmpp-websocket',
     clientNode: 'http://jitsi.org/jitsimeet',
   }
@@ -88,6 +92,7 @@ function Config(location) {
     CAMERA_EDITOR,
     DEFAULT_OBJECT_SIZE,
     JITSI_CONFIG,
+    JITSI_CONFERENCE,
   }
 }
 

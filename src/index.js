@@ -3,7 +3,7 @@ import * as THREE from 'three'
 // Import external libraries and helpers
 import { guestNameFromPlayerId, avatarOptionFromPlayerId } from './avatars.js'
 import { Security } from './security.js'
-import { initializeAVChat, muteAudio, unmuteAudio } from './audiovideo/chat.js'
+// import { initializeAVChat, muteAudio, unmuteAudio } from './audiovideo/chat.js'
 import { normalizeWheel } from './lib/normalizeWheel.js'
 import 'toastify-js/src/toastify.css'
 
@@ -37,6 +37,7 @@ import {
   sortByZ,
   delta,
   distance,
+  project2d,
 } from './util.js'
 import { config } from './config.js'
 import { network } from './network.js'
@@ -48,6 +49,12 @@ import { recordCoords } from './record_coords.js'
 import { getRef } from './dom_reference.js'
 
 import State from './svelte/stores.js'
+import {
+  myParticipantIds,
+  videoPositions,
+  videoVisibilities,
+  videoSize,
+} from '/audiovideo/ParticipantStore.js'
 
 import {
   KEY_A,
@@ -207,10 +214,10 @@ const start = async () => {
   // Allow local player to control self
   player.autonomous = false
 
-  const vidobj = player.videoBubble.object
-  vidobj.createDomElement()
-  vidobj.on('mute', muteAudio)
-  vidobj.on('unmute', unmuteAudio)
+  // const vidobj = player.videoBubble.object
+  // vidobj.createDomElement()
+  // vidobj.on('mute', muteAudio)
+  // vidobj.on('unmute', unmuteAudio)
 
   player.labelObj.setOnLabelChanged((text) => {
     player.goals.label.update({ text })
@@ -297,49 +304,53 @@ const start = async () => {
     // TODO: How do we arrive at this magic number?
     const playerHeight = 800000 / dist
 
+    videoSize.set(playerHeight)
+
     // TODO: make this filter for 'HasVideoBubble' instead of just looking for players
     stage.forEachEntityOfType('player', (anyPlayer, i) => {
       // Set videoBubble diameter, which can change due to
       // (a) new players entering the scene, or
       // (b) zoom level changing
-      anyPlayer.videoBubble.object.setDiameter(playerHeight)
+      // anyPlayer.videoBubble.object.setDiameter(playerHeight)
       // (Note: due to bug in ThreeJS, we incorrectly exclude players
       //  from being "on stage" when the bottom of their avatar
       //  goes off screen, so we process diameters here.)
-
-      if (occasionalUpdate % 10 === 0) {
-        const audio = anyPlayer.videoBubble.object.audio
-        if (audio) {
-          const dist = player.object.position.distanceTo(
-            anyPlayer.object.position
-          )
-          // if dist = 0: (500 + 1000) / 500 = 3.0     => clamped to 1.0
-          // if dist = 1000: (500 - 0) / 500 = 1.0     => clamped to 1.0
-          // if dist = 1200: (500 - 200) / 500 = 0.6   => clamped to 0.6
-          // if dist = 2000: (500 - 1000) / 500 = -0.5 => clamped to 0.15
-          const volume = (500 - (dist - 1000)) / 500
-          audio.volume = THREE.MathUtils.clamp(volume, 0.15, 1.0)
-        }
-      }
+      // if (occasionalUpdate % 10 === 0) {
+      //   const audio = anyPlayer.videoBubble.object.audio
+      //   if (audio) {
+      //     const dist = player.object.position.distanceTo(
+      //       anyPlayer.object.position
+      //     )
+      //     // if dist = 0: (500 + 1000) / 500 = 3.0     => clamped to 1.0
+      //     // if dist = 1000: (500 - 0) / 500 = 1.0     => clamped to 1.0
+      //     // if dist = 1200: (500 - 200) / 500 = 0.6   => clamped to 0.6
+      //     // if dist = 2000: (500 - 1000) / 500 = -0.5 => clamped to 0.15
+      //     const volume = (500 - (dist - 1000)) / 500
+      //     audio.volume = THREE.MathUtils.clamp(volume, 0.15, 1.0)
+      //   }
+      // }
     })
-    stage.forEachEntityOnStageOfType(
-      'player',
-      (anyPlayer, i) => {
-        // Sort the visible players by Z order
-        const el = anyPlayer.videoBubble.object.domElement
-        if (el) {
-          el.style.zIndex = i + 1
-        }
-      },
-      sortByZ
-    )
+    // stage.forEachEntityOnStageOfType(
+    //   'player',
+    //   (anyPlayer, i) => {
+    //     // Sort the visible players by Z order
+    //     const el = anyPlayer.videoBubble.object.domElement
+    //     if (el) {
+    //       el.style.zIndex = i + 1
+    //     }
+    //   },
+    //   sortByZ
+    // )
 
     network.transients.sendState([playerId, mouseId])
   })
 
   // Mouse wheel zooms in and out
-  document.addEventListener('wheel', function (event) {
-    if (event.target.id === 'game') {
+  window.addEventListener(
+    'wheel',
+    function (event) {
+      event.preventDefault()
+
       let pixelY = normalizeWheel(event)
 
       mouseWheelScale = THREE.MathUtils.clamp(
@@ -347,6 +358,7 @@ const start = async () => {
         0,
         mouseWheelScaleMax
       )
+
       if (
         zoomLockPos === null &&
         mouseWheelScale < mouseWheelScaleMax &&
@@ -364,8 +376,9 @@ const start = async () => {
         cameraPlayerOffset.y += 1500
         cameraPlayerOffset.z += 1875
       }
-    }
-  })
+    },
+    { passive: false }
+  )
 
   // The stage is special in that it creates a domElement that must be added to our page
   document.getElementById('game').appendChild(stage.renderer.domElement)
@@ -689,64 +702,69 @@ const start = async () => {
     target: player,
   }))
   window.addEventListener('keydown', (e) => {
-    if (e.target === stage.renderer.domElement) {
-      if (e.keyCode === KEY_BACK_SPACE || e.keyCode === KEY_DELETE) {
-        runCommandSimple('object delete')
-        // Don't accidentally allow backspace to trigger browser back
+    if (e.target.tagName === 'INPUT') {
+      return
+    }
+    if (e.keyCode === KEY_BACK_SPACE || e.keyCode === KEY_DELETE) {
+      runCommandSimple('object delete')
+      // Don't accidentally allow backspace to trigger browser back
+      e.preventDefault()
+    }
+    // This makes it so that 'tab' is controlled by us, rather than
+    // the default HTML tabIndex system
+    else if (e.keyCode === KEY_TAB) {
+      e.preventDefault()
+    } else if (e.keyCode === KEY_ESCAPE && stage.selection.count() >= 1) {
+      runCommandSimple('select none')
+    }
+    // Support `ctrl+A` and `cmd+A` for selecting all
+    else if (e.keyCode === KEY_A && (e.ctrlKey || e.metaKey)) {
+      runCommandSimple('select all')
+      e.preventDefault()
+    }
+    // Support `ctrl+C` and `cmd+C` for copy
+    else if (e.keyCode === KEY_C && (e.ctrlKey || e.metaKey)) {
+      runCommandSimple('select copy')
+      e.preventDefault()
+    }
+    // Support `ctrl+V` and `cmd+V` for copy
+    else if (e.keyCode === KEY_V && (e.ctrlKey || e.metaKey)) {
+      runCommand('select paste', {
+        network,
+        stage,
+        config,
+        position: mousePointer.object.position,
+      })
+    }
+    // Make it easier to type '/object` and all the other commands
+    else if (e.keyCode === KEY_SLASH /* Forward Slash */) {
+      e.preventDefault()
+      stage.focusOnInput()
+      document.getElementById('input').value = '/'
+    }
+    // Mute/unmute
+    else if (e.keyCode === KEY_M) {
+      // const env = { network, stage, config }
+      // if (stage.player.videoBubble.object.muted) {
+      //   runCommand('unmute', env)
+      // } else {
+      //   runCommand('mute', env)
+      // }
+    }
+    // Forward other keys to the keyboard controller
+    else {
+      const wasHandled = kbController.keyPressed(e.keyCode, {
+        shift: e.shiftKey,
+        ctrl: e.ctrlKey,
+        meta: e.metaKey,
+        repeat: e.repeat,
+      })
+      if (wasHandled) {
         e.preventDefault()
-      }
-      // This makes it so that 'tab' is controlled by us, rather than
-      // the default HTML tabIndex system
-      else if (e.keyCode === KEY_TAB) {
-        e.preventDefault()
-      } else if (e.keyCode === KEY_ESCAPE && stage.selection.count() >= 1) {
-        runCommandSimple('select none')
-      }
-      // Support `ctrl+A` and `cmd+A` for selecting all
-      else if (e.keyCode === KEY_A && (e.ctrlKey || e.metaKey)) {
-        runCommandSimple('select all')
-        e.preventDefault()
-      }
-      // Support `ctrl+C` and `cmd+C` for copy
-      else if (e.keyCode === KEY_C && (e.ctrlKey || e.metaKey)) {
-        runCommandSimple('select copy')
-        e.preventDefault()
-      }
-      // Support `ctrl+V` and `cmd+V` for copy
-      else if (e.keyCode === KEY_V && (e.ctrlKey || e.metaKey)) {
-        runCommand('select paste', {
-          network,
-          stage,
-          config,
-          position: mousePointer.object.position,
-        })
-      }
-      // Make it easier to type '/object` and all the other commands
-      else if (e.keyCode === KEY_SLASH /* Forward Slash */) {
-        e.preventDefault()
-        stage.focusOnInput()
-        document.getElementById('input').value = '/'
-      }
-      // Mute/unmute
-      else if (e.keyCode === KEY_M) {
-        const env = { network, stage, config }
-        if (stage.player.videoBubble.object.muted) {
-          runCommand('unmute', env)
-        } else {
-          runCommand('mute', env)
-        }
-      }
-      // Forward other keys to the keyboard controller
-      else if (!e.repeat) {
-        kbController.keyPressed(e.keyCode, {
-          shift: e.shiftKey,
-          ctrl: e.ctrlKey,
-          meta: e.metaKey,
-        })
       }
     }
   })
-  document.addEventListener('keyup', (e) => {
+  window.addEventListener('keyup', (e) => {
     if (e.target === stage.renderer.domElement) {
       kbController.keyReleased(e.keyCode, {
         shift: e.shiftKey,
@@ -808,6 +826,35 @@ const start = async () => {
       break
   }
 
+  myParticipantIds.subscribe((ids) => {
+    const myJid = ids[config.JITSI_CONFERENCE]
+    if (myJid) {
+      player.setJid(myJid)
+      console.log('myJid', myJid)
+    }
+  })
+
+  stage.addPostrenderFunction(() => {
+    const positions = {}
+    // videoPositions.subscribe((positions_) => (positions = positions_))()
+
+    stage.forEachEntityOfType('player', (player) => {
+      const jid = player.getJid()
+
+      if (jid) {
+        if (!positions[jid]) {
+          positions[jid] = { x: 0, y: 0 }
+        }
+        positions[jid].x = player.videoPosition.x
+        positions[jid].y = player.videoPosition.y
+      }
+    })
+
+    videoPositions.update((oldPositions) =>
+      Object.assign(oldPositions, positions)
+    )
+  })
+  /*
   initializeAVChat({
     playerId: player.uuid,
     room:
@@ -859,6 +906,7 @@ const start = async () => {
       }
     },
   })
+  */
 
   // console.log('start() complete')
 }

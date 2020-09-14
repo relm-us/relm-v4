@@ -103,26 +103,35 @@ const KeyboardKeyMap = stampit(Component, {
       if (action === undefined) {
         // If this doesn't match a known action, emit 'unknown' so that we can
         // potentially help the player with visual feedback or other cues.
-        this.emit('unknown', keyCode, opts)
+        if (!opts.repeat) {
+          this.emit('unknown', keyCode, opts)
+        }
+        return false
       } else if (['done', 'switch', 'close'].includes(action)) {
-        this.emit(action)
-        this.actions.clear()
+        if (!opts.repeat) {
+          this.emit(action)
+          this.actions.clear()
+        }
+        return true
       } else {
         // Check for 'double tap' action
-        const now = Date.now()
-        if (
-          (!this.doubleStopwatch[action] ||
-            now - this.doubleStopwatch[action] > 500) &&
-          this.releaseStopwatch[action] &&
-          now - this.releaseStopwatch[action] < 200
-        ) {
-          // Emit 'double tap'
-          this.emit('doublePressed', action)
-          this.doubleStopwatch[action] = now
-        }
+        if (!opts.repeat) {
+          const now = Date.now()
+          if (
+            (!this.doubleStopwatch[action] ||
+              now - this.doubleStopwatch[action] > 500) &&
+            this.releaseStopwatch[action] &&
+            now - this.releaseStopwatch[action] < 200
+          ) {
+            // Emit 'double tap'
+            this.emit('doublePressed', action)
+            this.doubleStopwatch[action] = now
+          }
 
-        // Add regular action
-        this.actions.add(action)
+          // Add regular action
+          this.actions.add(action)
+        }
+        return true
       }
     },
 

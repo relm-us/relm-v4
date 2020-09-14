@@ -199,6 +199,20 @@ function checkWebpFeature(feature, callback) {
   img.src = 'data:image/webp;base64,' + kTestImages[feature]
 }
 
+/**
+ * Convert a 3D position into a 2D screen coordinate
+ *
+ * @param {Vector3} position - 3D position to turn into a 2D coordinate by projection
+ * @param {Camera} camera - the camera to use as the projection
+ * @param {{width: float, height: float}} screen - width and height of the screen or canvas
+ */
+function project2d(position, camera, screen) {
+  position.project(camera)
+  position.x = ((position.x + 1) * screen.width) / 2
+  position.y = (-(position.y - 1) * screen.height) / 2
+  position.z = 0
+}
+
 export {
   uuidv4,
   getOrCreateLocalId,
@@ -217,4 +231,5 @@ export {
   delta,
   distance,
   checkWebpFeature,
+  project2d,
 }

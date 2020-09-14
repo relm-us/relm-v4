@@ -227,7 +227,7 @@ const Player = stampit(
     deepStatics: {
       goalDefinitions: {
         color: defineGoal('clr', { r: 1.0, g: 1.0, b: 1.0 }),
-        video: defineGoal('vid', { cam: true }),
+        video: defineGoal('vid', { cam: true, jid: null }),
       },
     },
 
@@ -236,6 +236,15 @@ const Player = stampit(
     },
 
     methods: {
+      setJid(jid) {
+        console.log('set jid', jid)
+        this.goals.video.update({ jid })
+      },
+
+      getJid() {
+        return this.goals.video.get('jid')
+      },
+
       update(_delta) {
         const colorGoal = this.goals.color
         if (!colorGoal.achieved) {
@@ -250,29 +259,9 @@ const Player = stampit(
 
         const videoGoal = this.goals.video
         if (!videoGoal.achieved) {
-          const vidobj = this.videoBubble.object
-          vidobj.setIsCamera(videoGoal.get('cam'))
-
-          vidobj.setOnClick(() => {
-            if (videoGoal.get('cam') === false) {
-              vidobj.video.requestFullscreen()
-              vidobj.video.classList.add('fullscreen')
-            }
-            document.addEventListener('fullscreenchange', () => {
-              vidobj.video.classList.remove('fullscreen')
-            })
-          })
-
-          vidobj.setOnDrag((pos) => {
-            const offsetGoal = this.goals.videoBubbleOffset
-            // console.log('player onDrag', pos, this.stage.fov)
-            offsetGoal.update({
-              x: offsetGoal.get('x') + (pos.x * 100) / this.stage.fov,
-              y: offsetGoal.get('y') - (pos.y * 100) / this.stage.fov,
-              z: offsetGoal.get('z'),
-            })
-          })
-
+          const visible = videoGoal.get('jid') !== null
+          console.log('videoGoal visible', visible)
+          this.setVideoVisibility(visible)
           videoGoal.markAchieved()
         }
       },

@@ -1,8 +1,7 @@
 <script>
   import { onMount } from 'svelte'
-  import { element } from 'svelte/internal'
-  import { avatarOptionFromPlayerId } from '../avatars'
-  import { hasAncestor } from '../svelte/util.js'
+  // import { hasAncestor } from '../../../../svelte/util.js'
+  import { hasAncestor } from '/svelte/util.js'
   import {
     KEY_RETURN,
     KEY_SPACE,
@@ -116,7 +115,7 @@
 
     cursor: pointer;
 
-    font-family: Arial, Helvetica, sans-serif;
+    font-family: Verdana, Geneva, Tahoma, sans-serif;
   }
   .select:focus {
     outline: none;

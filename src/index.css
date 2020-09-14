@@ -1,11 +1,22 @@
-#game {
+html,
+body {
+  font-family: Verdana, Geneva, Tahoma, sans-serif;
+  height: 100%;
+  margin: 0;
+  padding: 0;
+}
+.hide {
+  display: none !important;
+}
+
+/* #game {
   -webkit-touch-callout: none;
   -webkit-user-select: none;
   -khtml-user-select: none;
   -moz-user-select: none;
   -ms-user-select: none;
   user-select: none;
-}
+} */
 
 /*
   Thought Bubble CSS
@@ -296,7 +307,7 @@
   height: 30px;
 }
 
-#game:focus-within::before {
+/* #game:focus-within::before {
   content: '';
   position: absolute;
   top: 0;
@@ -304,7 +315,7 @@
   left: 0;
   right: 0;
   box-shadow: inset 0px 0px 12px #fe9;
-}
+} */
 
 #previews {
   top: 50%;
@@ -315,79 +326,6 @@
 }
 #previews.show {
   display: block;
-}
-
-.video-wrapper {
-  position: absolute;
-  transform: translate(-50%, -100%);
-  pointer-events: none;
-}
-.video-wrapper.drag-lock .video-circle {
-  border-color: #eebb11;
-}
-.video-wrapper.show {
-  animation: fadein 0.5s;
-}
-.video-wrapper.hide {
-  animation: fadeout 0.5s;
-  animation-fill-mode: forwards;
-}
-.video-circle {
-  width: 100px;
-  height: 100px;
-  border-radius: 100%;
-  border: 3px solid white;
-  overflow: hidden;
-  background-color: #ddd;
-  position: relative;
-  z-index: 1;
-}
-.video-circle.desktop {
-  border-radius: 0 !important;
-}
-.video-feed {
-  position: relative;
-  left: 50%;
-  top: 50%;
-  transform: translate(-50%, -50%);
-}
-.video-feed.mirror {
-  transform: translate(-50%, -50%) rotateY(180deg);
-}
-.video-feed.fullscreen {
-  width: 100% !important;
-  height: 100% !important;
-}
-.mute-button {
-  background: white center no-repeat url(./icons/unmuted.png);
-  background-size: 1.1em 1.1em;
-  width: 1.5em;
-  height: 1.5em;
-  position: absolute;
-  left: 50%;
-  transform: translate(-50%, 0);
-  bottom: -0.75em;
-  border: 3px solid white;
-  border-radius: 18px;
-  z-index: 1;
-  pointer-events: auto;
-}
-.mute-button:hover {
-  border-color: #eebb11;
-}
-.mute-button:hover::before {
-  content: 'Mute (M)';
-  white-space: nowrap;
-  position: relative;
-  left: 2em;
-  padding: 2px 5px;
-  height: 20px;
-  border: 1px solid #444;
-  border-radius: 3px;
-  background-color: white;
-}
-.mute-button.muted {
-  background-image: url(./icons/muted.png);
 }
 
 .info-title {

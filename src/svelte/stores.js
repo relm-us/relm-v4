@@ -8,11 +8,4 @@ export default {
   pressTabHelpVisible: writable(false),
   // A map of Jitsi conferenceIds to the player's participantId
   myJitsiParticipantIds: writable({}),
-
-  videoTrack: writable(null),
-  audioTrack: writable(null),
-  videoRequested: writable(true),
-  audioRequested: writable(true),
-  cameraDeviceId: writable(null),
-  micDeviceId: writable(null),
 }

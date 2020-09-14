@@ -47,7 +47,6 @@ const Document = stampit({
     },
 
     _connectWebsocketProvider({ serverYjsUrl, room, params = {}, onSync }) {
-      console.log(`Opening websocket to room '${room}'`, serverYjsUrl, params)
       this.provider = new WebsocketProvider(serverYjsUrl, room, this.doc, {
         params,
       })
@@ -135,29 +134,28 @@ const TransientDocument = stampit(Document, {
 
   methods: {
     installInterceptors(entity, abbrevs = ['p', 'r', 'spd', 'ans', 'vid']) {
-      this._cachedAwarenessState[entity.uuid] = {}
+      const uuid = entity.uuid
+      this._cachedAwarenessState[uuid] = {}
       abbrevs.forEach((goalAbbrev) => {
         if (entity.goals.has(goalAbbrev)) {
           const internalMap = entity.goals.get(goalAbbrev)._map
           const keys = Array.from(internalMap.keys())
           // Set default values
-          this._cachedAwarenessState[entity.uuid][
-            goalAbbrev
-          ] = internalMap.toJSON()
+          this._cachedAwarenessState[uuid][goalAbbrev] = internalMap.toJSON()
           installGetSetInterceptors(internalMap, keys, {
             has: (key) => {
-              return this.hasState(entity.uuid, goalAbbrev, key)
+              return this.hasState(uuid, goalAbbrev, key)
             },
             get: (key) => {
-              return this.getState(entity.uuid, goalAbbrev, key)
+              return this.getState(uuid, goalAbbrev, key)
             },
             set: (key, value) => {
-              if (this.setState(entity.uuid, goalAbbrev, key, value)) {
+              if (this.setState(uuid, goalAbbrev, key, value)) {
                 entity.goals.get(goalAbbrev).achieved = false
               }
             },
             toJSON: (originalJson) => {
-              const state = this.getAllState(entity.uuid, goalAbbrev) || {}
+              const state = this.getAllState(uuid, goalAbbrev) || {}
               const json = Object.assign(originalJson, state)
               return json
             },
@@ -210,12 +208,19 @@ const TransientDocument = stampit(Document, {
     },
 
     setState(uuid, goalAbbrev, key, value) {
-      if (this._cachedAwarenessState[uuid][goalAbbrev][key] !== value) {
-        this._cachedAwarenessState[uuid][goalAbbrev][key] = value
-        this._cachedAwarenessStateChanged = true
-        return true
-      } else {
-        return false
+      try {
+        if (this._cachedAwarenessState[uuid][goalAbbrev][key] !== value) {
+          this._cachedAwarenessState[uuid][goalAbbrev][key] = value
+          this._cachedAwarenessStateChanged = true
+          return true
+        } else {
+          return false
+        }
+      } catch (err) {
+        console.warn(
+          `Can't setState for ['${uuid}']['${goalAbbrev}']['${key}']`
+        )
+        throw err
       }
     },
 
