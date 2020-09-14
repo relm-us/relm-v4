@@ -1,19 +1,16 @@
 <script>
   import { onMount } from 'svelte'
   import { spring } from 'svelte/motion'
+
   import { canAutoPermit, getDefaultDeviceId } from './avutil.js'
+  import { deviceList } from './DeviceListStore.js'
+  import { videoTrack, audioTrack } from './LocalTrackStore.jsre.js'
+
   import Video from './Video.svelte'
   import Audio from './Audio.svelte'
   import DeviceSelector from './DeviceSelector.svelte'
-  import { deviceList } from './DeviceListStore.js'
 
   const AUDIO_LEVEL_MINIMUM = 0.0
-
-  // Global state
-  let videoTrack
-  let audioTrack
-
-  // videoTrack.disposed || videoTrack.isEnded()
 
   // Local state
   let localTracks = []
@@ -131,11 +128,13 @@
     }
 
     if (localTracks.length >= 1) {
-      videoTrack = localTracks.find((track) => track.type === 'video')
-      audioTrack = localTracks.find((track) => track.type === 'audio')
+      const videoTrack_ = localTracks.find((track) => track.type === 'video')
+      const audioTrack_ = localTracks.find((track) => track.type === 'audio')
+      videoTrack.set(videoTrack_)
+      audioTrack.set(audioTrack_)
 
-      if (audioTrack) {
-        audioTrack.addEventListener(
+      if (audioTrack_) {
+        $audioTrack.addEventListener(
           JitsiMeetJS.events.track.TRACK_AUDIO_LEVEL_CHANGED,
           audioLevelChanged
         )
@@ -148,7 +147,7 @@
       // to see more information about the devices available to the user, so requery
       await deviceList.requery()
     } else {
-      // Oh dear, we can't get anything to work
+      console.warn(`Oh dear, we can't get any audio or video tracks to work`)
     }
   }
 
@@ -174,9 +173,9 @@
   {#if hasPermission}
     <div class="video-box">
       {#if letMeHearMyself}
-        <Audio track={audioTrack} />
+        <Audio track={$audioTrack} />
       {/if}
-      <Video track={videoTrack} mirror={true} onSuspend={requestPermissions} />
+      <Video track={$videoTrack} mirror={true} onSuspend={requestPermissions} />
       <div class="video-stack overlay">
         {#if !audioRequested && !videoRequested}
           <div class="message">Join with cam and mic off</div>
@@ -254,11 +253,6 @@
       {#if requestBlocked}Try Again{:else}Request Permissions{/if}
     </button>
   {/if}
-  <div style="border 1px solid black; ">
-    {#each $deviceList as device}
-      <div>{device.label}: {device.deviceId}</div>
-    {/each}
-  </div>
 </div>
 
 <style>
