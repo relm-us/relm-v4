@@ -164,8 +164,8 @@
   <div class="state">My Role: {myRole}</div>
   <div class="participants">
     <VideoCircle
+      participantId={myParticipantId}
       videoTrack={$videoTrack}
-      audioTrack={$audioTrack}
       mirror={true} />
     {#each Object.values(participants) as participant}
       <!-- <Participant {participant} /> -->

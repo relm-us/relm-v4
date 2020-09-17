@@ -116,7 +116,7 @@
 
     cursor: pointer;
 
-    font-family: Arial, Helvetica, sans-serif;
+    font-family: Verdana, Geneva, Tahoma, sans-serif;
   }
   .select:focus {
     outline: none;

@@ -1,5 +1,9 @@
 import { writable } from 'svelte/store'
 
-const participants = writable({})
+// string
+const myParticipantId = writable(null)
 
-export { participants }
+// [key: string]: {x: float, y: float}
+const videoPositions = writable({})
+
+export { myParticipantId, videoPositions }

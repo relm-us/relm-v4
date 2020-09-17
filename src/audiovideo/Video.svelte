@@ -6,6 +6,7 @@
 
   export let id = uuidv4()
   export let autoPlay = true
+  export let fullscreen = false
   // iOS needs this so the video doesn't automatically play full screen
   export let playsInline = true
   export let track = undefined
@@ -86,6 +87,7 @@
 <video
   bind:this={videoElement}
   class:mirror
+  class:fullscreen
   {id}
   autoPlay={autoPlay ? true : undefined}
   playsInline={playsInline ? true : undefined}
@@ -99,5 +101,9 @@
   }
   video.mirror {
     transform: scaleX(-1);
+  }
+  .video.fullscreen {
+    width: 100%;
+    height: 100%;
   }
 </style>

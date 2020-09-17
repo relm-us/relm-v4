@@ -321,7 +321,7 @@
     margin: 8px;
     text-align: center;
 
-    font-family: Arial, Helvetica, sans-serif;
+    font-family: Verdana, Geneva, Tahoma, sans-serif;
   }
   .video-stack .message button {
     border: none;
@@ -345,7 +345,7 @@
     margin: 8px;
 
     font-size: 18px;
-    font-family: Arial, Helvetica, sans-serif;
+    font-family: Verdana, Geneva, Tahoma, sans-serif;
     padding: 8px 15px;
   }
   .button-tray button img {
