@@ -52,17 +52,22 @@
 </script>
 
 <div class="panel">
+  {#if false}
+    <div
+      class="button"
+      class:opaque={cameraPanelOpen}
+      on:click={toggleShowCameraSetup}>
+      <div class="icon">
+        <img src="/av-config-icon.svg" alt="Microphone/Camera Settings" />
+      </div>
+      <div class="label">Cam/Mic Setup</div>
+    </div>
+  {/if}
+
   <div
     class="button first"
-    class:opaque={cameraPanelOpen}
-    on:click={toggleShowCameraSetup}>
-    <div class="icon">
-      <img src="/av-config-icon.svg" alt="Microphone/Camera Settings" />
-    </div>
-    <div class="label">Cam/Mic Setup</div>
-  </div>
-
-  <div class="button" class:opaque={avatarPanelOpen} on:click={handleClose}>
+    class:opaque={avatarPanelOpen}
+    on:click={handleClose}>
     <div class="icon">
       <img src="/select-avatar-icon.svg" alt="Select Avatar" />
     </div>
