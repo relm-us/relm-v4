@@ -76,7 +76,8 @@
 
 <!-- Note:
   A number of video attributes are HTML "Boolean attributes", so to prevent the 
-  attribute key from being rendered, Svelte needs the value to be `undefined` when false:
+  attribute key from being incorrectly rendered, Svelte needs the value to be
+  `undefined` when false:
   - autoplay
   - playsinline
   - disablepictureinpicture
@@ -92,7 +93,9 @@
 
 <style>
   video {
-    object-fit: contain;
+    object-fit: cover;
+    width: 100%;
+    height: 100%;
   }
   video.mirror {
     transform: scaleX(-1);

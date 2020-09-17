@@ -3,8 +3,8 @@
 
   import { config } from '../config.js'
   import { onInterval } from '../svelte/util.js'
-  import { videoTrack, audioTrack } from './LocalTrackStore.jsre.js'
-  
+  import { videoTrack, audioTrack } from './LocalTrackStore.js'
+
   import Conference from './Conference.svelte'
 
   // @type {Array<string>} conferenceIds - the unique name of the Jitsi conference (room) to join
@@ -101,7 +101,7 @@
   .status {
     position: fixed;
     top: 0;
-    right: 0;
+    right: 16px;
   }
 
   .status img {

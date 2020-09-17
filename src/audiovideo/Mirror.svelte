@@ -4,7 +4,7 @@
 
   import { canAutoPermit, getDefaultDeviceId } from './avutil.js'
   import { deviceList } from './DeviceListStore.js'
-  import { videoTrack, audioTrack } from './LocalTrackStore.jsre.js'
+  import { videoTrack, audioTrack } from './LocalTrackStore.js'
 
   import Video from './Video.svelte'
   import Audio from './Audio.svelte'
@@ -14,6 +14,9 @@
 
   // Local state
   let localTracks = []
+  let videoTrack_ = null
+  let audioTrack_ = null
+
   let selectedDevices = {}
   let requestBlocked = false
   let enterMessage = null
@@ -128,13 +131,11 @@
     }
 
     if (localTracks.length >= 1) {
-      const videoTrack_ = localTracks.find((track) => track.type === 'video')
-      const audioTrack_ = localTracks.find((track) => track.type === 'audio')
-      videoTrack.set(videoTrack_)
-      audioTrack.set(audioTrack_)
+      videoTrack_ = localTracks.find((track) => track.type === 'video')
+      audioTrack_ = localTracks.find((track) => track.type === 'audio')
 
       if (audioTrack_) {
-        $audioTrack.addEventListener(
+        audioTrack_.addEventListener(
           JitsiMeetJS.events.track.TRACK_AUDIO_LEVEL_CHANGED,
           audioLevelChanged
         )
@@ -152,7 +153,17 @@
   }
 
   const joinGame = () => {
-    alert('TODO')
+    if (videoRequested && videoTrack_) {
+      videoTrack.set(videoTrack_)
+    } else {
+      videoTrack.set(null)
+    }
+
+    if (audioRequested && audioTrack_) {
+      audioTrack.set(audioTrack_)
+    } else {
+      audioTrack.set(null)
+    }
   }
 
   const handleHelp = () => {
@@ -173,9 +184,9 @@
   {#if hasPermission}
     <div class="video-box">
       {#if letMeHearMyself}
-        <Audio track={$audioTrack} />
+        <Audio track={audioTrack_} />
       {/if}
-      <Video track={$videoTrack} mirror={true} onSuspend={requestPermissions} />
+      <Video track={videoTrack_} mirror={true} onSuspend={requestPermissions} />
       <div class="video-stack overlay">
         {#if !audioRequested && !videoRequested}
           <div class="message">Join with cam and mic off</div>

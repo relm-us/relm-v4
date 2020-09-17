@@ -1,9 +1,10 @@
-<script>
+<script lang="ts">
   import { onMount } from 'svelte'
   import omit from 'just-omit'
 
-  import { myJitsiParticipantIds } from '../svelte/stores.js'
+  import { videoTrack, audioTrack } from './LocalTrackStore.js'
   import Participant from './Participant.svelte'
+  import VideoCircle from './VideoCircle.svelte'
 
   export let connection
   export let conferenceId
@@ -25,7 +26,13 @@
   let participants = {}
   let participantRoles = {}
 
+  let remoteTracks = {
+    video: {},
+    audio: {},
+  }
+
   const userJoined = (participantId, participant) => {
+    console.log('userJoined', participantId, 'tracks', participant.getTracks())
     participants[participantId] = participant
     participantRoles[participantId] = participant.getRole()
   }
@@ -42,21 +49,32 @@
     // Other participants are handled by individual Participant components
   }
 
-  const trackAdded = (track) => {
+  function assignRemoteTrack(track, value) {
     if (track.isLocal()) {
-      console.log('trackAdded (local)', track)
       return
     }
-    console.log('trackAdded', track)
+
     const participantId = track.getParticipantId()
+    switch (track.getType()) {
+      case 'video':
+        remoteTracks['video'][participantId] = value
+        break
+      case 'audio':
+        remoteTracks['audio'][participantId] = value
+        break
+    }
+  }
+
+  const trackAdded = (track) => {
+    assignRemoteTrack(track, track)
   }
 
   const trackRemoved = (track) => {
-    console.log('trackRemoved', track)
+    assignRemoteTrack(track, undefined)
   }
 
   const trackAudioLevelChanged = (participantId, audioLevel) => {
-    console.log('audio level', participantId, audioLevel)
+    // console.log('audio level', participantId, audioLevel)
   }
 
   const events = {
@@ -80,12 +98,11 @@
       console.log('Conference already exists, leaving')
       conference.leave()
     }
-    conference = window.conference = connection.initJitsiConference(
-      conferenceId,
-      {
-        openBridgeChannel: true,
-      }
-    )
+    conference = connection.initJitsiConference(conferenceId, {
+      // TODO: switch to 'true' once Jitsi-side fix:
+      //       https://community.jitsi.org/t/failed-to-parse-channel-message-as-json/78382
+      openBridgeChannel: false,
+    })
 
     myParticipantId = conference.myUserId()
 
@@ -115,11 +132,29 @@
     conference.join()
   })
 
-  // $: switch (conferenceState) {
-  //   case ConferenceState.CONNECTED:
-  //     break
-  //   default:
-  // }
+  let cachedLocalTracks = {
+    video: null,
+    audio: null,
+  }
+
+  function registerLocalTrack(track, cacheKey) {
+    track.subscribe((track_) => {
+      if (track_) {
+        cachedLocalTracks[cacheKey] = track_
+        conference.addTrack(track_)
+      } else {
+        const cachedTrack = cachedLocalTracks[cacheKey]
+        if (cachedTrack) {
+          conference.removeTrack(cachedTrack).then(() => {
+            cachedLocalTracks[cacheKey] = null
+          })
+        }
+      }
+    })
+  }
+
+  registerLocalTrack(videoTrack, 'video')
+  registerLocalTrack(audioTrack, 'audio')
 </script>
 
 <div class="conference">
@@ -128,8 +163,16 @@
   <div class="state">My ID: {myParticipantId}</div>
   <div class="state">My Role: {myRole}</div>
   <div class="participants">
+    <VideoCircle
+      videoTrack={$videoTrack}
+      audioTrack={$audioTrack}
+      mirror={true} />
     {#each Object.values(participants) as participant}
-      <Participant {participant} role={participantRoles[participant.getId()]} />
+      <!-- <Participant {participant} /> -->
+      <VideoCircle
+        participantId={participant.getId()}
+        videoTrack={remoteTracks['video'][participant.getId()]}
+        audioTrack={remoteTracks['audio'][participant.getId()]} />
     {/each}
   </div>
 </div>
