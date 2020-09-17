@@ -1,4 +1,5 @@
 import stampit from 'stampit'
+import Stats from 'stats.js'
 import EventEmittable from '@stamp/eventemittable'
 import { Vector3, Matrix4, Box3, Frustum } from 'three'
 
@@ -280,19 +281,30 @@ const Stage = stampit(
        * Main animation loop starts here.
        */
       start() {
+        this.stats = new Stats()
+        document.body.appendChild(this.stats.dom)
+
         const animate = (nowMsec) => {
           let avgDelta = calculateAverageDelta(nowMsec)
 
           // render the animation frame for each object by calling each object's update function
-          // this.stats.begin()
+          this.stats.begin()
           this.allUpdates(avgDelta)
           this.render(avgDelta)
           this.allPostrenders()
-          // this.stats.end()
+          this.stats.end()
 
           // keep looping
           if (this.continueRendering) {
-            requestAnimationFrame(animate)
+            // Be nice to the CPU/GPU by only requesting frequent animation frames
+            // when the user is focused on the Relm window/tab:
+            if (document.hasFocus()) {
+              requestAnimationFrame(animate)
+            } else {
+              setTimeout(() => {
+                requestAnimationFrame(animate)
+              }, 200)
+            }
           }
         }
         requestAnimationFrame(animate)
