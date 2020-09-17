@@ -155,14 +155,17 @@ const UsesAssetAsImage = stampit(Component, {
 
     _createMaterial(texture, materialType) {
       switch (materialType) {
-        case 'photo':
-          return PhotoMaterial({ texture })
-        case 'add':
-          return PhotoMaterial({ texture, blending: AdditiveBlending })
-        case 'subtract':
-          return PhotoMaterial({ texture, blending: SubtractiveBlending })
-        case 'multiply':
-          return PhotoMaterial({ texture, blending: MultiplyBlending })
+        // TODO: GLSL shader language changed during upgrade to THREE.js r120
+        //       so we need to re-enable 'PhotoMaterial' with proper shader code
+
+        // case 'photo':
+        //   return PhotoMaterial({ texture })
+        // case 'add':
+        //   return PhotoMaterial({ texture, blending: AdditiveBlending })
+        // case 'subtract':
+        //   return PhotoMaterial({ texture, blending: SubtractiveBlending })
+        // case 'multiply':
+        //   return PhotoMaterial({ texture, blending: MultiplyBlending })
         default:
           return new MeshStandardMaterial({
             map: texture,
