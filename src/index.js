@@ -608,7 +608,6 @@ const start = async () => {
         }
         if (operation === '=' && selected.length > 0) {
           const one = selected[previousMousedownIndex % selected.length]
-          showToast(`Selected ${one.type} (${one.uuid})`)
           selected = [one]
         }
 
