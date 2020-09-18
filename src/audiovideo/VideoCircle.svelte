@@ -3,15 +3,21 @@
   import Audio from './Audio.svelte'
   import VideoMuteButton from './VideoMuteButton.svelte'
 
-  import { videoPositions } from './ParticipantStore.js'
+  import {
+    videoPositions,
+    videoVisibilities,
+    videoSize,
+  } from './ParticipantStore.js'
 
   window.videoPositions = videoPositions
+  window.videoVisibilities = videoVisibilities
+  window.videoSize = videoSize
 
   export let participantId
   export let videoTrack
-  export let audioTrack
+  export let audioTrack = null
+  export let volume = 0
   export let mirror = false
-  export let visible = true
 
   let muted = false
 
@@ -21,13 +27,21 @@
 
   let position
   $: position = $videoPositions[participantId] || { x: 100, y: 100 }
+
+  let visible
+  $: visible = $videoVisibilities[participantId] === true ? true : false
+
+  let firstTimeVisible = false
+  $: firstTimeVisible = visible || firstTimeVisible
 </script>
 
-{#if visible}
+{#if firstTimeVisible}
   <div
     class="wrapper"
+    class:show={visible}
+    class:hide={!visible}
     style="--x: {position.x || 0}px; --y: {position.y || 0}px;">
-    <div class="circle" style="--size: 100px">
+    <div class="circle" style="--size: {$videoSize}px">
       {#if videoTrack}
         <Video track={videoTrack} {mirror} />
       {/if}
@@ -35,7 +49,7 @@
         <Audio track={audioTrack} />
       {/if}
     </div>
-    <VideoMuteButton {muted} onToggle={handleToggleMute} />
+    <VideoMuteButton {muted} {volume} onToggle={handleToggleMute} />
   </div>
 {/if}
 
@@ -79,5 +93,21 @@
   }
   .circle.desktop {
     border-radius: 0 !important;
+  }
+  @keyframes fadein {
+    from {
+      opacity: 0;
+    }
+    to {
+      opacity: 1;
+    }
+  }
+  @keyframes fadeout {
+    from {
+      opacity: 1;
+    }
+    to {
+      opacity: 0;
+    }
   }
 </style>

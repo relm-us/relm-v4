@@ -1,17 +1,25 @@
 <script>
   export let muted = false
+  export let volume = 0
   export let onToggle = (_muted) => {}
+
+  let popup = false
 
   function handleClick() {
     onToggle(!muted)
   }
 </script>
 
-<div class="button" class:muted on:mousedown|preventDefault={handleClick}>
-  <!-- {#if muted}
-    <img src="/audio-disabled.svg" width="32" alt="Audio Disabled" />
-  {:else}<img src="/audio-enabled.svg" width="32" alt="Audio Enabled" />{/if} -->
-</div>
+<div
+  class="button"
+  class:muted
+  on:mousedown|preventDefault={handleClick}
+  on:mouseover={() => (popup = true)}
+  on:mouseout={() => (popup = false)}
+  style="--percent: {volume}%" />
+{#if popup}
+  <div class="popup">Mute (M)</div>
+{/if}
 
 <style>
   .button {
@@ -22,26 +30,37 @@
     height: 1.5em;
     transform: translate(-50%, 0);
 
-    background: white center no-repeat url(./icons/unmuted.png);
-    background-size: 1.1em 1.1em;
+    background-image: url(./icons/mic-unmuted-inv.png),
+      linear-gradient(
+        0deg,
+        rgba(70, 180, 74, 1) var(--percent),
+        rgba(66, 66, 66, 1) var(--percent)
+      );
+    background-size: 110%, 110%;
+    background-position: center, center;
 
     border: 3px solid white;
-    border-radius: 18px;
+    border-radius: 100%;
 
     z-index: 1;
+    overflow: hidden;
 
     pointer-events: auto;
+  }
+  .button.muted {
+    background-color: #f22;
+    background-image: url(./icons/mic-muted-inv.png);
   }
   .button:hover {
     border-color: #eebb11;
   }
-  .button:hover::before {
-    position: relative;
-    left: 2em;
-    height: 20px;
+  .popup {
+    position: absolute;
+    left: 50%;
+    bottom: -0.75em;
+    transform: translate(1.5em, 0);
 
     font-family: Verdana, Geneva, Tahoma, sans-serif;
-    content: 'Mute (M)';
 
     padding: 3px 8px 3px 8px;
 
@@ -49,8 +68,6 @@
 
     background-color: white;
     white-space: nowrap;
-  }
-  .button.muted {
-    background-image: url(./icons/muted.png);
+    z-index: 1;
   }
 </style>

@@ -6,4 +6,10 @@ const myParticipantId = writable(null)
 // [key: string]: {x: float, y: float}
 const videoPositions = writable({})
 
-export { myParticipantId, videoPositions }
+// float
+const videoSize = writable(100)
+
+// [key: string]: boolean
+const videoVisibilities = writable({})
+
+export { myParticipantId, videoPositions, videoVisibilities, videoSize }
