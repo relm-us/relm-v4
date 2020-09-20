@@ -9,6 +9,8 @@
     videoSize,
   } from '../ParticipantStore.js'
 
+  // import videoDisabledIcon from './images/video-disabled.svg'
+
   window.videoPositions = videoPositions
   window.videoVisibilities = videoVisibilities
   window.videoSize = videoSize
@@ -19,10 +21,21 @@
   export let volume = 0
   export let mirror = false
 
-  let muted = false
+  export let videoEnabled = true
+  export let audioEnabled = true
+  export let onVideoChanged = (_) => {}
+  export let onAudioChanged = (_) => {}
 
-  function handleToggleMute(muted_) {
-    muted = muted_
+  function toggleVideoEnabled() {
+    videoEnabled = !videoEnabled
+    onVideoChanged(videoEnabled)
+  }
+
+  function handleSetAudioEnabled(enabled) {
+    if (audioEnabled !== enabled) {
+      audioEnabled = enabled
+      onAudioChanged(enabled)
+    }
   }
 
   let position
@@ -38,14 +51,22 @@
   class:hide={!visible}
   style="--x: {position.x || 0}px; --y: {position.y || 0}px;">
   <div class="circle" style="--size: {$videoSize}px">
-    {#if videoTrack}
+    {#if videoTrack && videoEnabled}
       <Video track={videoTrack} {mirror} />
     {/if}
-    {#if audioTrack}
+    {#if audioTrack && audioEnabled}
       <Audio track={audioTrack} />
     {/if}
   </div>
-  <VideoMuteButton {muted} {volume} onToggle={handleToggleMute} />
+  {#if videoTrack && videoEnabled}
+    <div class="overlay enabled" on:click={toggleVideoEnabled} />
+  {:else}
+    <div class="overlay disabled" on:click={toggleVideoEnabled} />
+  {/if}
+  <VideoMuteButton
+    {volume}
+    {audioEnabled}
+    setAudioEnabled={handleSetAudioEnabled} />
 </div>
 
 <style>
@@ -59,7 +80,7 @@
     top: var(--y);
 
     transform: translate(-50%, -50%);
-    pointer-events: none;
+    /* pointer-events: none; */
   }
   .wrapper.show {
     visibility: visible;
@@ -91,5 +112,25 @@
   }
   .circle.desktop {
     border-radius: 0 !important;
+  }
+  .overlay {
+    position: absolute;
+    z-index: 2;
+    width: 100%;
+    height: 100%;
+    top: 0;
+    border-radius: 99% 100% 100% 100%;
+  }
+  .overlay:hover {
+    background-color: rgba(0, 0, 0, 0.5);
+    background-size: 50%;
+    background-position: center;
+    background-repeat: no-repeat;
+  }
+  .overlay.enabled:hover {
+    background-image: url(./images/video-disabled.svg);
+  }
+  .overlay.disabled:hover {
+    background-image: url(./images/video-enabled.svg);
   }
 </style>

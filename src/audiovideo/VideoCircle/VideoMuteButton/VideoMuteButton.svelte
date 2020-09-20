@@ -1,18 +1,18 @@
 <script>
-  export let muted = false
+  export let audioEnabled = true
   export let volume = 0
-  export let onToggle = (_muted) => {}
+  export let setAudioEnabled = (_) => {}
 
   let popup = false
 
   function handleClick() {
-    onToggle(!muted)
+    setAudioEnabled(!audioEnabled)
   }
 </script>
 
 <div
   class="button"
-  class:muted
+  class:muted={!audioEnabled}
   on:mousedown|preventDefault={handleClick}
   on:mouseover={() => (popup = true)}
   on:mouseout={() => (popup = false)}
@@ -42,7 +42,7 @@
     border: 3px solid white;
     border-radius: 100%;
 
-    z-index: 1;
+    z-index: 3;
     overflow: hidden;
 
     pointer-events: auto;

@@ -6,6 +6,10 @@
 
   import Conference from '../Conference'
 
+  import connectingIcon from './images/connecting.svg'
+  import connectedIcon from './images/connected.svg'
+  import connectionFailedIcon from './images/connection-failed.svg'
+
   // @type {Array<string>} conferenceIds - the unique name of the Jitsi conference (room) to join
   export let conferenceIds
 
@@ -69,11 +73,11 @@
 <div class="connection">
   <div class="status">
     {#if connectState === ConnectState.CONNECTING}
-      <img src="/icons/connecting.svg" alt="Connecting..." />
+      <img src={connectingIcon} alt="Connecting..." />
     {:else if connectState === ConnectState.CONNECTED}
-      <img src="/icons/connected.svg" alt="Connected." />
+      <img src={connectedIcon} alt="Connected." />
     {:else if connectState === ConnectState.FAILED}
-      <img src="/icons/connection-failed.svg" alt="Connection Failed." />
+      <img src={connectionFailedIcon} alt="Connection Failed." />
     {:else}.{/if}
   </div>
   <div class="conferences">
