@@ -3,7 +3,7 @@ import * as THREE from 'three'
 // Import external libraries and helpers
 import { guestNameFromPlayerId, avatarOptionFromPlayerId } from './avatars.js'
 import { Security } from './security.js'
-import { initializeAVChat, muteAudio, unmuteAudio } from './audiovideo/chat.js'
+// import { initializeAVChat, muteAudio, unmuteAudio } from './audiovideo/chat.js'
 import { normalizeWheel } from './lib/normalizeWheel.js'
 import 'toastify-js/src/toastify.css'
 
@@ -207,10 +207,10 @@ const start = async () => {
   // Allow local player to control self
   player.autonomous = false
 
-  const vidobj = player.videoBubble.object
-  vidobj.createDomElement()
-  vidobj.on('mute', muteAudio)
-  vidobj.on('unmute', unmuteAudio)
+  // const vidobj = player.videoBubble.object
+  // vidobj.createDomElement()
+  // vidobj.on('mute', muteAudio)
+  // vidobj.on('unmute', unmuteAudio)
 
   player.labelObj.setOnLabelChanged((text) => {
     player.goals.label.update({ text })
@@ -302,37 +302,36 @@ const start = async () => {
       // Set videoBubble diameter, which can change due to
       // (a) new players entering the scene, or
       // (b) zoom level changing
-      anyPlayer.videoBubble.object.setDiameter(playerHeight)
+      // anyPlayer.videoBubble.object.setDiameter(playerHeight)
       // (Note: due to bug in ThreeJS, we incorrectly exclude players
       //  from being "on stage" when the bottom of their avatar
       //  goes off screen, so we process diameters here.)
-
-      if (occasionalUpdate % 10 === 0) {
-        const audio = anyPlayer.videoBubble.object.audio
-        if (audio) {
-          const dist = player.object.position.distanceTo(
-            anyPlayer.object.position
-          )
-          // if dist = 0: (500 + 1000) / 500 = 3.0     => clamped to 1.0
-          // if dist = 1000: (500 - 0) / 500 = 1.0     => clamped to 1.0
-          // if dist = 1200: (500 - 200) / 500 = 0.6   => clamped to 0.6
-          // if dist = 2000: (500 - 1000) / 500 = -0.5 => clamped to 0.15
-          const volume = (500 - (dist - 1000)) / 500
-          audio.volume = THREE.MathUtils.clamp(volume, 0.15, 1.0)
-        }
-      }
+      // if (occasionalUpdate % 10 === 0) {
+      //   const audio = anyPlayer.videoBubble.object.audio
+      //   if (audio) {
+      //     const dist = player.object.position.distanceTo(
+      //       anyPlayer.object.position
+      //     )
+      //     // if dist = 0: (500 + 1000) / 500 = 3.0     => clamped to 1.0
+      //     // if dist = 1000: (500 - 0) / 500 = 1.0     => clamped to 1.0
+      //     // if dist = 1200: (500 - 200) / 500 = 0.6   => clamped to 0.6
+      //     // if dist = 2000: (500 - 1000) / 500 = -0.5 => clamped to 0.15
+      //     const volume = (500 - (dist - 1000)) / 500
+      //     audio.volume = THREE.MathUtils.clamp(volume, 0.15, 1.0)
+      //   }
+      // }
     })
-    stage.forEachEntityOnStageOfType(
-      'player',
-      (anyPlayer, i) => {
-        // Sort the visible players by Z order
-        const el = anyPlayer.videoBubble.object.domElement
-        if (el) {
-          el.style.zIndex = i + 1
-        }
-      },
-      sortByZ
-    )
+    // stage.forEachEntityOnStageOfType(
+    //   'player',
+    //   (anyPlayer, i) => {
+    //     // Sort the visible players by Z order
+    //     const el = anyPlayer.videoBubble.object.domElement
+    //     if (el) {
+    //       el.style.zIndex = i + 1
+    //     }
+    //   },
+    //   sortByZ
+    // )
 
     network.transients.sendState([playerId, mouseId])
   })
@@ -730,12 +729,12 @@ const start = async () => {
       }
       // Mute/unmute
       else if (e.keyCode === KEY_M) {
-        const env = { network, stage, config }
-        if (stage.player.videoBubble.object.muted) {
-          runCommand('unmute', env)
-        } else {
-          runCommand('mute', env)
-        }
+        // const env = { network, stage, config }
+        // if (stage.player.videoBubble.object.muted) {
+        //   runCommand('unmute', env)
+        // } else {
+        //   runCommand('mute', env)
+        // }
       }
       // Forward other keys to the keyboard controller
       else if (!e.repeat) {
@@ -809,6 +808,7 @@ const start = async () => {
       break
   }
 
+  /*
   initializeAVChat({
     playerId: player.uuid,
     room:
@@ -860,6 +860,7 @@ const start = async () => {
       }
     },
   })
+  */
 
   // console.log('start() complete')
 }

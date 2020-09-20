@@ -59,9 +59,9 @@
     {/if}
   </div>
   {#if videoTrack && videoEnabled}
-    <div class="overlay enabled" on:click={toggleVideoEnabled} />
+    <div class="overlay show-disable" on:click={toggleVideoEnabled} />
   {:else}
-    <div class="overlay disabled" on:click={toggleVideoEnabled} />
+    <div class="overlay show-enable" on:click={toggleVideoEnabled} />
   {/if}
   <VideoMuteButton
     {volume}
@@ -127,10 +127,10 @@
     background-position: center;
     background-repeat: no-repeat;
   }
-  .overlay.enabled:hover {
+  .overlay.show-disable:hover {
     background-image: url(./images/video-disabled.svg);
   }
-  .overlay.disabled:hover {
+  .overlay.show-enable:hover {
     background-image: url(./images/video-enabled.svg);
   }
 </style>

@@ -1,4 +1,10 @@
 {
-  "presets": ["@babel/env"]
+  "presets": [
+    [
+      "@babel/preset-env",
+      {
+        "debug": true
+      }
+    ]
+  ]
 }
-
