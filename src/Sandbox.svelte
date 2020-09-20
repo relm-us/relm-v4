@@ -1,7 +1,6 @@
 <script>
-  import Connection from './audiovideo/Connection.svelte'
-  import Video from './audiovideo/Video.svelte'
-  import Mirror from './audiovideo/Mirror.svelte'
+  import Connection from './audiovideo/Connection'
+  import Mirror from './audiovideo/Mirror'
 </script>
 
 <Mirror />

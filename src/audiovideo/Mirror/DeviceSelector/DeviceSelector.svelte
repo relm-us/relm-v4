@@ -1,9 +1,10 @@
 <script>
   import { createEventDispatcher } from 'svelte'
 
-  import { groupBy } from './avutil.js'
-  import { deviceList, defaultDevices } from './DeviceListStore.js'
-  import Select from './Select.svelte'
+  import { groupBy } from '../../avutil.js'
+  import Select from './Select'
+  
+  import { deviceList, defaultDevices } from '../../DeviceListStore.js'
 
   export let selected = {}
 

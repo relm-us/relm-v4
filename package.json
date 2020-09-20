@@ -45,9 +45,12 @@
     "parcel-plugin-asset-copier": "^1.0.0",
     "parcel-plugin-externals": "^0.3.3",
     "parcel-plugin-html-externals": "^0.2.0",
-    "parcel-plugin-svelte": "^4.0.6",
+    "parcel-plugin-svelte": "https://gitpkg.now.sh/canadaduane/parcel-plugin-svelte/packages/parcel-plugin-svelte?master",
     "standard": "^14.3.1",
     "svelte": "^3.23.2"
+  },
+  "devDependenciesComments": {
+    "parcel-plugin-svelte": "We're currently using a custom build that fixes a duplicate inline CSS issue; the dup CSS in turn causes CSS url() assets to fail. Once merged, we should be able to use DeMoorJasper/parcel-plugin-svelte again."
   },
   "externals": {
     "vendor/**/*": false

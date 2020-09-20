@@ -2,13 +2,19 @@
   import { onMount } from 'svelte'
   import { spring } from 'svelte/motion'
 
-  import { canAutoPermit, getDefaultDeviceId } from './avutil.js'
-  import { deviceList } from './DeviceListStore.js'
-  import { videoTrack, audioTrack } from './LocalTrackStore.js'
+  import { canAutoPermit, getDefaultDeviceId } from '../avutil.js'
+  import { deviceList } from '../DeviceListStore.js'
+  import { videoTrack, audioTrack } from '../LocalTrackStore.js'
 
-  import Video from './Video.svelte'
-  import Audio from './Audio.svelte'
-  import DeviceSelector from './DeviceSelector.svelte'
+  import Video from '../Video'
+  import Audio from '../Audio'
+  import DeviceSelector from './DeviceSelector'
+
+  import videoEnabledIcon from './images/video-enabled.svg'
+  import videoDisabledIcon from './images/video-disabled.svg'
+  import audioEnabledIcon from './images/audio-enabled.svg'
+  import audioDisabledIcon from './images/audio-disabled.svg'
+  import settingsIcon from './images/settings.svg'
 
   const AUDIO_LEVEL_MINIMUM = 0.0
 
@@ -152,7 +158,7 @@
     }
   }
 
-  const joinGame = () => {
+  const joinWorld = () => {
     if (videoRequested && videoTrack_) {
       videoTrack.set(videoTrack_)
     } else {
@@ -202,9 +208,9 @@
             on:click={toggleVideoRequested}
             class:track-disabled={!videoRequested}>
             {#if videoRequested}
-              <img src="/video-enabled.svg" width="32" alt="Video Enabled" />
+              <img src={videoEnabledIcon} width="32" alt="Video Enabled" />
             {:else}
-              <img src="/video-disabled.svg" width="32" alt="Video Disabled" />
+              <img src={videoDisabledIcon} width="32" alt="Video Disabled" />
             {/if}
           </button>
           <button
@@ -213,21 +219,21 @@
             class:track-disabled={!audioRequested}
             style="--audio-level:{audioError ? '0' : ($audioLevelSpring * 85 + 15).toFixed(2) + '%'}">
             {#if audioRequested}
-              <img src="/audio-enabled.svg" width="32" alt="Audio Enabled" />
+              <img src={audioEnabledIcon} width="32" alt="Audio Enabled" />
             {:else}
-              <img src="/audio-disabled.svg" width="32" alt="Audio Disabled" />
+              <img src={audioDisabledIcon} width="32" alt="Audio Disabled" />
             {/if}
           </button>
           {#if advancedSettingsSupported}
             <button class="corner" on:click={toggleAdvancedSettings}><img
-                src="/settings.svg"
+                src={settingsIcon}
                 width="32"
                 alt="Settings" /></button>
           {/if}
         </div>
       </div>
     </div>
-    <button class="main-action" on:click={joinGame}>Join meeting</button>
+    <button class="main-action" on:click={joinWorld}>Join world</button>
     {#if advancedSettings}
       <div class="advanced-settings">
         <DeviceSelector
@@ -246,7 +252,7 @@
       class:blocked={requestBlocked}
       style="transform: translate({$videoPositionSpring}px, 0)">
       <div class="image">
-        <img src="/video-disabled.svg" width="75" alt="Video Disabled" />
+        <img src={videoDisabledIcon} width="75" alt="Video Disabled" />
       </div>
       <div class="message">
         {#if requestBlocked}

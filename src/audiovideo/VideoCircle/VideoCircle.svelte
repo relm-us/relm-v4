@@ -1,13 +1,13 @@
 <script>
-  import Video from './Video.svelte'
-  import Audio from './Audio.svelte'
-  import VideoMuteButton from './VideoMuteButton.svelte'
+  import Video from '../Video'
+  import Audio from '../Audio'
+  import VideoMuteButton from './VideoMuteButton'
 
   import {
     videoPositions,
     videoVisibilities,
     videoSize,
-  } from './ParticipantStore.js'
+  } from '../ParticipantStore.js'
 
   window.videoPositions = videoPositions
   window.videoVisibilities = videoVisibilities
@@ -30,28 +30,23 @@
 
   let visible
   $: visible = $videoVisibilities[participantId] === true ? true : false
-
-  let firstTimeVisible = false
-  $: firstTimeVisible = visible || firstTimeVisible
 </script>
 
-{#if firstTimeVisible}
-  <div
-    class="wrapper"
-    class:show={visible}
-    class:hide={!visible}
-    style="--x: {position.x || 0}px; --y: {position.y || 0}px;">
-    <div class="circle" style="--size: {$videoSize}px">
-      {#if videoTrack}
-        <Video track={videoTrack} {mirror} />
-      {/if}
-      {#if audioTrack}
-        <Audio track={audioTrack} />
-      {/if}
-    </div>
-    <VideoMuteButton {muted} {volume} onToggle={handleToggleMute} />
+<div
+  class="wrapper"
+  class:show={visible}
+  class:hide={!visible}
+  style="--x: {position.x || 0}px; --y: {position.y || 0}px;">
+  <div class="circle" style="--size: {$videoSize}px">
+    {#if videoTrack}
+      <Video track={videoTrack} {mirror} />
+    {/if}
+    {#if audioTrack}
+      <Audio track={audioTrack} />
+    {/if}
   </div>
-{/if}
+  <VideoMuteButton {muted} {volume} onToggle={handleToggleMute} />
+</div>
 
 <style>
   .wrapper {
@@ -67,11 +62,14 @@
     pointer-events: none;
   }
   .wrapper.show {
-    animation: fadein 0.5s;
+    visibility: visible;
+    opacity: 1;
+    transition: visibility 0s linear 0s, opacity 300ms;
   }
   .wrapper.hide {
-    animation: fadeout 0.5s;
-    animation-fill-mode: forwards;
+    visibility: hidden;
+    opacity: 0;
+    transition: visibility 0s linear 300ms, opacity 300ms;
   }
 
   .circle {
@@ -93,21 +91,5 @@
   }
   .circle.desktop {
     border-radius: 0 !important;
-  }
-  @keyframes fadein {
-    from {
-      opacity: 0;
-    }
-    to {
-      opacity: 1;
-    }
-  }
-  @keyframes fadeout {
-    from {
-      opacity: 1;
-    }
-    to {
-      opacity: 0;
-    }
   }
 </style>

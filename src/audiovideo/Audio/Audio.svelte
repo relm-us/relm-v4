@@ -1,6 +1,6 @@
 <script>
   import { afterUpdate, onDestroy } from 'svelte'
-  import { uuidv4 } from '../util.js'
+  import { uuidv4 } from '../../util.js'
 
   export let id = uuidv4()
   export let loop = false

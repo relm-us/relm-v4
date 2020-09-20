@@ -1,11 +1,10 @@
 <script>
   import { onMount } from 'svelte'
 
-  import { config } from '../config.js'
-  import { onInterval } from '../svelte/util.js'
-  import { videoTrack, audioTrack } from './LocalTrackStore.js'
+  import { config } from '../../config.js'
+  // import { onInterval } from '../../svelte/util.js'
 
-  import Conference from './Conference.svelte'
+  import Conference from '../Conference'
 
   // @type {Array<string>} conferenceIds - the unique name of the Jitsi conference (room) to join
   export let conferenceIds

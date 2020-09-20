@@ -30,7 +30,7 @@
     height: 1.5em;
     transform: translate(-50%, 0);
 
-    background-image: url(./icons/mic-unmuted-inv.png),
+    background-image: url(./images/mic-unmuted-inv.png),
       linear-gradient(
         0deg,
         rgba(70, 180, 74, 1) var(--percent),
@@ -49,7 +49,7 @@
   }
   .button.muted {
     background-color: #f22;
-    background-image: url(./icons/mic-muted-inv.png);
+    background-image: url(./images/mic-muted-inv.png);
   }
   .button:hover {
     border-color: #eebb11;
