@@ -1,5 +1,5 @@
 <script>
-  import Welcome from './Welcome.svelte'
+  import Welcome from './Welcome'
   // import EnterName from './EnterName.svelte'
   // import InitialMicCamSetup from './InitialMicCamSetup.svelte'
   import JoinWorld from './JoinWorld.svelte'

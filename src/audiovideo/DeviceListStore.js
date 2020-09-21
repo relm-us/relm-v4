@@ -51,9 +51,9 @@ function createDeviceListStore() {
   }
 
   // Initialize the deviceList with whatever the browser will tell us at this time
-  ready(() => {
-    getDeviceList().then(setDeviceList)
-  })
+  // ready(() => {
+  //   getDeviceList().then(setDeviceList)
+  // })
 
   // Whenever there is a device change event, update the store
   mediaDevices.addEventListener(DEVICE_LIST_CHANGED, setDeviceList)
