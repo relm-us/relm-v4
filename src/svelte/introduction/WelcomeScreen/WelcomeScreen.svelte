@@ -1,6 +1,11 @@
 <script>
+  import ContinueButton from '../ContinueButton'
+  import Checkmark from './Checkmark'
+  import DefaultScreen from '../DefaultScreen'
+
   import TermsOfService from '../TermsOfService.svelte'
-  import Checkmark from '../Checkmark'
+
+  import { name, agreeTos } from '/svelte/SettingsStore.js'
 
   export let next = () => {}
 
@@ -10,12 +15,18 @@
   function handleAgree(value) {
     agree = value
   }
+
+  function handleContinue() {
+    $agreeTos = agree
+  }
 </script>
 
-<div class="background" />
-
-<div class="single-column">
-  <h1>Welcome to Relm!</h1>
+<DefaultScreen>
+  {#if $name && $name.length > 2}
+    <h1>Welcome to Relm, {$name}!</h1>
+  {:else}
+    <h1>Welcome to Relm!</h1>
+  {/if}
 
   <div class="relm-image" />
 
@@ -41,35 +52,16 @@
     </Checkmark>
   </div>
 
-  <button
-    class="continue"
-    class:disabled={!agree}
-    on:click={next}>Continue</button>
+  <ContinueButton on:click={handleContinue} enabled={agree} />
 
   {#if showTOS}
     <div class="terms-of-service">
       <TermsOfService />
     </div>
   {/if}
-</div>
+</DefaultScreen>
 
 <style>
-  .background {
-    position: fixed;
-    height: 100%;
-    width: 100%;
-    background-color: #333;
-    z-index: -1;
-  }
-  .single-column {
-    margin: 0 auto;
-    padding: 8px 24px;
-    width: 600px;
-    min-height: 100%;
-    border-left: 2px solid #ddd;
-    border-right: 2px solid #ddd;
-    background-color: white;
-  }
   .relm-image {
     width: 500px;
     height: 300px;
@@ -95,25 +87,5 @@
   .squeezed {
     max-width: 400px;
     margin: 0 auto;
-  }
-  .continue {
-    display: block;
-    margin: 32px auto;
-    border: 0;
-    background-color: #ffa833;
-    color: #643;
-    padding: 16px;
-    border-radius: 8px;
-    font-size: 24px;
-    font-weight: bold;
-    box-shadow: 0px 0px 2px 0px rgba(0, 0, 0, 0.5);
-    cursor: pointer;
-  }
-  .continue.disabled {
-    pointer-events: none;
-    opacity: 0.3;
-  }
-  .continue:hover {
-    background-color: #ffb840;
   }
 </style>
