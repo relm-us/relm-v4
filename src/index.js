@@ -1,7 +1,6 @@
 import * as THREE from 'three'
 
 // Import external libraries and helpers
-import { guestNameFromPlayerId, avatarOptionFromPlayerId } from './avatars.js'
 import { Security } from './security.js'
 // import { initializeAVChat, muteAudio, unmuteAudio } from './audiovideo/chat.js'
 import { normalizeWheel } from './lib/normalizeWheel.js'
@@ -47,14 +46,19 @@ import { addManifestTo } from './manifest_loaders.js'
 import { runCommand } from './commands.js'
 import { recordCoords } from './record_coords.js'
 import { getRef } from './dom_reference.js'
+import { avatarOptionsOfGender } from './avatars.js'
 
 import State from './svelte/stores.js'
 import {
   myParticipantIds,
   videoPositions,
-  videoVisibilities,
   videoSize,
 } from '/audiovideo/ParticipantStore.js'
+import {
+  name as playerName,
+  avatarGender,
+  avatarVariant,
+} from './svelte/SettingsStore.js'
 
 import {
   KEY_A,
@@ -157,14 +161,25 @@ const start = async () => {
       connectTransients: !config.SINGLE_PLAYER_MODE,
       onTransientsSynced: () => {
         const color = randomPastelColor()
+
         // If we don't find ourselves in the transients document, we need to create ourselves
         if (!network.transients.objects.has(playerId)) {
+          let name = 'Anonymous'
+          playerName.subscribe((name_) => (name = name_))()
+
+          let avatarId = avatarOptionsOfGender('f')[0]
+          avatarGender.subscribe((gender) => {
+            avatarVariant.subscribe((variant) => {
+              avatarId = avatarOptionsOfGender(gender)[variant].avatarId
+            })()
+          })()
+
           network.transients.create({
             type: 'player',
             uuid: playerId,
             goals: {
-              label: { text: guestNameFromPlayerId(playerId), oz: 50 },
-              animationMesh: { v: avatarOptionFromPlayerId(playerId).avatarId },
+              label: { text: name, oz: 50 },
+              animationMesh: { v: avatarId },
               animationSpeed: { v: 1.0 },
               speed: { max: 250 },
               color: color,
@@ -765,19 +780,20 @@ const start = async () => {
     }
   })
   window.addEventListener('keyup', (e) => {
-    if (e.target === stage.renderer.domElement) {
-      kbController.keyReleased(e.keyCode, {
-        shift: e.shiftKey,
-        ctrl: e.ctrlKey,
-        meta: e.metaKey,
-      })
-      // This makes it so that 'tab' is controlled by us, rather than
-      // the default HTML tabIndex system
-      if (e.keyCode === KEY_TAB) {
-        e.preventDefault()
-      } else if (e.keyCode === KEY_SLASH /* Forward Slash */) {
-        e.preventDefault()
-      }
+    if (e.target.tagName === 'INPUT') {
+      return
+    }
+    kbController.keyReleased(e.keyCode, {
+      shift: e.shiftKey,
+      ctrl: e.ctrlKey,
+      meta: e.metaKey,
+    })
+    // This makes it so that 'tab' is controlled by us, rather than
+    // the default HTML tabIndex system
+    if (e.keyCode === KEY_TAB) {
+      e.preventDefault()
+    } else if (e.keyCode === KEY_SLASH /* Forward Slash */) {
+      e.preventDefault()
     }
   })
   kbController.on('done', stage.focusOnInput)

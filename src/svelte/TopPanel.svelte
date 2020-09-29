@@ -12,10 +12,6 @@
   let helpPanelOpen = false
   let avatarPanelOpen = false
 
-  function preventDefault(event) {
-    event.preventDefault()
-  }
-
   function toggleShowCameraSetup(event) {
     cameraPanelOpen = !cameraPanelOpen
     helpPanelOpen = false

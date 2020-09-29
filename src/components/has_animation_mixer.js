@@ -11,30 +11,7 @@ import {
   maskAllowOtherColors,
   maskAllowSkinTones,
 } from '../uvMapUtils.js'
-
-const maleArmatures = {
-  A: 0,
-  B: 1,
-  C: 2,
-  D: 3,
-  E: 4,
-  F: 5,
-  G: 6,
-  fA: 7,
-  fB: 8,
-}
-
-const femaleArmatures = {
-  B: 0,
-  C: 1,
-  D: 2,
-  E: 3,
-  F: 4,
-  G: 5,
-  fA: 6,
-  fB: 7,
-  fC: 8,
-}
+import { armatures } from '../avatars.js'
 
 /**
  * Finds an AnimationClip with a function passed in as the condition. More flexible
@@ -86,9 +63,9 @@ const HasAnimationMixer = stampit(Component, {
       const [gender, letter, _] = this.goals.animationMesh.get('v').split('-')
 
       if (gender === 'mal') {
-        return ['m', maleArmatures[letter]]
+        return ['m', armatures.m[letter]]
       } else if (gender === 'fem') {
-        return ['f', femaleArmatures[letter]]
+        return ['f', armatures.f[letter]]
       } else {
         return null
       }

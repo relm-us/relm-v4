@@ -7,7 +7,6 @@
   export let variant = null // 0 - 8
   export let skintoneId = null // 'pink' | 'black' | 'white' | 'asian' | 'tan'
   export let onChange = (gender, variant, skintoneId) => {}
-  export let onClose = () => {}
 
   const VARIANTS = [0, 1, 2, 3, 4, 5, 6, 7, 8]
   let selectedGenderTab = gender || 'f'
@@ -15,22 +14,7 @@
   let transientSkintoneId = 'pink'
 
   function handleSelect(gender, variant) {
-    console.log('handleSelect', gender, variant, transientSkintoneId)
-    // import { avatarOptionsOfGender } from '../avatars.js'
-    // const avatarId = avatarOptionsOfGender(gender)[variant].avatarId
     onChange(gender, variant, transientSkintoneId)
-
-    // player.goals.animationMesh.update({
-    //   v: avatarOptions[variant].avatarId,
-    // })
-
-    // const skintone = skintoneName
-    //   ? skintoneMap[gender][index][skintoneName]
-    //   : { x: 0, y: 0 }
-    // player.goals.skintone.update(skintone)
-    // player.goals.clothtone.update({ x: 0, y: 0 })
-
-    onClose()
   }
 </script>
 

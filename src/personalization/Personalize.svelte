@@ -1,6 +1,8 @@
 <script>
   import PersonalizeAvatar from './PersonalizeAvatar.svelte'
   import PersonalizeAvatarColors from './PersonalizeAvatarColors.svelte'
+  import { avatarOptionsOfGender } from '../avatars.js'
+  import { skintoneMap } from './skintoneMap.js'
 
   export let stage
   export let onClose
@@ -20,11 +22,28 @@
   function onPickSkintone(x, y) {
     stage.player.goals.skintone.update({ x, y })
   }
+
+  function onChangeAvatar(gender, variant, skintoneId) {
+    const avatarId = avatarOptionsOfGender(gender)[variant].avatarId
+
+    stage.player.goals.animationMesh.update({
+      v: avatarId,
+    })
+
+    const skintoneUvShift = skintoneId
+      ? skintoneMap[gender][variant][skintoneId]
+      : { x: 0, y: 0 }
+
+    stage.player.goals.skintone.update(skintoneUvShift)
+    stage.player.goals.clothtone.update({ x: 0, y: 0 })
+
+    onClose()
+  }
 </script>
 
 <div class="personalize">
   {#if screen === Screens.SELECT_AVATAR}
-    <PersonalizeAvatar player={stage.player} {onClose} />
+    <PersonalizeAvatar onChange={onChangeAvatar} />
     <div class="button-panel">
       <button
         on:mousedown|preventDefault

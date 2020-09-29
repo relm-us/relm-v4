@@ -2,7 +2,7 @@ import { getRandomInt, sumString } from './util.js'
 
 /**
  * A list of gender-specific avatar meshes & their accompanying animations
- * 
+ *
  * @typedef AvatarOption
  * @property {string} gender A string, either 'm' or 'f' at this time.
  * @property {string} avatarId An identifier that matches the glTF asset SkinnedMesh identifier
@@ -33,31 +33,56 @@ const avatarOptions = [
   { gender: 'm', avatarId: 'mal-fB-armature' },
 ]
 
+const armatures = {
+  m: {
+    A: 0,
+    B: 1,
+    C: 2,
+    D: 3,
+    E: 4,
+    F: 5,
+    G: 6,
+    fA: 7,
+    fB: 8,
+  },
+  f: {
+    B: 0,
+    C: 1,
+    D: 2,
+    E: 3,
+    F: 4,
+    G: 5,
+    fA: 6,
+    fB: 7,
+    fC: 8,
+  },
+}
+
 /**
  * Filter the avatarOptions for a given gender
- * 
+ *
  * @param {string} gender The gender to filter for, either null, 'm', or 'f'. If null, returns all avatarOptions.
  * @returns {Array<AvatarOption>}
  */
-function avatarOptionsOfGender (gender) {
+function avatarOptionsOfGender(gender) {
   if (gender === null) {
     return avatarOptions
   } else {
-    return avatarOptions.filter(a => a.gender === gender)
+    return avatarOptions.filter((a) => a.gender === gender)
   }
 }
 
 /**
  * Finds the index of an AvatarOption whose avatarId matches the `avatarId` param.
  * Note that if none is found, -1 is returned.
- * 
+ *
  * @param {string} avatarId The key to find among avatarOptions
  * @param {Array<AvatarOption>} avatarOptions The AvatarOption possibilities to choose from. Defaults to all avatarOptions.
  * @returns {number} The index of the AvatarOption with `avatarId`
  */
 function indexOfAvatarOption(avatarId, avatarOptions = avatarOptions) {
   if (avatarId) {
-    return qualifyingAvatars.findIndex(a => a.avatarId === avatarId)
+    return qualifyingAvatars.findIndex((a) => a.avatarId === avatarId)
   } else {
     // If avatarId is null, we choose -1 so that the subsequent increment will set it to 0
     return -1
@@ -65,9 +90,9 @@ function indexOfAvatarOption(avatarId, avatarOptions = avatarOptions) {
 }
 
 /**
- * Uses the `playerId` string to pseudo-randomly choose an avatarId from 
+ * Uses the `playerId` string to pseudo-randomly choose an avatarId from
  * the list of avatarOptions.
- * 
+ *
  * @param {string} playerId The UUID of the player.
  * @param {Array<AvatarOption>} avatarOptions The AvatarOption possibilities to choose from. Defaults to all avatarOptions.
  * @returns {AvatarOption} One of the AvatarOptions that was given in the avatarOptions array.
@@ -79,8 +104,8 @@ function avatarOptionFromPlayerId(playerId, options = avatarOptions) {
 
 /**
  * Uses the `playerId` string to create a 'Guest-xyz' name.
- * 
- * @param {string} playerId 
+ *
+ * @param {string} playerId
  */
 function guestNameFromPlayerId(playerId) {
   return 'Guest-' + playerId.slice(0, 3)
@@ -88,25 +113,27 @@ function guestNameFromPlayerId(playerId) {
 
 /**
  * Gets the AvatarOption in a list of options that is after the one with `avatarId`.
- * 
+ *
  * @param {string} avatarId The unique string identifier of the avatarOption
  * @param {Array<AvatarOption>} avatarOptions A list of AvatarOptions. Must include one AvatarOption with `avatarId`.
  */
-function getNextAvatarOption (avatarId, avatarOptions = avatarOptions) {
+function getNextAvatarOption(avatarId, avatarOptions = avatarOptions) {
   let index = indexOfAvatarOption(avatarId, avatarOptions) + 1
   // Wrap around
-  if (index >= avatarOptions.length) { index = 0 }
+  if (index >= avatarOptions.length) {
+    index = 0
+  }
   return avatarOptions[index]
 }
 
-function getRandomAvatarOption (avatarOptions = avatarOptions) {
+function getRandomAvatarOption(avatarOptions = avatarOptions) {
   let index = getRandomInt(avatarOptions.length)
   return avatarOptions[index]
 }
 
-
 export {
   avatarOptions,
+  armatures,
   avatarOptionsOfGender,
   indexOfAvatarOption,
   getNextAvatarOption,
