@@ -6,9 +6,8 @@
   import { deviceList, selectedDevices } from '../DeviceListStore.js'
   import {
     localTracks,
-    audioLevel,
-    audioRequested,
-    videoRequested,
+    localAudioLevel,
+    requestedTracks,
   } from '../LocalTrackStore.js'
 
   import Video from '../Video'
@@ -25,6 +24,9 @@
   const AUDIO_LEVEL_MINIMUM = 0.0
 
   const dispatch = createEventDispatcher()
+
+  const audioRequested = requestedTracks.audio
+  const videoRequested = requestedTracks.video
 
   // Local state
   let requestBlocked = false
@@ -56,7 +58,7 @@
   const toggleAdvancedSettings = () => (advancedSettings = !advancedSettings)
 
   // const audioLevelChanged = (level) => audioLevelSpring.set(level)
-  $: audioLevelSpring.set($audioLevel)
+  $: audioLevelSpring.set($localAudioLevel)
 
   function setRequestBlocked(blocked) {
     if (blocked) {
@@ -124,8 +126,8 @@
         <div class="button-tray">
           <button
             on:click={toggleVideoRequested}
-            class:track-disabled={!videoRequested}>
-            {#if videoRequested}
+            class:track-disabled={!$videoRequested}>
+            {#if $videoRequested}
               <img src={videoEnabledIcon} width="32" alt="Video Enabled" />
             {:else}
               <img src={videoDisabledIcon} width="32" alt="Video Disabled" />
@@ -171,7 +173,8 @@
       </div>
       <div class="message">
         {#if requestBlocked}
-          Cam and mic are blocked <button on:click={handleHelp}>(Need help?)</button>
+          Cam and mic are blocked
+          <button on:click={handleHelp}>(Need help?)</button>
         {:else}Cam and mic are not active{/if}
       </div>
     </div>

@@ -1,26 +1,24 @@
-import { writable } from 'svelte/store'
+import { derived, writable, get } from 'svelte/store'
 import { selectedDevices as selectedDevicesStore } from './DeviceListStore.js'
 
 const { TRACK_AUDIO_LEVEL_CHANGED } = JitsiMeetJS.events.track
 
-const audioRequested = writable(true)
-const videoRequested = writable(true)
-
-function getRequestedTracks() {
-  const requestedTracks = []
-
-  audioRequested.subscribe((audio) => {
-    if (audio) requestedTracks.push('audio')
-  })()
-
-  videoRequested.subscribe((video) => {
-    if (video) requestedTracks.push('video')
-  })()
-
-  return requestedTracks
+const requestedTracks = {
+  audio: writable(true),
+  video: writable(true),
 }
 
-function createLocalAudioLevelStore() {
+/**
+ * Converts requestedTracks to a list of track names, e.g. ['audio', 'video']
+ */
+const requestedTrackNames = derived(
+  [requestedTracks.audio, requestedTracks.video],
+  ([$audio, $video]) =>
+    [$audio ? 'audio' : null, $video ? 'video' : null].filter((x) => x),
+  []
+)
+
+function createAudioLevelStore() {
   const { subscribe, set } = writable(0)
 
   /**
@@ -48,32 +46,32 @@ function createLocalAudioLevelStore() {
   }
 }
 
-const audioLevel = createLocalAudioLevelStore()
+const localAudioLevel = createAudioLevelStore()
 
-async function createLocalTracks(requestedTracks, selectedDevices) {
+async function createLocalTracks(requestedTrackNames, selectedDevices) {
   let tracks = {}
 
-  const options = { devices: requestedTracks }
+  const options = { devices: requestedTrackNames }
 
   // If we have a specific video camera to request, include it in the options
-  if (requestedTracks.includes('video') && selectedDevices.videoinput) {
+  if (requestedTrackNames.includes('video') && selectedDevices.videoinput) {
     options.cameraDeviceId = selectedDevices.videoinput
   }
 
   // If we have a specific microphone to request, include it in the options
-  if (requestedTracks.includes('audio') && selectedDevices.audioinput) {
+  if (requestedTrackNames.includes('audio') && selectedDevices.audioinput) {
     options.micDeviceId = selectedDevices.audioinput
   }
 
   try {
     // Get all requested tracks at once
     for (const track of await JitsiMeetJS.createLocalTracks(options)) {
-      tracks[track.getType()] = audioLevel.initTrack(track)
+      tracks[track.getType()] = localAudioLevel.initTrack(track)
     }
   } catch (err) {
-    if (requestedTracks.length > 1) {
+    if (requestedTrackNames.length > 1) {
       // If multiple tracks were requested, try again by requesting one at a time
-      for (const requestedTrack of requestedTracks) {
+      for (const requestedTrack of requestedTrackNames) {
         try {
           Object.assign(
             tracks,
@@ -85,7 +83,7 @@ async function createLocalTracks(requestedTracks, selectedDevices) {
       }
     } else {
       console.warn(
-        `Unable to create local track: ${requestedTracks.join(', ')}`
+        `Unable to create local track: ${requestedTrackNames.join(', ')}`
       )
     }
   }
@@ -94,20 +92,15 @@ async function createLocalTracks(requestedTracks, selectedDevices) {
 }
 
 function createLocalTracksStore() {
-  const { subscribe, set } = writable({})
-
-  function get() {
-    let tracks
-    subscribe((tracks_) => (tracks = tracks_))()
-    return tracks
-  }
+  const store = writable({})
+  const { subscribe, set } = store
 
   function clear() {
-    const tracks = get()
+    const tracks = get(store)
 
     // Clean up from past local track creation
     for (const track of Object.values(tracks)) {
-      audioLevel.deinitTrack(track)
+      localAudioLevel.deinitTrack(track)
     }
 
     // Reset localTracks to empty object
@@ -138,11 +131,11 @@ function createLocalTracksStore() {
      */
     request: async ({ requestedTracks, selectedDevices } = {}) => {
       if (!requestedTracks) {
-        requestedTracks = getRequestedTracks()
+        requestedTracks = get(requestedTrackNames)
       }
 
       if (!selectedDevices) {
-        selectedDevices = selectedDevicesStore.get()
+        selectedDevices = get(selectedDevicesStore)
       }
 
       const tracks = await createLocalTracks(requestedTracks, selectedDevices)
@@ -161,4 +154,4 @@ function createLocalTracksStore() {
 
 const localTracks = createLocalTracksStore()
 
-export { localTracks, audioLevel, videoRequested, audioRequested }
+export { localTracks, localAudioLevel, requestedTracks, createAudioLevelStore }
