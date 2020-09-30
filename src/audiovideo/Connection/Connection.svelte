@@ -87,20 +87,13 @@
       {/each}
     {/if}
   </div>
-  {#if false}
-    <h2>Config</h2>
-    {#if configVisible}
-      <button on:click={() => (configVisible = false)}>Hide Config</button>
-      <div class="config">
-        <pre>{JSON.stringify(config.JITSI_CONFIG, null, 2)}</pre>
-      </div>
-    {:else}
-      <button on:click={() => (configVisible = true)}>Show Config</button>
-    {/if}
-  {/if}
 </div>
 
 <style>
+  .connection {
+    display: none;
+  }
+
   .status {
     position: fixed;
     top: 0;

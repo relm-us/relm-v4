@@ -10,12 +10,20 @@
   import ExportImport from './ExportImport.svelte'
   import IdentityModal from './IdentityModal.svelte'
   import Connection from '/audiovideo/Connection'
+  import { onMount } from 'svelte'
 
   export let start
   export let stage
   export let network
 
   let promise = start()
+
+  onMount(() => {
+    document.body.style = 'overflow: hidden'
+    return () => {
+      document.body.style = 'overflow: auto'
+    }
+  })
 </script>
 
 {#await promise}

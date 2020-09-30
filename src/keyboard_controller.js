@@ -98,7 +98,7 @@ const KeyboardKeyMap = stampit(Component, {
       }
     },
 
-    keyPressed(keyCode, opts) {
+    keyPressed(keyCode, opts = {}) {
       const action = this.getActionFromKeyCode(keyCode)
       if (action === undefined) {
         // If this doesn't match a known action, emit 'unknown' so that we can
