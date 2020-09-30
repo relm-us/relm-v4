@@ -17,7 +17,6 @@
   let uploadVisible = false
 
   onMount(async () => {
-    console.log('Upload onMount', previewsEl)
     const dropzone = new Dropzone(document.body, {
       url: config.SERVER_UPLOAD_URL,
       clickable: '#upload-button',
@@ -122,4 +121,14 @@
 <div
   bind:this={previewsEl}
   class="dropzone dropzone-previews"
+  class:hide={!uploadVisible}
   class:show={uploadVisible} />
+
+<style>
+  .show {
+    display: block;
+  }
+  .hide {
+    display: none;
+  }
+</style>
