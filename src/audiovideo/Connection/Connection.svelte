@@ -90,10 +90,6 @@
 </div>
 
 <style>
-  .connection {
-    display: none;
-  }
-
   .status {
     position: fixed;
     top: 0;

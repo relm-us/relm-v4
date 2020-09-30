@@ -21,10 +21,12 @@
     KICKED: 'kicked',
   }
 
+  // TODO: show conferenceState in for diagnostics (submenu somewhere?)
   let conferenceState = ConferenceState.INITIAL
   let conference = null
 
   let myParticipantId
+  // TODO: let user see their own Jitsi role?
   let myRole
   let participants = {}
   let participantRoles = {}
@@ -255,10 +257,6 @@
 </script>
 
 <div class="conference">
-  <div class="header">{conferenceId}</div>
-  <div class="state">{conferenceState}</div>
-  <div class="state">My ID: {myParticipantId}</div>
-  <div class="state">My Role: {myRole}</div>
   <div class="participants">
     <VideoCircle
       participantId={myParticipantId}
@@ -274,19 +272,3 @@
     {/each}
   </div>
 </div>
-
-<style>
-  .conference {
-    border: 2px solid #888;
-    border-radius: 8px;
-    overflow: hidden;
-  }
-  .header {
-    font-weight: bold;
-    background-color: sandybrown;
-    padding: 8px 15px;
-  }
-  .state {
-    padding: 8px 15px;
-  }
-</style>
