@@ -83,7 +83,7 @@
     conference = window.conference = connection.initJitsiConference(
       conferenceId,
       {
-        openBridgeChannel: true,
+        openBridgeChannel: 'websocket',
       }
     )
 

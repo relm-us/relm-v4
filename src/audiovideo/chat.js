@@ -225,7 +225,7 @@ function onUserLeft(participant) {
  */
 function onConnectionSuccess() {
   room = window.room = connection.initJitsiConference(relmContext.room, {
-    openBridgeChannel: true,
+    openBridgeChannel: 'websocket',
   })
 
   // Set playerId as name so that others can connect video to game player
