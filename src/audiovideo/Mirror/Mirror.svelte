@@ -13,7 +13,7 @@
   import Video from '../Video'
   import Audio from '../Audio'
   import DeviceSelector from './DeviceSelector'
-  import ContinueButton from '/svelte/ContinueButton'
+  import ContinueButton from '../../svelte/ContinueButton'
 
   import videoEnabledIcon from './images/video-enabled.svg'
   import videoDisabledIcon from './images/video-disabled.svg'

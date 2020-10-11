@@ -1,12 +1,12 @@
 <script>
   import { onMount, createEventDispatcher } from 'svelte'
-  import { canAutoPermit } from '/audiovideo/avutil.js'
-  import { localTracks } from '/audiovideo/LocalTrackStore.js'
+  import { canAutoPermit } from '../../../audiovideo/avutil.js'
+  import { localTracks } from '../../../audiovideo/LocalTrackStore.js'
 
-  import Checkbox from '/svelte/Checkbox'
-  import Mirror from '/audiovideo/Mirror'
+  import Checkbox from '../../Checkbox'
+  import Mirror from '../../../audiovideo/Mirror'
   import DefaultScreen from '../DefaultScreen'
-  import { skipCameraSetup } from '/svelte/SettingsStore.js'
+  import { skipCameraSetup } from '../../SettingsStore.js'
 
   const dispatch = createEventDispatcher()
 

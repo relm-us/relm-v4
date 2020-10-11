@@ -10,7 +10,7 @@ import * as THREE from 'three'
 
 // see https://github.com/zeux/meshoptimizer
 
-THREE.MeshoptGLTFLoader = (function () {
+const MeshoptGLTFLoader = (function () {
   function GLTFLoader(manager) {
     THREE.Loader.call(this, manager)
 
@@ -3104,5 +3104,4 @@ THREE.MeshoptGLTFLoader = (function () {
   return GLTFLoader
 })()
 
-const MeshoptGLTFLoader = THREE.MeshoptGLTFLoader
 export { MeshoptGLTFLoader }

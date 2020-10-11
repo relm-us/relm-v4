@@ -1,11 +1,11 @@
 <script>
   import ContinueButton from '../../ContinueButton'
-  import Checkbox from '/svelte/Checkbox'
+  import Checkbox from '../../Checkbox'
   import DefaultScreen from '../DefaultScreen'
 
   import TermsOfService from '../TermsOfService.svelte'
 
-  import { name, agreeTos } from '/svelte/SettingsStore.js'
+  import { name, agreeTos } from '../../SettingsStore.js'
 
   let showTOS = false
   let agree = false
@@ -45,8 +45,11 @@
 
   <div class="para squeezed">
     <Checkbox checked={agree} onCheck={handleAgree}>
-      I'm at least 13 years old, and I agree to Relm's <a href="#" class="tos-button" on:click|preventDefault={() => (showTOS = !showTOS)}>Terms
-        of Service</a>
+      I'm at least 13 years old, and I agree to Relm's
+      <a
+        href="#"
+        class="tos-button"
+        on:click|preventDefault={() => (showTOS = !showTOS)}>Terms of Service</a>
     </Checkbox>
   </div>
 

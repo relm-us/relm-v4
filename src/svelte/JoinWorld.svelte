@@ -1,4 +1,5 @@
 <script>
+  import { onMount } from 'svelte'
   import { config } from '/config.js'
 
   import TopPanel from '././TopPanel.svelte'
@@ -9,8 +10,7 @@
   import Upload from './Upload.svelte'
   import ExportImport from './ExportImport.svelte'
   import IdentityModal from './IdentityModal.svelte'
-  import Connection from '/audiovideo/Connection'
-  import { onMount } from 'svelte'
+  import Connection from '../audiovideo/Connection'
 
   export let start
   export let stage
