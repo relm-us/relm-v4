@@ -23,6 +23,7 @@
     "dompurify": "^2.0.11",
     "dropzone": "^5.7.0",
     "flatqueue": "^1.2.1",
+    "jitsi-svelte": "^0.3.0",
     "just-omit": "^1.1.0",
     "keycode-js": "^2.0.3",
     "partykals": "^1.0.1",

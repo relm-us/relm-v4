@@ -1,10 +1,8 @@
 <script>
   import { onMount, createEventDispatcher } from 'svelte'
-  import { canAutoPermit } from '/audiovideo/avutil.js'
-  import { localTracks } from '/audiovideo/LocalTrackStore.js'
+  import { localTracksStore, Mirror, canAutoPermit } from 'jitsi-svelte'
 
   import Checkbox from '/svelte/Checkbox'
-  import Mirror from '/audiovideo/Mirror'
   import DefaultScreen from '../DefaultScreen'
   import { skipCameraSetup } from '/svelte/SettingsStore.js'
 
@@ -21,7 +19,7 @@
     transientSkipCameraSetup = $skipCameraSetup
     const autoPermit = await canAutoPermit()
     if (autoPermit && $skipCameraSetup) {
-      const hasPermission = await localTracks.request()
+      const hasPermission = await localTracksStore.request()
       if (hasPermission) {
         dispatch('done')
       } else {

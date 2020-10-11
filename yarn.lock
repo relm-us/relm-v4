@@ -4903,6 +4903,13 @@ jest@^26.0.1:
     import-local "^3.0.2"
     jest-cli "^26.4.2"
 
+jitsi-svelte@^0.3.0:
+  version "0.3.0"
+  resolved "https://registry.yarnpkg.com/jitsi-svelte/-/jitsi-svelte-0.3.0.tgz#edc13ae66ac6ac9e1ed9b1c1f442caf346c98c39"
+  integrity sha512-83vT9s2vlXIpWe3QlwCdgqYCsWGFHgqR9+eWZHDpieZGyqB/ubZcDK9bLW5cDdYYZ2xsjqTWZ8z2OHdM/+aveg==
+  dependencies:
+    keycode-js "^3.1.0"
+
 "js-tokens@^3.0.0 || ^4.0.0", js-tokens@^4.0.0:
   version "4.0.0"
   resolved "https://registry.yarnpkg.com/js-tokens/-/js-tokens-4.0.0.tgz#19203fb59991df98e3a287050d4647cdeaf32499"
@@ -5142,6 +5149,11 @@ keycode-js@^2.0.3:
   resolved "https://registry.yarnpkg.com/keycode-js/-/keycode-js-2.0.3.tgz#0ef559be057847aae6c520ce03577f4a12f7e257"
   integrity sha512-nGuOQ0zvYQFr0OOBOZS47e/ifsiuNz1pleQIFS+LX+udj3St6AvHpv55MI8DCre6Yg9D2CG/qqWbuAx7iQt9FQ==
 
+keycode-js@^3.1.0:
+  version "3.1.0"
+  resolved "https://registry.yarnpkg.com/keycode-js/-/keycode-js-3.1.0.tgz#9938d5488f9415ae243c4de6d6e827af293c7d75"
+  integrity sha512-aAa8PVW7kBDyG14ifGOseaVBjsT1LI953060yRSzzf3G0beKKEuwHVvFGcCI+AofY68NUkPxbLqrkfWPjXySCw==
+
 kind-of@^3.0.2, kind-of@^3.0.3, kind-of@^3.2.0:
   version "3.2.2"
   resolved "https://registry.yarnpkg.com/kind-of/-/kind-of-3.2.2.tgz#31ea21a734bab9bbb0f32466d893aea51e4a3c64"
@@ -5273,10 +5285,17 @@ levn@^0.3.0, levn@~0.3.0:
     prelude-ls "~1.1.2"
     type-check "~0.3.2"
 
-lib0@^0.2.12, lib0@^0.2.28, lib0@^0.2.31, lib0@^0.2.32:
+lib0@^0.2.12, lib0@^0.2.28, lib0@^0.2.31:
   version "0.2.33"
   resolved "https://registry.yarnpkg.com/lib0/-/lib0-0.2.33.tgz#dd759c489d416344efe065c534bccf3ce4925d3e"
   integrity sha512-Pnm8FzjUr+aTYkEu2A20c1EfVHla8GbVX+GXn6poxx0gcmEuCs+XszjLmtEbI9xYOoI/83xVi7VOIoyHgOO87w==
+  dependencies:
+    isomorphic.js "^0.1.3"
+
+lib0@^0.2.33:
+  version "0.2.34"
+  resolved "https://registry.yarnpkg.com/lib0/-/lib0-0.2.34.tgz#c4479f5f2083894687fcfa9d0b9d9935e35ea008"
+  integrity sha512-cqsVIMPgFlDtgQcpkt7HOY6W3sbYPIe3qxMnbRSwHTgiQancgm+TRDPx28mC6GUZ6lG6Nr0bIWf4Nog6dWUNUg==
   dependencies:
     isomorphic.js "^0.1.3"
 
@@ -8530,9 +8549,9 @@ yargs@^15.3.1:
     y18n "^4.0.0"
     yargs-parser "^18.1.2"
 
-yjs@^13.3.2:
-  version "13.3.2"
-  resolved "https://registry.yarnpkg.com/yjs/-/yjs-13.3.2.tgz#80377d7a1e3af8d9611e95b7bf1a96d3203cda6c"
-  integrity sha512-f4R9wK4Pn0FDrNR++mjaW4mbC/qsFHzZaDicva1yN3IMrlUuwQ6qt3HEUc4DMiAkjETGB07LyhxbQ9YgNenk8Q==
+yjs@^13.4.1:
+  version "13.4.1"
+  resolved "https://registry.yarnpkg.com/yjs/-/yjs-13.4.1.tgz#5ef869eb2e64f028eb013952a5f28412a084dc90"
+  integrity sha512-kIh0sprCTzIm2qyr1VsovkvjKzD2GR4WcU/McJpLAEvImCJHA78Q3S6uSLnhZX0i7FQdrLPCRT8DtTPEH73jnw==
   dependencies:
-    lib0 "^0.2.32"
+    lib0 "^0.2.33"
