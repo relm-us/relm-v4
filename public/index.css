@@ -1,0 +1,365 @@
+html,
+body {
+  font-family: Verdana, Geneva, Tahoma, sans-serif;
+  height: 100%;
+  margin: 0;
+  padding: 0;
+}
+.hide {
+  display: none !important;
+}
+
+/* #game {
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  -khtml-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+} */
+
+/*
+  Thought Bubble CSS
+  
+  Note that .circle-text requires the following:
+  - a div with class 'circle-text'
+  - a span inside that div
+  
+  The outer span should also contain the following style properties:
+    width: $radius*2;
+    height: $radius*2;
+*/
+.thought-bubble.centered {
+  transform: translate(-50%, -100%);
+  justify-content: center;
+}
+.thought-bubble.centered .speech-text {
+  /* TODO: separate this into attribute other than `centered` */
+  color: white;
+  background-color: #444;
+  border: 2px solid white;
+}
+.thought-bubble {
+  display: flex;
+  position: absolute;
+  transform: translate(0, -100%);
+  z-index: 1;
+}
+.thought-dot-1 {
+  /* smallest circle: closest to head */
+  position: absolute;
+  transform: translate(-50%, -50%);
+  z-index: 1;
+  border: 2px solid #555;
+  background-color: white;
+  border-radius: 100%;
+  width: 5px;
+  height: 5px;
+  left: -25px;
+  bottom: 20px;
+  opacity: 0.9;
+}
+.thought-dot-2 {
+  /* small circle: between smallest circle & thought bubble */
+  position: absolute;
+  transform: translate(-50%, -50%);
+  z-index: 1;
+  border: 2px solid #555;
+  background-color: white;
+  border-radius: 100%;
+  width: 12px;
+  height: 12px;
+  left: -10px;
+  bottom: 18px;
+  opacity: 0.9;
+}
+.speech-text {
+  border: 2px solid #555;
+  background-color: white;
+  font: 14px sans-serif;
+  opacity: 0.9;
+  flex-shrink: 0;
+}
+.thought-bubble.centered {
+  /** FIXME: We shouldn't just assume that centered "thought bubbles"
+   *  don't get mouse pointer events. This is a hack for now, so that
+   *  diamonds don't interfore with mouse wheel scrolling.  
+   */
+  pointer-events: none;
+}
+.thought-bubble.centered .speech-text a,
+.thought-bubble.centered .speech-text:visited {
+  text-decoration: none;
+  font-weight: bold;
+  color: #f54;
+  pointer-events: all;
+}
+.speech-text a,
+.speech-text:visited {
+  text-decoration: none;
+  font-weight: bold;
+  color: #f54;
+}
+.rectangle-text {
+  text-align: center;
+  word-wrap: break-word;
+  overflow-y: auto;
+  border-radius: 7px;
+  text-align: left;
+  padding: 10px;
+  max-width: 300px;
+  max-height: 300px;
+}
+.circle-text-center {
+  position: relative;
+  top: 25%;
+}
+.circle-text {
+  border-radius: 100%;
+  text-align: center;
+  padding: 5px;
+  overflow: hidden;
+  max-width: 300px;
+  max-height: 300px;
+}
+.circle-text::before {
+  content: '';
+  height: 100%;
+  width: 50%;
+  float: left;
+  shape-outside: polygon(
+    0 0,
+    100% 0,
+    60% 4%,
+    40% 10%,
+    20% 20%,
+    10% 28.2%,
+    5% 34.4%,
+    0 50%,
+    5% 65.6%,
+    10% 71.8%,
+    20% 80%,
+    40% 90%,
+    60% 96%,
+    100% 100%,
+    0 100%
+  );
+}
+.circle-text > span::before {
+  content: '';
+  height: 100%;
+  width: 50%;
+  float: right;
+  shape-outside: polygon(
+    100% 0,
+    0 0,
+    40% 4%,
+    60% 10%,
+    80% 20%,
+    90% 28.2%,
+    95% 34.4%,
+    100% 50%,
+    95% 65.6%,
+    90% 71.8%,
+    80% 80%,
+    60% 90%,
+    40% 96%,
+    0 100%,
+    100% 100%
+  );
+}
+/* close button */
+.thought-bubble-close {
+  opacity: 0.9;
+}
+.circle-text + .thought-bubble-close {
+  right: 0px;
+  top: 0px;
+}
+.rectangle-text + .thought-bubble-close {
+  right: -15px;
+  top: -15px;
+}
+/* action button */
+.thought-bubble-action:after {
+  content: 'G';
+  padding: 5px;
+}
+.thought-bubble-action {
+  opacity: 0.9;
+
+  position: absolute;
+  z-index: 1;
+  border: 2px solid #aaa;
+  background-color: white;
+  border-radius: 100%;
+  width: 25px;
+  height: 25px;
+  right: -10px;
+  top: 30px;
+}
+.circle-text + .thought-bubble-action {
+  right: 0px;
+  top: 40px;
+}
+.rectangle-text + .thought-bubble-action {
+  right: -15px;
+  top: 25px;
+}
+
+.offscreen-indicator-label {
+  opacity: 0.6;
+  background-color: #fff;
+  border-radius: 4px;
+  padding: 0px 8px 2px 8px !important;
+  text-shadow: 0px 0px 5px #fff !important;
+  color: #111 !important;
+}
+.entity-label.editing {
+  padding-left: 10px;
+  padding-right: 10px;
+  border: 1px solid black;
+}
+.entity-label {
+  position: absolute;
+  transform: translate(-50%, -50%);
+  display: ruby;
+  color: #e5e5e5;
+  letter-spacing: 1px;
+  font-weight: bold;
+  text-shadow: 0px 0px 3px #000;
+  padding-left: 5px;
+  padding-right: 5px;
+  pointer-events: none;
+}
+
+/* CSS-only "Close" button with icon */
+.close {
+  position: absolute;
+  z-index: 1;
+  border: 2px solid #aaa;
+  background-color: white;
+  border-radius: 100%;
+  width: 25px;
+  height: 25px;
+}
+.close:before,
+.close:after {
+  position: absolute;
+  left: 12px;
+  top: 2px;
+  content: ' ';
+  height: 20px;
+  width: 2px;
+  background-color: #aaa;
+}
+.close:before {
+  transform: rotate(45deg);
+}
+.close:after {
+  transform: rotate(-45deg);
+}
+
+#progress-bar {
+  position: absolute;
+  height: 20px;
+  bottom: 0px;
+  left: 0px;
+  right: 0px;
+  z-index: 100;
+  text-align: center;
+}
+#progress-bar > div {
+  position: absolute;
+  border-radius: 2.5px;
+  background-color: #f54;
+  left: 0px;
+  height: 100%;
+  text-align: center;
+  text-emphasis: bold;
+  overflow: hidden;
+}
+
+.bold-p {
+  font-weight: bold;
+}
+.welcome-settings {
+  padding: 15px;
+  border-radius: 10px;
+}
+.welcome-settings > div {
+  margin-bottom: 15px;
+}
+
+.sign-message {
+  color: #421;
+  text-align: center;
+  font-size: 18pt;
+  height: 90px;
+}
+.chat-message {
+  border: 2px solid black;
+  padding: 15px;
+  background-color: white;
+  color: black;
+  opacity: 0.8;
+  border-radius: 8px;
+  height: 30px;
+}
+
+/* #game:focus-within::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  bottom: 50px;
+  left: 0;
+  right: 0;
+  box-shadow: inset 0px 0px 12px #fe9;
+} */
+
+#previews {
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  position: absolute;
+  display: none;
+}
+#previews.show {
+  display: block;
+}
+
+.info-title {
+  text-align: center;
+  background: #eee;
+  padding: 10px 30px;
+  color: #444;
+  border-radius: 3px;
+  margin-bottom: 15px;
+}
+.info-type {
+  font-size: 18pt;
+  font-weight: bold;
+}
+.info-uuid {
+  font-size: 10pt;
+}
+.info-group {
+  display: flex;
+  flex-direction: column;
+  margin-top: 10px;
+}
+.info-attr {
+  display: flex;
+  flex-direction: row;
+}
+.info-label {
+  margin-right: 15px;
+  text-decoration: underline;
+}
+.info-attr-key {
+  margin-left: 30px;
+  margin-right: 10px;
+}
+.info-attr-value a {
+  color: white;
+}

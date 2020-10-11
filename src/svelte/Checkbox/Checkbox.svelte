@@ -17,6 +17,12 @@
 </div>
 
 <style>
+  .box.checked {
+    background-image: url(./images/checkmark.svg);
+    background-position: center;
+    background-repeat: no-repeat;
+    background-size: 75%;
+  }
   .checkmark {
     display: flex;
     align-items: center;
@@ -30,12 +36,6 @@
     border-radius: 4px;
 
     cursor: pointer;
-  }
-  .box.checked {
-    background-image: url(./images/checkmark.svg);
-    background-position: center;
-    background-repeat: no-repeat;
-    background-size: 75%;
   }
   .text {
     flex-grow: 1;

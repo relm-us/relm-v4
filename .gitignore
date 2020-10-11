@@ -2,6 +2,7 @@
 target
 .cache/
 .parcel-cache/
+public/build/
 
 # Backup files
 .DS_Store
@@ -12,11 +13,8 @@ thumbs.db
 .vscode/
 
 backups/
-dist/
 saved_relms/
 server/relm-data/
 server/assets/
 server/tmp/
 node_modules/
-statebus/
-design/*.afdesign

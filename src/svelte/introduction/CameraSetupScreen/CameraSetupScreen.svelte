@@ -4,7 +4,7 @@
 
   import Checkbox from '/svelte/Checkbox'
   import DefaultScreen from '../DefaultScreen'
-  import { skipCameraSetup } from '/svelte/SettingsStore.js'
+  import { skipCameraSetup } from '../../SettingsStore.js'
 
   const dispatch = createEventDispatcher()
 
