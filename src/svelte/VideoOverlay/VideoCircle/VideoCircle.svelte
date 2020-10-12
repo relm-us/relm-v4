@@ -1,72 +1,57 @@
 <script>
-  import Video from '../Video'
-  import Audio from '../Audio'
+  import { spring } from 'svelte/motion'
+  import { Audio, Video } from 'jitsi-svelte'
   import VideoMuteButton from './VideoMuteButton'
 
-  import {
-    videoPositions,
-    videoVisibilities,
-    videoSize,
-  } from '../ParticipantStore.js'
+  export let participant
+  export let position
 
-  // import videoDisabledIcon from './images/video-disabled.svg'
+  const ZOOM = 800000
 
-  window.videoPositions = videoPositions
-  window.videoVisibilities = videoVisibilities
-  window.videoSize = videoSize
+  let x, y, size
 
-  export let participantId
-  export let videoTrack
-  export let audioTrack = null
-  export let volume = 0
-  export let mirror = false
-
-  export let videoEnabled = true
-  export let audioEnabled = true
-  export let onVideoChanged = (_) => {}
-  export let onAudioChanged = (_) => {}
+  $: size = ZOOM / $position.z
+  $: x = $position.x
+  $: y = $position.y - size / 2
 
   function toggleVideoEnabled() {
-    videoEnabled = !videoEnabled
-    onVideoChanged(videoEnabled)
+    participant.setVideoEnabled(!$participant.videoEnabled)
   }
 
-  function handleSetAudioEnabled(enabled) {
-    if (audioEnabled !== enabled) {
-      audioEnabled = enabled
-      onAudioChanged(enabled)
-    }
-  }
+  let videoEnabled
+  $: videoEnabled = $participant.videoEnabled && $participant.video
 
-  let position
-  $: position = $videoPositions[participantId] || { x: 100, y: 100 }
+  let audioEnabled
+  $: audioEnabled = $participant.audioEnabled && $participant.audio
 
-  let visible
-  $: visible = $videoVisibilities[participantId] === true ? true : false
+  let audioLevelSpring = spring(0, {
+    stiffness: 0.3,
+    damping: 0.8,
+  })
+
+  participant.audioLevelStore.subscribe(($audioLevel) =>
+    audioLevelSpring.set($audioLevel)
+  )
 </script>
 
-<div
-  class="wrapper"
-  class:show={visible}
-  class:hide={!visible}
-  style="--x: {position.x || 0}px; --y: {position.y || 0}px;">
-  <div class="circle" style="--size: {$videoSize}px">
-    {#if videoTrack && videoEnabled}
-      <Video track={videoTrack} {mirror} />
+<div class="wrapper" style="--x: {x || 0}px; --y: {y || 0}px;">
+  <div class="circle" style="--size: {size}px">
+    {#if videoEnabled}
+      <Video track={$participant.video} mirror={$participant.isLocal} />
     {/if}
-    {#if audioTrack && audioEnabled}
-      <Audio track={audioTrack} />
+    {#if audioEnabled && !$participant.isLocal}
+      <Audio track={$participant.audio} />
     {/if}
   </div>
-  {#if videoTrack && videoEnabled}
+  {#if videoEnabled}
     <div class="overlay show-disable" on:click={toggleVideoEnabled} />
   {:else}
     <div class="overlay show-enable" on:click={toggleVideoEnabled} />
   {/if}
   <VideoMuteButton
-    {volume}
     {audioEnabled}
-    setAudioEnabled={handleSetAudioEnabled} />
+    setAudioEnabled={participant.setAudioEnabled}
+    volume={$audioLevelSpring * 85 + 15} />
 </div>
 
 <style>

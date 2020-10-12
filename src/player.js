@@ -237,8 +237,9 @@ const Player = stampit(
 
     methods: {
       setJid(jid) {
-        console.log('set jid', jid)
-        this.goals.video.update({ jid })
+        if (jid !== this.getJid()) {
+          this.goals.video.update({ jid })
+        }
       },
 
       getJid() {

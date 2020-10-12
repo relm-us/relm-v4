@@ -1,5 +1,5 @@
 <script>
-  import Mirror from '../audiovideo/Mirror'
+  import { Mirror } from 'jitsi-svelte'
 </script>
 
 <div class="setup">

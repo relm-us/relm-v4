@@ -1,4 +1,5 @@
 import stampit from 'stampit'
+import { writable } from 'svelte/store'
 import Stats from 'stats.js'
 import EventEmittable from '@stamp/eventemittable'
 import { Vector3, Matrix4, Box3, Frustum } from 'three'
@@ -10,8 +11,11 @@ import { HasScene } from './has_scene.js'
 import { SceneWithCamera } from './scene_with_camera.js'
 import { SceneWithRenderer } from './scene_with_renderer.js'
 import { Selection } from './selection.js'
-import { uuidv4 } from './util.js'
+import { uuidv4, project2d } from './util.js'
 import { FindIntersectionsFromScreenCoords } from './find_intersections_from_screen_coords.js'
+
+// FIXME: position of video shouldn't be hard-coded
+const PLAYER_HEIGHT = 200
 
 const Stage = stampit(
   HasScene,
@@ -62,6 +66,11 @@ const Stage = stampit(
       this.intersectionFinder = FindIntersectionsFromScreenCoords({
         stage: this,
       })
+
+      // Projected 2D position & size for each player. 'z' is distance to camera.
+      // [playerId: string] => { x: float, y: float, z: float}
+      this.projected2d = {}
+      this.projection2d = new Vector3()
 
       if (!width || !height) {
         throw new Error('State requires width and height')
@@ -226,6 +235,39 @@ const Stage = stampit(
 
         for (let uuid in this.entities) {
           const entity = this.entities[uuid]
+
+          // calculate 2d projection of visible players for video circle overlay
+          if (
+            entity.object &&
+            // checking for 'visible' players is faster because we (unfortunately)
+            // currently accumulate invisible players in our transient network
+            entity.object.visible &&
+            entity.type === 'player'
+          ) {
+            const jid = entity.getJid()
+            if (jid) {
+              const dist = this.camera.position.distanceTo(
+                entity.object.position
+              )
+              this.projection2d.copy(entity.object.position)
+              this.projection2d.y += PLAYER_HEIGHT
+              project2d(this.projection2d, this.camera, {
+                width: this.width,
+                height: this.height,
+              })
+              const projection = {
+                x: this.projection2d.x,
+                y: this.projection2d.y,
+                z: dist,
+              }
+              if (!(jid in this.projected2d)) {
+                this.projected2d[jid] = writable(projection)
+              } else {
+                this.projected2d[jid].set(projection)
+              }
+            }
+          }
+
           // Handle each entity's `update` function
           if (entity.update) {
             entity.update(delta)

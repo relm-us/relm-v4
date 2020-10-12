@@ -4,7 +4,7 @@ import { Vector3 } from 'three'
 import { Component } from './component.js'
 import { defineGoal } from '../goals/goal.js'
 import { project2d } from '../util.js'
-import { videoVisibilities } from '/audiovideo/ParticipantStore.js'
+import { participants } from '../connection.js'
 
 /**
  * HasVideoBubble is a Component that can be added to a Player or other
@@ -28,10 +28,8 @@ const HasVideoBubble = stampit(Component, {
     setVideoVisibility(visible) {
       const jid = this.getJid()
 
-      if (jid) {
-        videoVisibilities.update((visibilities) => {
-          return Object.assign(visibilities, { [jid]: visible })
-        })
+      if (jid && jid in participants) {
+        participants[jid].setVisible(visible)
       } else {
         console.warn(
           `Can't ${visible ? 'show' : 'hide'} video bubble: jid is null`

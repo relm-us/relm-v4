@@ -7,8 +7,8 @@ import State from './svelte/stores.js'
 import { avatarOptionsOfGender } from './avatars.js'
 import { teleportToOtherRelm } from './teleportal.js'
 import { createRelm, truncateRelm, getRelmMetadata } from './api/admin.js'
-import { muteAudio, unmuteAudio } from './audiovideo/chat.js'
-import { toggleScreenShare } from './audiovideo/screenshare.js'
+// import { muteAudio, unmuteAudio } from './audiovideo/chat.js'
+// import { toggleScreenShare } from './audiovideo/screenshare.js'
 
 import {
   take,

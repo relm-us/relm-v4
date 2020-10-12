@@ -161,16 +161,18 @@ class ThoughtBubble {
     }
 
     const cleanText = DOMPurify.sanitize(text)
-    const clickableText = anchorme({
-      input: cleanText,
-      options: {
-        truncate: 30,
-        middleTruncation: true,
-        attributes: {
-          target: '_blank',
-        },
-      },
-    })
+    // FIXME
+    const clickableText = cleanText
+    // const clickableText = anchorme({
+    //   input: cleanText,
+    //   options: {
+    //     truncate: 30,
+    //     middleTruncation: true,
+    //     attributes: {
+    //       target: '_blank',
+    //     },
+    //   },
+    // })
 
     this.diameter = this.getDiameterForCircleOfText(text)
     if (this.enableCircle) {

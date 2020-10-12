@@ -4,13 +4,14 @@
 
   import TopPanel from '././TopPanel.svelte'
   import PressTabHelp from './PressTabHelp.svelte'
+  import VideoOverlay from './VideoOverlay'
 
   import ThoughtBar from './ThoughtBar.svelte'
   import PadController from './PadController.svelte'
   import Upload from './Upload.svelte'
   import ExportImport from './ExportImport.svelte'
   import IdentityModal from './IdentityModal.svelte'
-  import Connection from '../audiovideo/Connection'
+  import { connection } from '../connection.js'
 
   export let start
   export let stage
@@ -19,6 +20,8 @@
   let promise = start()
 
   onMount(() => {
+    connection.joinConference(config.JITSI_CONFERENCE)
+
     document.body.style = 'overflow: hidden'
     return () => {
       document.body.style = 'overflow: auto'
@@ -36,7 +39,7 @@
   <Upload {stage} {network} />
   <ExportImport {stage} {network} />
   <IdentityModal {stage} {network} />
-  <Connection conferenceIds={[config.JITSI_CONFERENCE]} />
+  <VideoOverlay positions={stage.projected2d} />
 {:catch err}
   {console.error(err)}
 {/await}

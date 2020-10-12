@@ -72,7 +72,10 @@ export default {
     }),
 
     // Allow JS import statements to use '/' to indicate root of project (not root of file system)
-    rootImport(),
+    rootImport({
+      root: `${__dirname}/src`,
+      useInput: 'append',
+    }),
 
     // Converts commonjs modules into ES6 modules required by Rollup.js
     commonjs(),

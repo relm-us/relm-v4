@@ -2,7 +2,7 @@
   import { onMount, createEventDispatcher } from 'svelte'
   import { localTracksStore, Mirror, canAutoPermit } from 'jitsi-svelte'
 
-  import Checkbox from '/svelte/Checkbox'
+  import Checkbox from '../../../svelte/Checkbox'
   import DefaultScreen from '../DefaultScreen'
   import { skipCameraSetup } from '../../SettingsStore.js'
 

@@ -49,11 +49,8 @@ import { getRef } from './dom_reference.js'
 import { avatarOptionsOfGender } from './avatars.js'
 
 import State from './svelte/stores.js'
-import {
-  myParticipantIds,
-  videoPositions,
-  videoSize,
-} from '/audiovideo/ParticipantStore.js'
+import { connection } from './connection.js'
+
 import {
   name as playerName,
   avatarGender,
@@ -82,7 +79,6 @@ THREE.Cache.enabled = true
 
 const security = Security()
 
-let occasionalUpdate = 0
 let mouseWheelTarget = new THREE.Vector3()
 let cameraPlayerOffset = new THREE.Vector3()
 let mouseWheelScale = 0.0
@@ -229,11 +225,6 @@ const start = async () => {
   // Allow local player to control self
   player.autonomous = false
 
-  // const vidobj = player.videoBubble.object
-  // vidobj.createDomElement()
-  // vidobj.on('mute', muteAudio)
-  // vidobj.on('unmute', unmuteAudio)
-
   player.labelObj.setOnLabelChanged((text) => {
     player.goals.label.update({ text })
   })
@@ -313,38 +304,6 @@ const start = async () => {
   // 2. Calculate audio volume based on distance
   // 3. Sort players by Z order
   stage.addUpdateFunction((delta) => {
-    occasionalUpdate++
-
-    const dist = stage.camera.position.distanceTo(player.object.position)
-    // TODO: How do we arrive at this magic number?
-    const playerHeight = 800000 / dist
-
-    videoSize.set(playerHeight)
-
-    // TODO: make this filter for 'HasVideoBubble' instead of just looking for players
-    stage.forEachEntityOfType('player', (anyPlayer, i) => {
-      // Set videoBubble diameter, which can change due to
-      // (a) new players entering the scene, or
-      // (b) zoom level changing
-      // anyPlayer.videoBubble.object.setDiameter(playerHeight)
-      // (Note: due to bug in ThreeJS, we incorrectly exclude players
-      //  from being "on stage" when the bottom of their avatar
-      //  goes off screen, so we process diameters here.)
-      // if (occasionalUpdate % 10 === 0) {
-      //   const audio = anyPlayer.videoBubble.object.audio
-      //   if (audio) {
-      //     const dist = player.object.position.distanceTo(
-      //       anyPlayer.object.position
-      //     )
-      //     // if dist = 0: (500 + 1000) / 500 = 3.0     => clamped to 1.0
-      //     // if dist = 1000: (500 - 0) / 500 = 1.0     => clamped to 1.0
-      //     // if dist = 1200: (500 - 200) / 500 = 0.6   => clamped to 0.6
-      //     // if dist = 2000: (500 - 1000) / 500 = -0.5 => clamped to 0.15
-      //     const volume = (500 - (dist - 1000)) / 500
-      //     audio.volume = THREE.MathUtils.clamp(volume, 0.15, 1.0)
-      //   }
-      // }
-    })
     // stage.forEachEntityOnStageOfType(
     //   'player',
     //   (anyPlayer, i) => {
@@ -842,89 +801,14 @@ const start = async () => {
       break
   }
 
-  myParticipantIds.subscribe((ids) => {
-    const myJid = ids[config.JITSI_CONFERENCE]
-    if (myJid) {
-      player.setJid(myJid)
-      console.log('myJid', myJid)
+  connection.conferencesStore.subscribe(($conferences) => {
+    const list = Object.values($conferences)
+    if (list.length > 0) {
+      list[0].localParticipant.fieldsStore.subscribe(($participant) => {
+        player.setJid($participant.jid)
+      })
     }
   })
-
-  stage.addPostrenderFunction(() => {
-    const positions = {}
-    // videoPositions.subscribe((positions_) => (positions = positions_))()
-
-    stage.forEachEntityOfType('player', (player) => {
-      const jid = player.getJid()
-
-      if (jid) {
-        if (!positions[jid]) {
-          positions[jid] = { x: 0, y: 0 }
-        }
-        positions[jid].x = player.videoPosition.x
-        positions[jid].y = player.videoPosition.y
-      }
-    })
-
-    videoPositions.update((oldPositions) =>
-      Object.assign(oldPositions, positions)
-    )
-  })
-  /*
-  initializeAVChat({
-    playerId: player.uuid,
-    room:
-      'relm-' +
-      config.ENV +
-      '-' +
-      config.ROOM +
-      (config.SINGLE_PLAYER_MODE ? `-${playerId}` : ''),
-    onMuteChanged: (track, playerId) => {
-      const muted = track.isMuted()
-      const otherPlayer = stage.entities[playerId]
-      // console.log('onMuteChanged', playerId, muted, otherPlayer)
-      if (muted) {
-        otherPlayer.videoBubble.object.enterMutedState()
-      } else {
-        otherPlayer.videoBubble.object.enterUnmutedState()
-      }
-    },
-    createVideoElement: (entityId) => {
-      // console.log('playerId', playerId)
-      // console.log('createVideoElement', entityId)
-      const entity = stage.entities[entityId]
-      if (entity) {
-        if (entity.videoBubble) {
-          return entity.videoBubble.object.createDomElement()
-        } else {
-          console.warn(
-            "Can't create video element for entity that has no VideoBubble",
-            entityId
-          )
-        }
-      } else {
-        console.warn("Can't create video element for missing entity", entityId)
-      }
-    },
-    createAudioElement: (entityId) => {
-      const entity = stage.entities[entityId]
-      if (entity) {
-        if (entity.videoBubble) {
-          return entity.videoBubble.object.createAudioElement()
-        } else {
-          console.warn(
-            "Can't create audio element for entity that has no VideoBubble",
-            entityId
-          )
-        }
-      } else {
-        console.warn("Can't create audio element for missing entity", entityId)
-      }
-    },
-  })
-  */
-
-  // console.log('start() complete')
 }
 
 const app = new App({
