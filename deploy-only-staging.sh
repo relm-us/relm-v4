@@ -1,1 +1,1 @@
-rsync -azvP -e ssh dist/* deploy@ayanarra.com:/var/www/html/relm-staging/ --delete-excluded
+rsync -azvP -e ssh public/* deploy@relm.us:/var/www/html/relm-staging/ --delete
