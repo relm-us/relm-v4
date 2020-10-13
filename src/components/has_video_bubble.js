@@ -25,18 +25,6 @@ const HasVideoBubble = stampit(Component, {
   },
 
   methods: {
-    setVideoVisibility(visible) {
-      const jid = this.getJid()
-
-      if (jid && jid in participants) {
-        participants[jid].setVisible(visible)
-      } else {
-        console.warn(
-          `Can't ${visible ? 'show' : 'hide'} video bubble: jid is null`
-        )
-      }
-    },
-
     updateVideoOffset() {
       const offset = this.goals.videoOffset
       this.videoOffset.x = offset.get('x')

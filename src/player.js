@@ -260,9 +260,9 @@ const Player = stampit(
 
         const videoGoal = this.goals.video
         if (!videoGoal.achieved) {
-          const visible = videoGoal.get('jid') !== null
-          console.log('videoGoal visible', visible)
-          this.setVideoVisibility(visible)
+          // const visible = videoGoal.get('jid') !== null
+          // console.log('videoGoal visible', visible)
+          // this.setVideoVisibility(visible)
           videoGoal.markAchieved()
         }
       },
