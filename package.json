@@ -20,7 +20,7 @@
     "anchorme": "^2.1.2",
     "axios": "^0.19.2",
     "base64-arraybuffer-es6": "^0.5.0",
-    "dompurify": "^2.0.11",
+    "dompurify": "^2.0.17",
     "dropzone": "^5.7.0",
     "flatqueue": "^1.2.1",
     "just-omit": "^1.1.0",
